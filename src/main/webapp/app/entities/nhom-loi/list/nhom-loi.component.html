@@ -1,0 +1,101 @@
+<div>
+  <h2 id="page-heading" data-cy="NhomLoiHeading">
+    <span>Nhóm lỗi</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="loadAll()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span>Làm mới</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-nhom-loi"
+        [routerLink]="['/nhom-loi/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span> Tạo mới Nhóm lỗi </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="nhomLois?.length === 0">
+    <span>No nhomLois found</span>
+  </div>
+
+  <div class="table-responsive" id="entities" *ngIf="nhomLois && nhomLois.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr>
+          <th scope="col"><span>ID</span></th>
+          <th scope="col"><span>Mã nhóm lỗi</span></th>
+          <th scope="col"><span>Tên nhóm lỗi</span></th>
+          <th scope="col"><span>Ngày tạo</span></th>
+          <th scope="col"><span>Ngày cập nhật</span></th>
+          <th scope="col"><span>Username</span></th>
+          <th scope="col"><span>Ghi chú</span></th>
+          <th scope="col"><span>Trạng thái</span></th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let nhomLoi of nhomLois; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/nhom-loi', nhomLoi.id, 'view']">{{ nhomLoi.id }}</a>
+          </td>
+          <td>{{ nhomLoi.maNhomLoi }}</td>
+          <td>{{ nhomLoi.tenNhomLoi }}</td>
+          <td>{{ nhomLoi.ngayTao | formatMediumDatetime }}</td>
+          <td>{{ nhomLoi.ngayCapNhat | formatMediumDatetime }}</td>
+          <td>{{ nhomLoi.username }}</td>
+          <td>{{ nhomLoi.ghiChu }}</td>
+          <td>{{ nhomLoi.trangThai }}</td>
+          <td class="text-end">
+            <div class="">
+              <button
+                type="submit"
+                [routerLink]="['/nhom-loi', nhomLoi.id, 'view']"
+                class="btn btn-info btn-sm"
+                data-cy="entityDetailsButton"
+              >
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline">Xem chi tiết</span>
+              </button>
+
+              <button
+                type="submit"
+                [routerLink]="['/nhom-loi', nhomLoi.id, 'edit']"
+                class="btn btn-primary btn-sm"
+                data-cy="entityEditButton"
+              >
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline">Chỉnh sửa</span>
+              </button>
+
+              <button type="submit" (click)="delete(nhomLoi)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline">Xoá</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div *ngIf="nhomLois && nhomLois.length > 0">
+    <div>
+      <select class="form-select" aria-label="Default select example" [(ngModel)]="itemPerPage">
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        <option value="all">All</option>
+      </select>
+      <pagination-controls (pageChange)="page = $event" style="float: right"></pagination-controls>
+    </div>
+  </div>
+</div>

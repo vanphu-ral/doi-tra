@@ -1,0 +1,78 @@
+<div id="demo-container" class="container-slickgrid col-md-12 content">
+  <h2 id="page-heading">Tổng hợp sản phẩm phân tích và sản phẩm xuất kho</h2>
+  <div class="btn-header d-flex justify-content-between">
+    <form id="dateForm">
+      <div style="width: 20rem" class="search-inp">
+        <label class="form-label-header">Ngày bắt đầu</label>
+        <input
+          class="form-control"
+          type="date"
+          id="startDate"
+          [(ngModel)]="startDates"
+          [ngModelOptions]="{ standalone: true }"
+          (click)="changeDate()"
+          style="width: 15rem"
+        />
+      </div>
+      <div style="width: 20rem" class="search-inp">
+        <label class="form-label-header">Ngày kết thúc</label>
+        <input
+          class="form-control"
+          type="date"
+          id="endDate"
+          [(ngModel)]="endDates"
+          [ngModelOptions]="{ standalone: true }"
+          (click)="changeDate()"
+          style="width: 15rem"
+        />
+      </div>
+
+      <div style="width: 20rem" class="search-inp">
+        <label for="month" class="form-label-header">Tháng</label>
+        <ng-multiselect-dropdown
+          [settings]="dropdownSettings"
+          [data]="listMonth"
+          [(ngModel)]="selectedItems"
+          [ngModelOptions]="{ standalone: true }"
+          (onDeSelect)="onDeSelect($event)"
+          (onSelect)="onItemSelect($event)"
+          (onSelectAll)="onSelectAll($event)"
+        ></ng-multiselect-dropdown>
+      </div>
+
+      <button class="btn btn-primary" style="height: 2.5rem; margin-left: 5px" (click)="changeDate2()">
+        <fa-icon icon="search"></fa-icon> Tìm kiếm
+      </button>
+    </form>
+    <button class="btn btn-success" style="height: 2.5rem; margin-top: 2rem" (click)="getExportExcel()">
+      <fa-icon [icon]="faFileExcel"></fa-icon>
+      Xuất báo cáo
+    </button>
+  </div>
+
+  <angular-slickgrid
+    gridId="bao-cao-san-pham-xuat-kho"
+    [columnDefinitions]="columnDefinitions"
+    [gridOptions]="gridOptions"
+    [dataset]="chiTietXuatKhoSum"
+    (onAngularGridCreated)="angularGridReady($event)"
+  ></angular-slickgrid>
+</div>
+
+<div class="modal-confirm" [ngClass]="{ active: isModalOpenConfirmLost }">
+  <div class="modal-content-confirm">
+    <h3>Dữ liệu của tháng...năm...bị thiếu, có muốn tiêp tục xuất báo cáo không?</h3>
+    <button class="btn btn-danger" (click)="confirmLost()">Xóa</button>
+    <button class="btn btn-primary" (click)="closeModalConfirmLost()">Hủy</button>
+  </div>
+</div>
+
+<div *ngIf="loading" class="loading-spinner">
+  <div class="spinner">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+</div>

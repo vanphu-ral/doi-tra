@@ -1,0 +1,103 @@
+<div>
+  <h2 id="page-heading" data-cy="NhomSanPhamHeading">
+    <span>Nhóm sản phẩm</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="loadAll()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span>Làm mới</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-nhom-san-pham"
+        [routerLink]="['/nhom-san-pham/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span> Tạo mới Nhóm sản phẩm </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="nhomSanPhams?.length === 0">
+    <span>No nhomSanPhams found</span>
+  </div>
+
+  <div class="table-responsive" id="entities" *ngIf="nhomSanPhams && nhomSanPhams.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr>
+          <th scope="col"><span>ID</span></th>
+          <th scope="col"><span>Tên</span></th>
+          <th scope="col"><span>Time Create</span></th>
+          <th scope="col"><span>Time Update</span></th>
+          <th scope="col"><span>Username</span></th>
+          <th scope="col"><span>Trạng thái</span></th>
+          <th scope="col"><span>Chủng loại</span></th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let nhomSanPham of nhomSanPhams; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/nhom-san-pham', nhomSanPham.id, 'view']">{{ nhomSanPham.id }}</a>
+          </td>
+          <td>{{ nhomSanPham.name }}</td>
+          <td>{{ nhomSanPham.timeCreate }}</td>
+          <td>{{ nhomSanPham.timeUpdate | formatMediumDatetime }}</td>
+          <td>{{ nhomSanPham.username }}</td>
+          <td>{{ nhomSanPham.trangThai }}</td>
+          <td>
+            <div *ngIf="nhomSanPham.chungLoai">
+              <a [routerLink]="['/chung-loai', nhomSanPham.chungLoai?.id, 'view']">{{ nhomSanPham.chungLoai?.id }}</a>
+            </div>
+          </td>
+          <td class="text-end">
+            <div class="">
+              <button
+                type="submit"
+                [routerLink]="['/nhom-san-pham', nhomSanPham.id, 'view']"
+                class="btn btn-info btn-sm"
+                data-cy="entityDetailsButton"
+              >
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline">Xem chi tiết</span>
+              </button>
+
+              <button
+                type="submit"
+                [routerLink]="['/nhom-san-pham', nhomSanPham.id, 'edit']"
+                class="btn btn-primary btn-sm"
+                data-cy="entityEditButton"
+              >
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline">Chỉnh sửa</span>
+              </button>
+
+              <button type="submit" (click)="delete(nhomSanPham)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline">Xoá</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div *ngIf="nhomSanPhams && nhomSanPhams.length > 0">
+    <div>
+      <select class="form-select" aria-label="Default select example" [(ngModel)]="itemPerPage">
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        <option value="all">All</option>
+      </select>
+      <pagination-controls (pageChange)="page = $event" style="float: right"></pagination-controls>
+    </div>
+  </div>
+</div>

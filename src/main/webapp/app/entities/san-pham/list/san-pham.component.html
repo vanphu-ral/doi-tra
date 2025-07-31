@@ -1,0 +1,29 @@
+<div id="demo-container" class="container-slickgrid col-md-12 content">
+  <h2 id="page-heading">
+    {{ title }}
+  </h2>
+  <div class="btn-header d-flex justify-content-end">
+    <button class="btn btn-sm btn-outline-primary btn-option btn-addTN me-2" (click)="addItem()">Thêm mới</button>
+  </div>
+  <angular-slickgrid
+    gridId="san-pham"
+    [columnDefinitions]="columnDefinitions1"
+    [gridOptions]="gridOptions1"
+    [dataset]="sanPhams"
+    (onAngularGridCreated)="angularGridReady($event)"
+  >
+  </angular-slickgrid>
+</div>
+
+<!-- <div class="table-responsive popup-background" role="dialog">
+  <div class="popup-container">
+    <div class="popup-header">
+      <h2>Thêm mới sản phẩm</h2>
+      <hr>
+      <span class="close-btn">&times;</span>
+    </div>
+    <div class="popup-content">
+
+    </div>
+  </div>
+</div> -->

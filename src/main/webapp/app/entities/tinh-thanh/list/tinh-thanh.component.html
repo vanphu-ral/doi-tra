@@ -1,0 +1,91 @@
+<div>
+  <h2 id="page-heading" data-cy="TinhThanhHeading">
+    <span>Tỉnh thành</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="loadAll()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span>Làm mới</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-tinh-thanh"
+        [routerLink]="['/tinh-thanh/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span> Tạo mới tỉnh thành </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="tinhThanhs?.length === 0">
+    <span>No tinhThanhs found</span>
+  </div>
+
+  <div class="table-responsive" id="entities" *ngIf="tinhThanhs && tinhThanhs.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr>
+          <th scope="col"><span>ID</span></th>
+          <th scope="col"><span>Id Tỉnh thành</span></th>
+          <th scope="col"><span>Tên</span></th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tinhThanh of tinhThanhs; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/tinh-thanh', tinhThanh.id, 'view']">{{ tinhThanh.id }}</a>
+          </td>
+          <td>{{ tinhThanh.idTinhThanh }}</td>
+          <td>{{ tinhThanh.name }}</td>
+          <td class="text-end">
+            <div>
+              <button
+                type="submit"
+                [routerLink]="['/tinh-thanh', tinhThanh.id, 'view']"
+                class="btn btn-info btn-sm"
+                data-cy="entityDetailsButton"
+              >
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline">Xem chi tiết</span>
+              </button>
+
+              <button
+                type="submit"
+                [routerLink]="['/tinh-thanh', tinhThanh.id, 'edit']"
+                class="btn btn-primary btn-sm"
+                data-cy="entityEditButton"
+              >
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline">Chỉnh sửa</span>
+              </button>
+
+              <button type="submit" (click)="delete(tinhThanh)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline">Xoá</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div *ngIf="tinhThanhs && tinhThanhs.length > 0">
+    <div>
+      <select class="form-select" aria-label="Default select example" [(ngModel)]="itemPerPage">
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        <option value="all">All</option>
+      </select>
+      <pagination-controls (pageChange)="page = $event" style="float: right"></pagination-controls>
+    </div>
+  </div>
+</div>

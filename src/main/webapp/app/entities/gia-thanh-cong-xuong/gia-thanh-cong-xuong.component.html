@@ -1,0 +1,199 @@
+<div id="demo-container" class="container-slickgrid col-md-12 content">
+  <h2 id="page-heading">Thống kê danh sách giá thành công xưởng theo tháng</h2>
+  <div class="btn-header d-flex justify-content-end">
+    <button class="btn btn-outline-primary btn-option btn-addTN me-2" (click)="openPopupThemMoi()">Thêm mới</button>
+  </div>
+  <angular-slickgrid
+    [columnDefinitions]="columnDefinitions"
+    [gridOptions]="gridOption"
+    (onAngularGridCreated)="angularGridReady($event)"
+    (onBeforePaginationChange)="handleOnBeforePaginationChange($event)"
+  ></angular-slickgrid>
+</div>
+
+<div class="table-responsive popup-background" role="dialog" *ngIf="popupThemMoi === true">
+  <div class="popup-container">
+    <div class="popup-header">
+      <h2>Thêm mới</h2>
+      <hr />
+      <span class="close-btn" (click)="closePopupThemMoi()">&times;</span>
+    </div>
+    <input type="file" class="btn btn-success btn-import" />
+    <button class="btn btn-success" type="button">Tải form mẫu</button>
+    <div class="popup-content">
+      <form>
+        <div>
+          <label for="">Tháng</label>
+          <select name="" id="">
+            <option value="1">Tháng 1</option>
+            <option value="2">Tháng 2</option>
+            <option value="3">Tháng 3</option>
+            <option value="4">Tháng 4</option>
+            <option value="5">Tháng 5</option>
+            <option value="6">Tháng 6</option>
+            <option value="7">Tháng 7</option>
+            <option value="8">Tháng 8</option>
+            <option value="9">Tháng 9</option>
+            <option value="10">Tháng 10</option>
+            <option value="11">Tháng 11</option>
+            <option value="12">Tháng12</option>
+          </select>
+        </div>
+        <div>
+          <label for="">Năm</label>
+          <input type="text" />
+        </div>
+      </form>
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-danger btn-option" style="margin: 15px">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span>Huỷ bỏ</span>
+        </button>
+
+        <button type="submit" id="save-entity" data-cy="entityCreateSaveButton" class="btn btn-success btn-option" style="margin: 15px">
+          <fa-icon icon="check"></fa-icon>&nbsp;<span>Xác Nhận</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-confirm" role="dialog" [ngClass]="{ active: popupEdit }">
+  <div class="modal-content-confirm">
+    <div class="popup-header">
+      <h2>Chỉnh sửa</h2>
+      <hr />
+      <span class="close-btn" (click)="closePopupEdit()">&times;</span>
+    </div>
+    <input type="file" class="btn btn-success btn-import" />
+    <!-- <button class="btn btn-success" type="button">Tải form mẫu</button> -->
+    <div class="popup-content">
+      <form>
+        <div>
+          <label for="">Tháng</label>
+          <select name="" id="">
+            <option value="1">Tháng 1</option>
+            <option value="2">Tháng 2</option>
+            <option value="3">Tháng 3</option>
+            <option value="4">Tháng 4</option>
+            <option value="5">Tháng 5</option>
+            <option value="6">Tháng 6</option>
+            <option value="7">Tháng 7</option>
+            <option value="8">Tháng 8</option>
+            <option value="9">Tháng 9</option>
+            <option value="10">Tháng 10</option>
+            <option value="11">Tháng 11</option>
+            <option value="12">Tháng12</option>
+          </select>
+        </div>
+        <div>
+          <label for="">Năm</label>
+          <input type="text" />
+        </div>
+      </form>
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-danger btn-option" style="margin: 15px">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span>Huỷ bỏ</span>
+        </button>
+
+        <button type="submit" id="save-entity" data-cy="entityCreateSaveButton" class="btn btn-success btn-option" style="margin: 15px">
+          <fa-icon icon="check"></fa-icon>&nbsp;<span>Xác Nhận</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="table-responsive popup-background" role="dialog" *ngIf="popupChiTiet === true">
+  <div class="popup-container">
+    <div class="popup-header">
+      <h2>Thông tin chi tiết các sản phẩm xuất kho</h2>
+      <hr />
+      <span class="close-btn" (click)="closePopupChiTiet()">&times;</span>
+    </div>
+    <div class="popup-content">
+      <form>
+        <table class="table table-striped">
+          <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending">
+              <th scope="col" style="width: 3rem">
+                <span>Tháng</span>
+              </th>
+              <th scope="col">
+                <span>Năm</span>
+              </th>
+              <th scope="col">
+                <span>Người cập nhật</span>
+              </th>
+              <th scope="col">
+                <span>Thời gian tạo</span>
+              </th>
+              <th scope="col">
+                <span>Thời gian cập nhật</span>
+              </th>
+            </tr>
+          </thead>
+          <button class="btn" type="button" (click)="openPopupEdit()">Cập nhật</button>
+          <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-danger btn-option" style="margin: 15px">
+            <fa-icon icon="ban"></fa-icon>&nbsp;<span>Xoá</span>
+          </button>
+          <tbody>
+            <tr data-cy="entityTable">
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Sản phẩm</h2>
+        <div class="fixed-header-table">
+          <table class="table table-strpied" aria-describedby="page-heading">
+            <thead>
+              <tr>
+                <th scope="col"><span>STT</span></th>
+                <th scope="col"><span>Tháng</span></th>
+                <th scope="col"><span>Năm</span></th>
+                <th scope="col"><span>Mã sản phẩm</span></th>
+                <th scope="col"><span>Tên sản phẩm</span></th>
+                <th scope="col"><span>Ngành</span></th>
+                <th scope="col"><span>Chủng loại</span></th>
+                <th scope="col"><span>Sản phẩm</span></th>
+                <th scope="col"><span>Nhóm sản phẩm</span></th>
+                <th scope="col"><span>Nhóm SP theo công suất</span></th>
+                <th scope="col"><span>Giá</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-confirm" [ngClass]="{ active: isModalOpenConfirmSuccess }">
+  <div class="modal-content-confirm">
+    <!-- <span class="close-modal-confirm" (click)="closeModalConfirmDuplicate()">&times;</span> -->
+    <h3>Tải thông tin lên thành công</h3>
+    <button class="btn btn-danger" (click)="closeModalConfirmSuccess()">Hủy</button>
+    <button class="btn btn-success" (click)="confirmSuccess()">OK</button>
+  </div>
+</div>

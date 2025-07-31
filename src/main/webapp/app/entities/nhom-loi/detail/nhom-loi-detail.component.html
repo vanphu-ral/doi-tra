@@ -1,0 +1,56 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="nhomLoi">
+      <h2 data-cy="nhomLoiDetailsHeading"><span>Nhóm lỗi</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span>ID</span></dt>
+        <dd>
+          <span>{{ nhomLoi.id }}</span>
+        </dd>
+        <dt><span>Mã nhóm lỗi</span></dt>
+        <dd>
+          <span>{{ nhomLoi.maNhomLoi }}</span>
+        </dd>
+        <dt><span>Tên nhóm lỗi</span></dt>
+        <dd>
+          <span>{{ nhomLoi.tenNhomLoi }}</span>
+        </dd>
+        <dt><span>Ngày tạo</span></dt>
+        <dd>
+          <span>{{ nhomLoi.ngayTao | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span>Ngày cập nhật</span></dt>
+        <dd>
+          <span>{{ nhomLoi.ngayCapNhat | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span>Username</span></dt>
+        <dd>
+          <span>{{ nhomLoi.username }}</span>
+        </dd>
+        <dt><span>Ghi chú</span></dt>
+        <dd>
+          <span>{{ nhomLoi.ghiChu }}</span>
+        </dd>
+        <dt><span>Trạng thái</span></dt>
+        <dd>
+          <span>{{ nhomLoi.trangThai }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Trở lại</span>
+      </button>
+
+      <button type="button" [routerLink]="['/nhom-loi', nhomLoi.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Chỉnh sửa</span>
+      </button>
+    </div>
+  </div>
+</div>

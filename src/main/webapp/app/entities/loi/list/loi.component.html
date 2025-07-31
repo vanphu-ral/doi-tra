@@ -1,0 +1,97 @@
+<div>
+  <h2 id="page-heading" data-cy="LoiHeading">
+    <span>Lỗi</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="loadAll()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span>Làm mới</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-loi"
+        [routerLink]="['/loi/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span> Tạo mới lỗi </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="lois?.length === 0">
+    <span>No lois found</span>
+  </div>
+
+  <div class="table-responsive" id="entities" *ngIf="lois && lois.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr>
+          <th scope="col"><span>ID</span></th>
+          <th scope="col"><span>Err Code</span></th>
+          <th scope="col"><span>Tên lỗi</span></th>
+          <th scope="col"><span>Ngày tạo</span></th>
+          <th scope="col"><span>Ngày cập nhật</span></th>
+          <th scope="col"><span>Username</span></th>
+          <th scope="col"><span>Ghi chú</span></th>
+          <th scope="col"><span>Trạng thái</span></th>
+          <th scope="col"><span>Nhóm lỗi</span></th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let loi of lois; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/loi', loi.id, 'view']">{{ loi.id }}</a>
+          </td>
+          <td>{{ loi.errCode }}</td>
+          <td>{{ loi.tenLoi }}</td>
+          <td>{{ loi.ngayTao | formatMediumDatetime }}</td>
+          <td>{{ loi.ngayCapNhat | formatMediumDatetime }}</td>
+          <td>{{ loi.username }}</td>
+          <td>{{ loi.chiChu }}</td>
+          <td>{{ loi.trangThai }}</td>
+          <td>
+            <div *ngIf="loi.nhomLoi">
+              <a [routerLink]="['/nhom-loi', loi.nhomLoi?.id, 'view']">{{ loi.nhomLoi?.id }}</a>
+            </div>
+          </td>
+          <td class="text-end">
+            <div class="">
+              <button type="submit" [routerLink]="['/loi', loi.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline">Xem chi tiết</span>
+              </button>
+
+              <button type="submit" [routerLink]="['/loi', loi.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline">Chỉnh sửa</span>
+              </button>
+
+              <button type="submit" (click)="delete(loi)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline">Xoá</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div *ngIf="lois && lois.length > 0">
+    <div>
+      <select class="form-select" aria-label="Default select example" [(ngModel)]="itemPerPage">
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        <option value="all">All</option>
+      </select>
+      <pagination-controls (pageChange)="page = $event" style="float: right"></pagination-controls>
+    </div>
+  </div>
+</div>

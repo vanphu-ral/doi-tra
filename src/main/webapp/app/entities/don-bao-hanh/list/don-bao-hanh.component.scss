@@ -1,0 +1,59 @@
+::ng-deep .angular-slickgrid table td {
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+::ng-deep .wrap-text-cell {
+  display: flex;
+  align-items: center;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+  height: 100%;
+}
+
+::ng-deep .slick-cell {
+  align-items: center;
+  display: flex;
+}
+
+::ng-deep .progress {
+  width: 100% !important;
+}
+
+.btn-menu {
+  padding: 0px 16px;
+  height: 40px;
+}
+
+.label_checkAll {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  input {
+    margin: 5px 0;
+  }
+}
+
+.popup-header {
+  border-bottom: 2px solid #006699;
+}
+
+.info-card {
+  border: 1px solid #9d9d9d;
+  border-radius: 10px;
+  padding: 2rem 1rem;
+  background: #ececec;
+}
+::ng-deep .slickgrid-container .slick-cell.number-cell {
+  justify-content: center !important;
+}
+
+// ::ng-deep div.wrap-text-cell {
+//     white-space: normal !important;
+//     word-break: break-word !important;
+//     overflow-wrap: break-word !important;
+//     display: block;
+
+// }

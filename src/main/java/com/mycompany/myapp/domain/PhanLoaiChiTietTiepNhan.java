@@ -28,11 +28,11 @@ public class PhanLoaiChiTietTiepNhan implements Serializable {
     @JsonIgnoreProperties(value = { "phanTichLois", "phanLoaiChiTietTiepNhan" }, allowSetters = true)
     private Set<PhanTichSanPham> phanTichSanPhams = new HashSet<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "sanPham", "donBaoHanh", "phanLoaiChiTietTiepNhans" }, allowSetters = true)
     private ChiTietSanPhamTiepNhan chiTietSanPhamTiepNhan;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "phanLoaiChiTietTiepNhans" }, allowSetters = true)
     private DanhSachTinhTrang danhSachTinhTrang;
 

@@ -2,8 +2,10 @@ package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.domain.PhanLoaiChiTietDonBaoHanhResponse;
 import com.mycompany.myapp.domain.PhanLoaiChiTietTiepNhan;
+import com.mycompany.myapp.service.dto.DonBaoHanhSummaryDto;
 import java.util.List;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -46,4 +48,24 @@ public interface PhanLoaiChiTietTiepNhanRepository extends JpaRepository<PhanLoa
         nativeQuery = true
     )
     Integer getSum(Long id1, Long id2);
+
+    @Query(
+        "SELECT pl FROM PhanLoaiChiTietTiepNhan pl " +
+        "JOIN FETCH pl.chiTietSanPhamTiepNhan ct " +
+        "JOIN FETCH pl.danhSachTinhTrang tt " +
+        "WHERE ct.donBaoHanh.id = :donBaoHanhId"
+    )
+    List<PhanLoaiChiTietTiepNhan> findByDonBaoHanhId(@Param("donBaoHanhId") Long donBaoHanhId);
+
+    @Query(
+        value = "SELECT ct.don_bao_hanh_id AS donBaoHanhId, SUM(pl.so_luong) AS slPhanTich " +
+        "FROM phan_loai_chi_tiet_tiep_nhan pl " +
+        "JOIN chi_tiet_san_pham_tiep_nhan ct ON pl.chi_tiet_san_pham_tiep_nhan_id = ct.id " +
+        "WHERE ct.don_bao_hanh_id IN (:donIds) " +
+        "AND pl.so_luong IS NOT NULL AND pl.so_luong > 0 " +
+        "AND (pl.danh_sach_tinh_trang_id = 1 OR pl.danh_sach_tinh_trang_id = 2) " +
+        "GROUP BY ct.don_bao_hanh_id",
+        nativeQuery = true
+    )
+    List<Object[]> sumSlPhanTichByDonBaoHanhIdsNative(@Param("donIds") List<Long> donIds);
 }

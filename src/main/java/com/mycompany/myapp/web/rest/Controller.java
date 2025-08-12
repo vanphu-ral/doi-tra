@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -46,6 +47,12 @@ public class Controller {
     @PostMapping("don-bao-hanh/change-status")
     public void ChangeDonBaoHanhStatus(@RequestBody DonBaoHanh request) {
         this.fullServices.ChangeDonBaoHanhStatus(request);
+    }
+
+    // ☺ B1: Lấy danh sách phân loại chi tiết theo đơn bảo hành
+    @GetMapping("/phan-loai-chi-tiet-tiep-nhans/by-don-bao-hanh/{donBaoHanhId}")
+    public List<PhanLoaiChiTietTiepNhan> getPhanLoaiChiTietByDonBaoHanh(@PathVariable Long donBaoHanhId) {
+        return this.fullServices.getPhanLoaiChiTietByDonBaoHanh(donBaoHanhId);
     }
 
     //☺ lấy chi tiết đơn bảo hành theo id

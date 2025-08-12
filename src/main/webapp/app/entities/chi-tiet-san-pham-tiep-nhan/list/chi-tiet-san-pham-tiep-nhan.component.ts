@@ -13,6 +13,7 @@ import * as XLSX from 'xlsx';
 @Component({
   selector: 'jhi-chi-tiet-san-pham-tiep-nhan',
   templateUrl: './chi-tiet-san-pham-tiep-nhan.component.html',
+  styleUrls: ['./chi-tiet-san-pham-tiep-nhan.component.scss'],
 })
 export class ChiTietSanPhamTiepNhanComponent implements OnInit {
   tongHopUrl = this.applicationConfigService.getEndpointFor('api/tong-hop');

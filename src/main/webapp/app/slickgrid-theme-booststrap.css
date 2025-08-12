@@ -3925,7 +3925,7 @@ body .slickgrid-container .slick-header-columns .slick-header-column.ui-state-de
 }
 
 .btn-header {
-  padding-right: 6em;
+  padding-right: 1em;
   display: flex;
   justify-content: flex-end;
 }

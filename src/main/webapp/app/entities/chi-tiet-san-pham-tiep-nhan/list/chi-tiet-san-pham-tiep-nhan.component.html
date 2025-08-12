@@ -1,11 +1,10 @@
 <div id="demo-container" class="container-slickgrid col-md-12 content">
   <h2 id="page-heading">Tổng hợp</h2>
-  <div class="btn-header d-flex justify-content-end">
-    <button class="btn btn-outline-primary btn-option btn-addTN me-2" (click)="openPopupViewCTL()">Xem chi tiết lỗi</button>
-  </div>
-  <div class="btn-header d-flex justify-content-between">
-    <form id="dateForm">
-      <div style="width: 20rem" class="search-inp">
+
+  <div class="d-flex justify-content-between align-items-end flex-wrap mb-3">
+    <!-- Bộ lọc ngày -->
+    <form id="dateForm" class="d-flex align-items-end gap-3 flex-wrap">
+      <div class="search-inp">
         <label class="form-label-header">Ngày bắt đầu</label>
         <input
           class="form-control"
@@ -14,10 +13,9 @@
           [(ngModel)]="startDates"
           [ngModelOptions]="{ standalone: true }"
           (change)="changeDate()"
-          style="width: 15rem"
         />
       </div>
-      <div style="width: 20rem" class="search-inp">
+      <div class="search-inp">
         <label class="form-label-header">Ngày kết thúc</label>
         <input
           class="form-control"
@@ -26,21 +24,19 @@
           [(ngModel)]="endDates"
           [ngModelOptions]="{ standalone: true }"
           (change)="changeDate()"
-          style="width: 15rem"
         />
       </div>
-      <!-- <input type="submit" (click)="changeDate()" /> -->
-      <button class="btn btn-outline-primary btn-option btn-addTN me-2" style="height: 2.5rem" (click)="changeDate()">Apply</button>
+      <button class="btn btn-success" (click)="changeDate()">Áp dụng</button>
     </form>
-    <button class="btn btn-outline-primary btn-option btn-addTN me-2" style="height: 2.5rem; margin-left: 44rem" (click)="exportToExcel()">
-      Export Excel
-    </button>
-    <button class="btn btn-outline-primary btn-option btn-addTN me-2" style="height: 2.5rem" (click)="getExportExcel()">
-      Xuất báo cáo
-    </button>
 
-    <!-- <button class="btn btn-outline-primary btn-option btn-addTN me-2" style="height: 2.5rem" (click)="getDonBaoHanhInfo()">Test api</button> -->
+    <!-- Các nút chức năng -->
+    <div class="d-flex gap-2">
+      <button class="btn btn-info" (click)="openPopupViewCTL()">Xem chi tiết lỗi</button>
+      <button class="btn btn-warning" (click)="exportToExcel()">Export Excel</button>
+      <button class="btn btn-primary" (click)="getExportExcel()">Xuất báo cáo</button>
+    </div>
   </div>
+
   <angular-slickgrid
     gridId="tong-hop"
     [columnDefinitions]="columnDefinitions"

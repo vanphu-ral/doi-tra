@@ -1,7 +1,12 @@
 <div id="demo-container" class="container-slickgrid col-md-12 content">
-  <h2 id="page-heading">{{ title }}</h2>
-  <div class="btn-header d-flex justify-content-end">
-    <button class="btn btn-outline-primary btn-option btn-addTN me-2" (click)="openPopupThemMoi()">Thêm mới</button>
+  <div class="don-bao-hanh-header d-flex justify-content-between align-items-center">
+    <h2 id="page-heading" class="mb-0">{{ title }}</h2>
+    <div class="btn-header">
+      <button class="btn btn-outline-dark btn-option btn-addTN me-2 btn-menu" (click)="openGridMenu($event)">
+        <i class="fa fa-filter"></i>
+      </button>
+      <button class="btn btn-outline-primary btn-option btn-addTN me-2" (click)="openPopupThemMoi()">Thêm mới</button>
+    </div>
   </div>
   <angular-slickgrid
     gridId="don-bao-hanh"
@@ -261,7 +266,7 @@
       </form>
     </div>
     <div class="popup-footer">
-      <button class="btn btn-danger btn-option" (click)="closePopupEdit()"><fa-icon icon="ban"></fa-icon>&nbsp;Huỷ</button>
+      <button class="btn btn-danger btn-option" (click)="closePopupEdit()" type="button"><fa-icon icon="ban"></fa-icon>&nbsp;Huỷ</button>
       <button class="btn btn-success btn-option" (click)="xacNhanCapNhatDonBaoHanh()">
         <fa-icon icon="check"></fa-icon>&nbsp;Xác nhận
       </button>
@@ -298,9 +303,9 @@
               <th scope="col" jhiSortBy="">
                 <span class="span-table-phanloai">Ngày tạo đơn</span>
               </th>
-              <th scope="col" jhiSortBy="">
+              <!-- <th scope="col" jhiSortBy="">
                 <span class="span-table-phanloai">Ngày trả biên bản</span>
-              </th>
+              </th> -->
               <th scope="col" jhiSortBy="">
                 <span class="span-table-phanloai">Trạng thái</span>
               </th>
@@ -363,188 +368,209 @@
               <td style="padding-top: 15px">
                 {{ donBaoHanh.ngayTiepNhan | date: 'YYYY-MM-dd hh:mm:ss ' }}
               </td>
-              <td style="padding-top: 15px">{{ donBaoHanh.ngayTraBienBan | date: 'YYYY-MM-dd hh:mm:ss ' }}</td>
+              <!-- <td style="padding-top: 15px">{{ donBaoHanh.ngayTraBienBan | date: 'YYYY-MM-dd hh:mm:ss ' }}</td> -->
               <td>
                 <input
                   type="text"
                   class="input-table form-control"
+                  [ngStyle]="getStyle(donBaoHanh.trangThai)"
                   [(ngModel)]="donBaoHanh.trangThai"
                   [ngModelOptions]="{ standalone: true }"
                   disabled
                 />
+                <!-- <span class="status-label" [ngStyle]="getStyle(donBaoHanh.trangThai)">
+                  {{ donBaoHanh.trangThai }}
+                </span> -->
               </td>
             </tr>
           </tbody>
         </table>
+        <div class="info-card">
+          <h2>Thông tin chi tiết mã tiếp nhận</h2>
 
-        <h2>Thông tin chi tiết mã tiếp nhận</h2>
-
-        <div class="btn-group-phanloai">
-          <div class="group-header-phanloai">
-            <button class="btn-add btn-option" (click)="addRow()">Thêm mới</button>
-            <p style="margin-top: 20px">Tổng số lượng sản phẩm: {{ resultChiTietSanPhamTiepNhans.length }}</p>
-            <p style="margin-top: 20px">
-              Tiến độ: {{ countItem }}/{{ resultChiTietSanPhamTiepNhans.length
-              }}<input type="range" id="donBaoHanh" [(ngModel)]="tienDo" [ngModelOptions]="{ standalone: true }" /> {{ tienDo }}%
-            </p>
+          <div class="btn-group-phanloai">
+            <div class="group-header-phanloai">
+              <button class="btn-add btn-option" (click)="addRow()">Thêm mới</button>
+              <p style="margin-top: 20px">Tổng số lượng sản phẩm: {{ resultChiTietSanPhamTiepNhans.length }}</p>
+              <p style="margin-top: 20px">
+                Tiến độ: {{ countItem }}/{{ resultChiTietSanPhamTiepNhans.length
+                }}<input type="range" id="donBaoHanh" [(ngModel)]="tienDo" [ngModelOptions]="{ standalone: true }" /> {{ tienDo }}%
+              </p>
+            </div>
+            <div class="btn-header-phanloai">
+              <button type="button" (click)="closePopupPhanLoai()" class="btn btn-danger btn-option" style="float: right; height: 35px">
+                <fa-icon icon="ban"></fa-icon>&nbsp;<span>Huỷ</span>
+              </button>
+              <!-- <button type="submit" id="save-entity" class="btn btn-primary">Xác nhận</button> -->
+              <button
+                *ngIf="tienDo === 100"
+                type="submit"
+                id="save-entity"
+                class="btn btn-success btn-option"
+                style="float: right; height: 35px"
+                (click)="xacNhanPhanLoai()"
+              >
+                Hoàn thành
+              </button>
+              <button *ngIf="isChanged === true" type="submit" id="save-entity" class="btn btn-primary" (click)="xacNhanPhanLoai()">
+                Lưu
+              </button>
+            </div>
           </div>
-          <div class="btn-header-phanloai">
-            <button type="button" class="btn btn-danger btn-option" style="float: right; height: 35px">
-              <fa-icon icon="ban"></fa-icon>&nbsp;<span>Huỷ</span>
-            </button>
-            <!-- <button type="submit" id="save-entity" class="btn btn-primary">Xác nhận</button> -->
-            <button
-              *ngIf="tienDo === 100"
-              type="submit"
-              id="save-entity"
-              class="btn btn-primary btn-option"
-              style="float: right; height: 35px"
-              (click)="xacNhanPhanLoai()"
-            >
-              Hoàn thành
-            </button>
-            <button *ngIf="isChanged === true" type="submit" id="save-entity" class="btn btn-primary" (click)="xacNhanPhanLoai()">
-              Lưu
-            </button>
-          </div>
-        </div>
-        <div class="fixed-header-table">
-          <table class="table table-striped" aria-describedby="page-heading">
-            <thead style="background-color: #006699">
-              <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending">
-                <th scope="col">
-                  <span class="span-table-phanloai" style="display: block">STT</span>
-                  <input class="inp-hidden" style="height: 35px; width: 10px" disabled />
-                </th>
-
-                <th scope="col">
-                  <span class="span-table-phanloai" style="display: block; width: 45em">Tên sản phẩm</span>
-                  <input
-                    type="text"
-                    placeholder="Tìm kiếm"
-                    class="form-control"
-                    list="ten_san_pham"
-                    [(ngModel)]="searchKey"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="searchInPopupPhanLoai()"
-                  />
-                  <datalist id="ten_san_pham">
-                    <option *ngFor="let item of danhSachGocPopupPhanLoai" value="{{ item.tenSanPham }}"></option>
-                  </datalist>
-                </th>
-                <th scope="col">
-                  <span class="span-table-phanloai" style="display: block">Số lượng khách giao</span>
-                  <input class="inp-hidden" style="height: 35px" disabled />
-                </th>
-                <th scope="col">
-                  <span class="span-table-phanloai" style="display: block">Đổi mới</span>
-                  <input class="inp-hidden" style="height: 35px" disabled />
-                </th>
-
-                <th scope="col">
-                  <span class="span-table-phanloai" style="display: block">Sửa chữa</span>
-                  <input class="inp-hidden" style="height: 35px" disabled />
-                </th>
-
-                <th scope="col">
-                  <span class="span-table-phanloai" style="display: block">Không bảo hành</span>
-                  <input class="inp-hidden" style="height: 35px" disabled />
-                </th>
-
-                <th scope="col">
-                  <span class="span-table-phanloai" style="display: block">Số lượng đã nhận</span>
-                  <input class="inp-hidden" style="height: 35px" disabled />
-                </th>
-
-                <th scope="col">
-                  <span class="span-table-phanloai" style="display: block">checkBox</span>
+          <div class="fixed-header-table">
+            <div class="table-toolbar">
+              <div class="search-group">
+                <label for="searchKey">Tìm kiếm sản phẩm:</label>
+                <input
+                  type="text"
+                  id="searchKey"
+                  class="form-control"
+                  [(ngModel)]="searchKey"
+                  [ngModelOptions]="{ standalone: true }"
+                  (change)="searchInPopupPhanLoai()"
+                  list="ten_san_pham"
+                />
+                <datalist id="ten_san_pham">
+                  <option *ngFor="let item of danhSachGocPopupPhanLoai" [value]="item.tenSanPham"></option>
+                </datalist>
+              </div>
+              <div class="checkbox-group">
+                <label class="label_checkAll">
                   <input type="checkbox" class="ui-checkbox" [checked]="checkAll" (change)="phanLoaiCheckAll()" />
-                </th>
+                  <span> Chọn tất cả </span>
+                </label>
+              </div>
+            </div>
 
-                <th scope="col">
-                  <span class="span-table-phanloai" style="display: block">Option</span>
-                  <input class="inp-hidden" style="height: 37px; width: 10px" disabled />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let i = index; let data; of: resultChiTietSanPhamTiepNhans" class="editable-row">
-                <td>{{ i + 1 }}</td>
-                <td>
-                  <input
-                    type="text"
-                    class="input-table form-control"
-                    [(ngModel)]="data.tenSanPham"
-                    [ngModelOptions]="{ standalone: true }"
-                    list="field_danh_sach_san_pham"
-                    (change)="updateTenSanPham(data.tenSanPham, i)"
-                  />
-                  <datalist id="field_danh_sach_san_pham">
-                    <option *ngFor="let item of danhSachSanPham" value="{{ item.name }}"></option>
-                  </datalist>
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    class="input-table form-control"
-                    [(ngModel)]="data.slKhachGiao"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="updatePopupPhanLoai(i)"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    class="input-table form-control"
-                    [(ngModel)]="data.slDoiMoi"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="updatePopupPhanLoai(i)"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    class="input-table form-control"
-                    [(ngModel)]="data.slSuaChua"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="updatePopupPhanLoai(i)"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    class="input-table form-control"
-                    [(ngModel)]="data.slKhongBaoHanh"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="updatePopupPhanLoai(i)"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    class="input-table form-control"
-                    [(ngModel)]="data.slTiepNhan"
-                    [ngModelOptions]="{ standalone: true }"
-                    disabled
-                  />
-                </td>
-                <td>
-                  <input
-                    type="checkbox"
-                    class="ui-checkbox"
-                    [(ngModel)]="data.tinhTrangBaoHanh"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="updateSignalPhanLoai(i)"
-                  />
-                </td>
-                <td>
-                  <button class="btn btn-danger" (click)="deleteRowPopupPhanLoai(data.id)">Xóa</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div>
+            <table class="table table-striped" aria-describedby="page-heading">
+              <thead style="background-color: #006699">
+                <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending">
+                  <th scope="col">
+                    <span class="span-table-phanloai" style="display: block">STT</span>
+                    <!-- <input class="inp-hidden" style="height: 35px; width: 10px" disabled /> -->
+                  </th>
+
+                  <th scope="col">
+                    <span class="span-table-phanloai" style="display: block; width: 35em">Tên sản phẩm</span>
+                    <!-- <input type="text" placeholder="Tìm kiếm" class="form-control" list="ten_san_pham"
+                      [(ngModel)]="searchKey" [ngModelOptions]="{ standalone: true }"
+                      (change)="searchInPopupPhanLoai()" />
+                    <datalist id="ten_san_pham">
+                      <option *ngFor="let item of danhSachGocPopupPhanLoai" value="{{ item.tenSanPham }}"></option>
+                    </datalist> -->
+                  </th>
+                  <th scope="col">
+                    <span class="span-table-phanloai" style="display: block">Số lượng khách giao</span>
+                    <!-- <input class="inp-hidden" style="height: 35px" disabled /> -->
+                  </th>
+                  <th scope="col">
+                    <span class="span-table-phanloai" style="display: block">Đổi mới</span>
+                    <!-- <input class="inp-hidden" style="height: 35px" disabled /> -->
+                  </th>
+
+                  <th scope="col">
+                    <span class="span-table-phanloai" style="display: block">Sửa chữa</span>
+                    <!-- <input class="inp-hidden" style="height: 35px" disabled /> -->
+                  </th>
+
+                  <th scope="col">
+                    <span class="span-table-phanloai" style="display: block">Không bảo hành</span>
+                    <!-- <input class="inp-hidden" style="height: 35px" disabled /> -->
+                  </th>
+
+                  <th scope="col">
+                    <span class="span-table-phanloai" style="display: block">Số lượng đã nhận</span>
+                    <!-- <input class="inp-hidden" style="height: 35px" disabled /> -->
+                  </th>
+
+                  <th scope="col">
+                    <span class="span-table-phanloai" style="display: block">checkBox</span>
+                    <!-- <input type="checkbox" class="ui-checkbox" [checked]="checkAll" (change)="phanLoaiCheckAll()" /> -->
+                  </th>
+
+                  <th scope="col">
+                    <span class="span-table-phanloai" style="display: block">Option</span>
+                    <!-- <input class="inp-hidden" style="height: 37px; width: 10px" disabled /> -->
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index; trackBy: trackByResult" class="editable-row">
+                  <td>{{ i + 1 }}</td>
+                  <td>
+                    <input
+                      type="text"
+                      class="input-table form-control"
+                      [(ngModel)]="data.tenSanPham"
+                      [ngModelOptions]="{ standalone: true }"
+                      list="field_danh_sach_san_pham"
+                      (change)="updateTenSanPham(data.tenSanPham, i)"
+                    />
+                    <datalist id="field_danh_sach_san_pham">
+                      <option *ngFor="let item of danhSachSanPham" value="{{ item.name }}"></option>
+                    </datalist>
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      class="input-table form-control"
+                      [(ngModel)]="data.slKhachGiao"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="updatePopupPhanLoai(i)"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      class="input-table form-control"
+                      [(ngModel)]="data.slDoiMoi"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="updatePopupPhanLoai(i)"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      class="input-table form-control"
+                      [(ngModel)]="data.slSuaChua"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="updatePopupPhanLoai(i)"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      class="input-table form-control"
+                      [(ngModel)]="data.slKhongBaoHanh"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="updatePopupPhanLoai(i)"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      class="input-table form-control"
+                      [(ngModel)]="data.slTiepNhan"
+                      [ngModelOptions]="{ standalone: true }"
+                      disabled
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      class="ui-checkbox"
+                      [(ngModel)]="data.tinhTrangBaoHanh"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="updateSignalPhanLoai(i)"
+                    />
+                  </td>
+                  <td>
+                    <button class="btn btn-danger" (click)="deleteRowPopupPhanLoai(data.id)">Xóa</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div>
             <pagination-controls (pageChange)="page = $event" style="float: right"></pagination-controls>
           </div>

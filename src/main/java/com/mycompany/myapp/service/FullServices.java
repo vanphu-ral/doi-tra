@@ -4,11 +4,14 @@ import com.mycompany.myapp.domain.*;
 import com.mycompany.myapp.repository.*;
 import com.mycompany.myapp.service.dto.ChiTietXuatKhoDTO;
 import com.mycompany.myapp.service.dto.DateTimeSearchDTO;
+import com.mycompany.myapp.service.dto.DonBaoHanhSummaryDto;
 import com.mycompany.myapp.service.dto.MonthYearDTO;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -200,6 +203,11 @@ public class FullServices {
         return donBaoHanh;
     }
 
+    // ☺ B1: Lấy danh sách phân loại chi tiết theo đơn bảo hành
+    public List<PhanLoaiChiTietTiepNhan> getPhanLoaiChiTietByDonBaoHanh(Long donBaoHanhId) {
+        return phanLoaiChiTietTiepNhanRepository.findByDonBaoHanhId(donBaoHanhId);
+    }
+
     //☺ thêm mới chi tiết sản phẩm tiếp nhận
     public List<ChiTietSanPhamTiepNhan> postChiTietSanPhamTiepNhan(List<ChiTietSanPhamTiepNhan> requestList) {
         List<ChiTietSanPhamTiepNhan> chiTietSanPhamTiepNhanList = new ArrayList<>();
@@ -292,15 +300,33 @@ public class FullServices {
     // * Trang chủ
     //☺ lấy danh sách tất cả các đơn bảo hành ở trạng thái chờ phân tích , đang phân tích
     public List<DonBaoHanh> getDonBaoHanhByTrangThai() {
-        List<DonBaoHanh> donBaoHanhList = this.donBaoHanhRepository.getDonBaoHanhByTrangThais();
-        for (DonBaoHanh donBaoHanh : donBaoHanhList) {
-            Integer slPhanTich = 0;
-            List<Long> list = this.chiTietSanPhamTiepNhanRepository.getListOfId(donBaoHanh.getId());
-            if (list.size() > 0) {
-                slPhanTich = this.phanLoaiChiTietTiepNhanRepository.getSum(list.get(0), list.get(list.size() - 1));
-            }
-            donBaoHanh.setSlPhanTich(slPhanTich);
+        // 1. Lấy danh sách DonBaoHanh đang chờ phân tích
+        List<DonBaoHanh> donBaoHanhList = donBaoHanhRepository.getDonBaoHanhByTrangThais();
+        if (donBaoHanhList.isEmpty()) {
+            return donBaoHanhList;
         }
+
+        // 2. Thu thập ID
+        List<Long> donIds = donBaoHanhList.stream().map(DonBaoHanh::getId).collect(Collectors.toList());
+
+        // 3. Thực hiện native query tổng hợp 1 lần
+        List<Object[]> rawSummaries = phanLoaiChiTietTiepNhanRepository.sumSlPhanTichByDonBaoHanhIdsNative(donIds);
+
+        // 4. Chuyển thành map để truy xuất O(1)
+        Map<Long, Integer> summaryMap = rawSummaries
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    row -> ((Number) row[0]).longValue(), // donBaoHanhId
+                    row -> ((Number) row[1]).intValue() // slPhanTich
+                )
+            );
+
+        // 5. Gán kết quả lên entity
+        for (DonBaoHanh don : donBaoHanhList) {
+            don.setSlPhanTich(summaryMap.getOrDefault(don.getId(), 0));
+        }
+
         return donBaoHanhList;
     }
 

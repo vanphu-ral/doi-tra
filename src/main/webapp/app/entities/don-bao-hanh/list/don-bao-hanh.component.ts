@@ -22,8 +22,9 @@ import {
   SlickCompositeEditor,
   Formatter,
   SlickEventData,
+  ExtensionName,
 } from './../../../../../../../node_modules/angular-slickgrid';
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { HttpResponse, HttpClient } from '@angular/common/http';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -38,9 +39,24 @@ import { SanPhamService } from 'app/entities/san-pham/service/san-pham.service';
 import dayjs from 'dayjs/esm';
 import { NavbarComponent } from 'app/layouts/navbar/navbar.component';
 import { faPrint } from '@fortawesome/free-solid-svg-icons';
+import { catchError, forkJoin, of, tap } from 'rxjs';
+interface IResultItem {
+  id: number;
+  tenSanPham?: string;
+  donVi?: string;
+  slKhachGiao?: number;
+  slTiepNhanTong: number;
+  slTiepNhan: number;
+  slDoiMoi: number;
+  slSuaChua: number;
+  slKhongBaoHanh: number;
+  chiTietSanPhamTiepNhan: any;
+  tinhTrangBaoHanh: boolean;
+}
 @Component({
   selector: 'jhi-don-bao-hanh',
   templateUrl: './don-bao-hanh.component.html',
+  styleUrls: ['./don-bao-hanh.component.scss'],
 })
 export class DonBaoHanhComponent implements OnInit {
   phanLoaiChiTietTiepNhanUrl = this.applicationConfigService.getEndpointFor('api/phan-loai-chi-tiet-tiep-nhans');
@@ -103,6 +119,12 @@ export class DonBaoHanhComponent implements OnInit {
   ascending!: boolean;
   // biến lưu thông tin từng đơn bảo hành
   thongTinDonBaoHanh: any;
+  danhSachTrangThai = [
+    { label: 'Chờ xử lý', value: 'CHO_XU_LY' },
+    { label: 'Đang xử lý', value: 'DANG_XU_LY' },
+    { label: 'Hoàn thành', value: 'HOAN_THANH' },
+  ];
+
   // biến đóng mở popup
   popupChinhSuaThongTin = false;
   popupPhanLoai = false;
@@ -208,19 +230,23 @@ export class DonBaoHanhComponent implements OnInit {
     protected accountService: AccountService,
     protected danhSachTinhTrangService: DanhSachTinhTrangService,
     protected sanPhamService: SanPhamService, // protected dialog: MatDialog,
-    protected navBarComponent: NavbarComponent
+    protected navBarComponent: NavbarComponent,
+    protected cdr: ChangeDetectorRef
   ) {}
-
+  trackByResult(_idx: number, item: IResultItem): number {
+    console.log('[DEBUG] trackByResult idx, id=', _idx, item.id);
+    return item.id;
+  }
   buttonBBTN: Formatter<any> = (_row, _cell, value) =>
     value
-      ? `<button class="btn btn-primary fa fa-print" style="height: 28px; line-height: 14px" title="In biên bản tiếp nhận"></button>`
+      ? `<button class="btn btn-success fa fa-print" style="height: 28px; line-height: 14px" title="In biên bản tiếp nhận"></button>`
       : { text: '<i class="fa fa-print" aria-hidden="true"></i>' };
 
   buttonPL: Formatter<any> = (_row, _cell, value) =>
     value
-      ? `<button class="btn btn-success fa fa-check-square-o" style="height: 28px; line-height: 14px; width: 15px">PL</button>`
+      ? `<button class="btn btn-primary fa fa-eye" style="height: 28px; line-height: 14px; width: 15px">PL</button>`
       : {
-          text: '<button class="btn btn-success fa fa-check-square-o" style="height: 28px; line-height: 14px" title="Phân loại"></button>',
+          text: '<button class="btn btn-primary fa fa-eye" style="height: 28px; line-height: 14px" title="Phân loại"></button>',
         };
 
   buttonEdit: Formatter<any> = (_row, _cell, value) =>
@@ -283,6 +309,7 @@ export class DonBaoHanhComponent implements OnInit {
         excludeFromHeaderMenu: true,
         formatter: this.buttonBBTN,
         maxWidth: 55,
+        cssClass: 'wrap-text',
         minWidth: 55,
         onCellClick: (e: Event, args: OnEventArgs) => {
           this.idDonBaoHanh = args.dataContext.id;
@@ -300,7 +327,7 @@ export class DonBaoHanhComponent implements OnInit {
         excludeFromGridMenu: true,
         excludeFromHeaderMenu: true,
         formatter: this.buttonPL,
-
+        cssClass: 'wrap-text',
         maxWidth: 55,
         minWidth: 55,
         onCellClick: (e: Event, args: OnEventArgs) => {
@@ -319,6 +346,7 @@ export class DonBaoHanhComponent implements OnInit {
         excludeFromColumnPicker: true,
         excludeFromGridMenu: true,
         excludeFromHeaderMenu: true,
+        cssClass: 'wrap-text',
         formatter: this.buttonEdit,
         minWidth: 55,
         maxWidth: 55,
@@ -356,7 +384,9 @@ export class DonBaoHanhComponent implements OnInit {
         field: 'maTiepNhan',
         sortable: true,
         filterable: true,
+        formatter: (_row, _cell, value) => `<div class="wrap-text-cell">${value as string}</div>`,
         minWidth: 140,
+        width: 140,
         // maxWidth: 200,
         type: FieldType.string,
         filter: {
@@ -369,10 +399,15 @@ export class DonBaoHanhComponent implements OnInit {
         id: 'khachHang',
         name: 'Khách hàng',
         field: 'tenKhachHang',
-
+        cssClass: 'wrap-text',
         sortable: true,
         filterable: true,
-        minWidth: 350,
+        // formatter: (_row, _cell, value) => {
+        //   const safeValue = String(value ?? '');
+        //   return `<div style="white-space: normal; word-break: break-word; line-height: 1.4;">${safeValue}</div>`;
+        // },
+        minWidth: 310,
+        width: 320,
         // maxWidth: 400,
         type: FieldType.string,
         filter: {
@@ -384,12 +419,14 @@ export class DonBaoHanhComponent implements OnInit {
       {
         id: 'ngayTiepNhan',
         name: 'Ngày tạo đơn',
+        cssClass: 'wrap-text-cell',
         field: 'ngayTiepNhan',
         dataKey: 'ngayTiepNhan',
         sortable: true,
         defaultSortAsc: false,
         filterable: true,
         minWidth: 140,
+        width: 140,
         // maxWidth: 160,
         type: FieldType.object,
         formatter: Formatters.dateTimeIso,
@@ -413,9 +450,10 @@ export class DonBaoHanhComponent implements OnInit {
         field: 'slTiepNhan',
         sortable: true,
         filterable: true,
-        minWidth: 80,
-        maxWidth: 80,
+        minWidth: 85,
+        maxWidth: 85,
         type: FieldType.number,
+        cssClass: 'wrap-text-cell number-cell',
         filter: {
           placeholder: 'Search...',
           model: Filters.compoundInputText,
@@ -435,10 +473,11 @@ export class DonBaoHanhComponent implements OnInit {
         id: 'slDaPhanTich',
         name: 'Đã xử lý',
         field: 'slDaPhanTich',
+        cssClass: 'wrap-text-cell number-cell',
         sortable: true,
         filterable: true,
-        minWidth: 70,
-        maxWidth: 70,
+        minWidth: 75,
+        maxWidth: 75,
         type: FieldType.number,
         filter: {
           placeholder: 'Search...',
@@ -453,6 +492,8 @@ export class DonBaoHanhComponent implements OnInit {
             rows: 5,
           } as LongTextEditorOption,
         },
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        formatter: (_row, _cell, value) => `<div class="number-cell">${value}</div>`,
       },
       {
         id: 'tienDo',
@@ -478,6 +519,7 @@ export class DonBaoHanhComponent implements OnInit {
         sortable: true,
         filterable: true,
         minWidth: 140,
+        width: 140,
         // maxWidth: 140,
         type: FieldType.object,
         formatter: Formatters.dateTimeIso,
@@ -495,39 +537,41 @@ export class DonBaoHanhComponent implements OnInit {
           } as LongTextEditorOption,
         },
       },
-      {
-        id: 'ngayTraBienBan',
-        name: 'Ngày trả biên bản',
-        field: 'ngayTraBienBan',
-        dataKey: 'ngayTraBienBan',
-        sortable: true,
-        filterable: true,
-        minWidth: 140,
-        // maxWidth: 140,
-        type: FieldType.object,
-        formatter: Formatters.dateTimeIso,
-        filter: {
-          placeholder: 'Search...',
-          model: Filters.compoundDate,
-        },
-        editor: {
-          model: Editors.text,
-          required: true,
-          maxLength: 100,
-          editorOptions: {
-            col: 42,
-            rows: 5,
-          } as LongTextEditorOption,
-        },
-      },
+      // {
+      //   id: 'ngayTraBienBan',
+      //   name: 'Ngày trả biên bản',
+      //   field: 'ngayTraBienBan',
+      //   dataKey: 'ngayTraBienBan',
+      //   width: 140,
+      //   sortable: true,
+      //   filterable: true,
+      //   minWidth: 140,
+      //   // maxWidth: 140,
+      //   type: FieldType.object,
+      //   formatter: Formatters.dateTimeIso,
+      //   filter: {
+      //     placeholder: 'Search...',
+      //     model: Filters.compoundDate,
+      //   },
+      //   editor: {
+      //     model: Editors.text,
+      //     required: true,
+      //     maxLength: 100,
+      //     editorOptions: {
+      //       col: 42,
+      //       rows: 5,
+      //     } as LongTextEditorOption,
+      //   },
+      // },
       {
         id: 'nguoiTaoDon',
         name: 'Người tạo đơn',
         field: 'nguoiTaoDon',
         sortable: true,
         filterable: true,
-        minWidth: 80,
-        maxWidth: 80,
+        minWidth: 115,
+        maxWidth: 115,
+        width: 115,
         type: FieldType.string,
         filter: {
           placeholder: 'Search...',
@@ -549,8 +593,10 @@ export class DonBaoHanhComponent implements OnInit {
         field: 'nhanVienGiaoHang',
         sortable: true,
         filterable: true,
-        minWidth: 120,
+        minWidth: 90,
+        width: 90,
         type: FieldType.string,
+        cssClass: 'wrap-text-cell',
         filter: {
           placeholder: 'Search',
           model: Filters.compoundInputText,
@@ -571,12 +617,36 @@ export class DonBaoHanhComponent implements OnInit {
         field: 'trangThai',
         sortable: true,
         filterable: true,
-        minWidth: 120,
-        maxWidth: 120,
+        minWidth: 180,
+        maxWidth: 180,
         type: FieldType.string,
         filter: {
           placeholder: 'Search...',
           model: Filters.compoundInputText,
+        },
+        formatter: (row, cell, value, column, dataContext) => {
+          const status = String(value);
+          const tooltip = `Trạng thái: ${status}`;
+
+          const colorMap: Record<string, string> = {
+            'Chờ phân tích': '#f0ad4e',
+            'Đang phân tích': '#5bc0de',
+            'Hoàn thành phân tích': '#5cb85c',
+          };
+
+          const color = colorMap[status] ?? '#999';
+
+          return `
+    <div style="display: flex; align-items: center; white-space: normal; word-wrap: break-word;">
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: ${color}; display: inline-block; margin-right: 6px;"></span>
+      <span>${status}</span>
+    </div>
+  `;
+        },
+        customTooltip: {
+          useRegularTooltip: true,
+          useRegularTooltipFromFormatterOnly: true,
+          maxWidth: 200,
         },
         editor: {
           model: Editors.text,
@@ -587,50 +657,7 @@ export class DonBaoHanhComponent implements OnInit {
             rows: 5,
           } as LongTextEditorOption,
         },
-        // formatter: (row: number, cell: number, value: string, columnDef: any, dataContext: any) => {
-        //   let cssClass = '';
-        //   switch (value) {
-        //     case 'Chờ phân loại':
-        //       cssClass = 'status-waiting';
-        //       break;
-        //     case 'Chờ phân tích':
-        //       cssClass = 'waiting-analyzsis';
-        //       break;
-        //     case 'Đang phân tích':
-        //       cssClass = 'status-analyzing';
-        //       break;
-        //     case 'Hoàn thành phân tích':
-        //       cssClass = 'status-completed';
-        //       break;
-        //     default:
-        //       cssClass = '';
-        //       break;
-        //   }
-        //   return `<div class="${cssClass}">${value}</div>`;
-        // },
       },
-      // {
-      //   id: 'trangThaiIn',
-      //   name: 'Trạng thái in',
-      //   field: 'trangThaiIn',
-      //   sortable: true,
-      //   filterable: true,
-      //   minWidth: 80,
-      //   type: FieldType.string,
-      //   filter: {
-      //     placeholder: 'search',
-      //     model: Filters.compoundInputText,
-      //   },
-      //   editor: {
-      //     model: Editors.text,
-      //     required: true,
-      //     maxLength: 100,
-      //     editorOptions: {
-      //       col: 42,
-      //       rows: 5,
-      //     } as LongTextEditorOption,
-      //   },
-      // },
     ];
     this.gridOptions1 = {
       enableAutoResize: true,
@@ -639,6 +666,18 @@ export class DonBaoHanhComponent implements OnInit {
       enablePagination: true,
       // enableAutoSizeColumns: true,
       asyncEditorLoadDelay: 2000,
+      frozenColumn: 2,
+      enableGridMenu: true,
+      gridMenu: {
+        iconCssClass: 'd-none',
+        hideClearAllFiltersCommand: false,
+        hideClearAllSortingCommand: false,
+        hideExportCsvCommand: false,
+        hideExportExcelCommand: false,
+        commandTitle: 'Tác vụ lưới',
+        columnTitle: 'Hiển thị cột',
+      },
+
       // enableColumnPicker: true,
       // enableRowDetailView: true,
       // rowDetailView: {
@@ -667,6 +706,7 @@ export class DonBaoHanhComponent implements OnInit {
       editable: true,
       enableCellNavigation: true,
       gridHeight: 620,
+      rowHeight: 48,
       gridWidth: '100%',
       // autoHeight: true,
       autoFitColumnsOnFirstLoad: true,
@@ -691,12 +731,20 @@ export class DonBaoHanhComponent implements OnInit {
         ],
       },
     };
+    this.columnDefinitions1 = this.columnDefinitions1.map(col => {
+      const isTextType = ['string', 'object'].includes(col.type ?? '');
+      if (isTextType && !col.formatter) {
+        return { ...col, formatter: this.wrapTextFormatter };
+      }
+      return col;
+    });
     this.getPhanLoaiChiTietTiepNhan();
     this.getKhachHangs();
     this.getDanhSachTinhTrang();
     this.getSanPhams();
     this.getDanhSachBienBan();
     this.getMaxId();
+    // this.getChiTietPhanLoais(Number(this.idDonBaoHanh));
     this.accountService.identity().subscribe(account => {
       this.account = account;
     });
@@ -742,6 +790,13 @@ export class DonBaoHanhComponent implements OnInit {
     ];
     this.donBaoHanhs.sort((a, b) => b.id - a.id);
   }
+  //format xuống dòng dùng chung cho các cell
+  wrapTextFormatter: Formatter<any> = (_row, _cell, value) => {
+    const safeValue = String(value ?? '');
+    return `<div class="wrap-text-cell">${safeValue}</div>`;
+    // return `<div style="white-space: normal; word-break: break-word; line-height: 1.4;display: flex; align-items: center;">${safeValue}</div>`;
+  };
+
   //lấy danh sách biên bản
   getDanhSachBienBan(): void {
     this.http.get<any>('api/ma-bien-bans').subscribe(res => {
@@ -789,90 +844,246 @@ export class DonBaoHanhComponent implements OnInit {
       },
     });
   }
-  //get thông tin phân loại
-  getChiTietPhanLoais(id: number): void {
+  onPrintClick(): void {
+    console.log('[DEBUG] vào onPrintClick()');
+    this.openPopupInBBTN4();
+  }
+  getDuLieuPhanLoai(id: number): void {
     this.isLoading = true;
     this.countItem = 0;
-    var list1: any[] = [];
     this.resultChiTietSanPhamTiepNhans = [];
-    // this.keySession = `TiepNhan ${id.toString()}`;
-    // const result = sessionStorage.getItem(`TiepNhan ${id.toString()}`);
-    // // this.resultChiTietSanPhamTiepNhans = JSON.parse(result as string);
-    // if (result === null) {
-    // lấy danh sách chi tiết sản phẩm tiếp nhận lấy theo id
-    this.http.get<any>(`${this.chiTietSanPhamTiepNhanUrl}/${id.toString()}`).subscribe(
-      res => {
-        this.chiTietSanPhamTiepNhans = res;
-        this.loading = false;
-        // console.log('b', res);
-        // lấy danh sách tình trạng
-        this.http.get<any>(this.danhSachTinhTrangUrl).subscribe(resTT => {
-          this.danhSachTinhTrangs = resTT;
-          // sessionStorage.setItem('danhSachTinhTrang', JSON.stringify(resTT));
-          // console.log('danh sách tình trạng', resTT);
-          // lấy danh sách phân loại chi tiết tiếp nhận
-          this.http.get<any>(this.phanLoaiChiTietTiepNhanUrl).subscribe(res1 => {
-            this.phanLoaiChiTietTiepNhans = res1;
-            //  console.log('phan loai chi tiet tiep nhan', res1);
-            // Khởi tạo danh sacsah result hiển thị trên giao diện
-            // => gán dataset = resutl
-            // khởi tạo danh sách rỗng
-            // const list: any[] = [];
-            for (let i = 0; i < this.chiTietSanPhamTiepNhans.length; i++) {
-              const item = {
-                id: this.chiTietSanPhamTiepNhans[i].id,
-                tenSanPham: this.chiTietSanPhamTiepNhans[i].sanPham?.name,
-                donVi: this.chiTietSanPhamTiepNhans[i].sanPham?.donVi,
-                slKhachGiao: this.chiTietSanPhamTiepNhans[i].soLuongKhachHang,
-                slTiepNhanTong: 0,
-                slTiepNhan: 0,
-                slDoiMoi: 0,
-                slSuaChua: 0,
-                slKhongBaoHanh: 0,
-                chiTietSanPhamTiepNhan: this.chiTietSanPhamTiepNhans[i],
-                tinhTrangBaoHanh: false,
-              };
-              if (this.chiTietSanPhamTiepNhans[i].tinhTrangBaoHanh === 'true') {
-                item.tinhTrangBaoHanh = true;
-              }
-              for (let j = 0; j < this.phanLoaiChiTietTiepNhans.length; j++) {
-                if (item.id === this.phanLoaiChiTietTiepNhans[j].chiTietSanPhamTiepNhan?.id) {
-                  // gán số lượng vào biến slDoiMoi
-                  if (this.phanLoaiChiTietTiepNhans[j].danhSachTinhTrang?.id === 1) {
-                    item.slDoiMoi = this.phanLoaiChiTietTiepNhans[j].soLuong as number;
-                    item.slTiepNhan += this.phanLoaiChiTietTiepNhans[j].soLuong as number;
-                  }
-                  // gán số lượng vào biến slsuaChua
-                  if (this.phanLoaiChiTietTiepNhans[j].danhSachTinhTrang?.id === 2) {
-                    item.slSuaChua = this.phanLoaiChiTietTiepNhans[j].soLuong as number;
-                    item.slTiepNhan += this.phanLoaiChiTietTiepNhans[j].soLuong as number;
-                  }
-                  // gán số lượng vào biến slKhongBaoHanh
-                  if (this.phanLoaiChiTietTiepNhans[j].danhSachTinhTrang?.id === 3) {
-                    item.slKhongBaoHanh = this.phanLoaiChiTietTiepNhans[j].soLuong as number;
-                    item.slTiepNhan += this.phanLoaiChiTietTiepNhans[j].soLuong as number;
-                  }
-                }
-              }
-              // this.isLoading = true;
-              list1.push(item); // list đã có dữ liệu
-              this.resultChiTietSanPhamTiepNhans.push(item);
-            }
 
-            //Cập nhật tiến độ
-            for (let i1 = 0; i1 < this.resultChiTietSanPhamTiepNhans.length; i1++) {
-              if (this.resultChiTietSanPhamTiepNhans[i1].tinhTrangBaoHanh === true) {
-                this.countItem++;
-                this.tienDo = Number(((this.countItem / this.resultChiTietSanPhamTiepNhans.length) * 100).toFixed(2));
-              }
-            }
-          });
-        });
-      },
-      error => {
-        this.loading = false;
+    forkJoin([
+      this.http.get<any>(`${this.chiTietSanPhamTiepNhanUrl}/${id}`),
+      this.http.get<any>(`${this.phanLoaiChiTietTiepNhanUrl}/by-don-bao-hanh/${id}`),
+    ]).subscribe(([resChiTiet, resPhanLoai]) => {
+      this.chiTietSanPhamTiepNhans = resChiTiet;
+      this.phanLoaiChiTietTiepNhans = resPhanLoai;
+
+      const phanLoaiMap = new Map<number, IPhanLoaiChiTietTiepNhan[]>();
+      for (const pl of this.phanLoaiChiTietTiepNhans) {
+        const chiTietId = pl.chiTietSanPhamTiepNhan?.id;
+        if (typeof chiTietId === 'number') {
+          if (!phanLoaiMap.has(chiTietId)) {
+            phanLoaiMap.set(chiTietId, []);
+          }
+          phanLoaiMap.get(chiTietId)!.push(pl);
+        }
       }
-    );
+
+      for (const chiTiet of this.chiTietSanPhamTiepNhans) {
+        const item = {
+          id: chiTiet.id,
+          tenSanPham: chiTiet.sanPham?.name,
+          donVi: chiTiet.sanPham?.donVi,
+          slKhachGiao: chiTiet.soLuongKhachHang,
+          slTiepNhanTong: 0,
+          slTiepNhan: 0,
+          slDoiMoi: 0,
+          slSuaChua: 0,
+          slKhongBaoHanh: 0,
+          chiTietSanPhamTiepNhan: chiTiet,
+          tinhTrangBaoHanh: chiTiet.tinhTrangBaoHanh === 'true',
+        };
+
+        const idSanPham = item.id;
+        const danhSachPhanLoai = typeof idSanPham === 'number' ? phanLoaiMap.get(idSanPham) ?? [] : [];
+        for (const phanLoai of danhSachPhanLoai) {
+          const tinhTrangId = phanLoai.danhSachTinhTrang?.id;
+          const soLuong = phanLoai.soLuong ?? 0;
+
+          if (tinhTrangId === 1) {
+            item.slDoiMoi += soLuong;
+          } else if (tinhTrangId === 2) {
+            item.slSuaChua += soLuong;
+          } else if (tinhTrangId === 3) {
+            item.slKhongBaoHanh += soLuong;
+          }
+
+          item.slTiepNhan += soLuong;
+        }
+
+        this.resultChiTietSanPhamTiepNhans.push(item);
+      }
+
+      // Tính tiến độ
+      this.countItem = this.resultChiTietSanPhamTiepNhans.filter(item => item.tinhTrangBaoHanh).length;
+      this.tienDo = Number(((this.countItem / this.resultChiTietSanPhamTiepNhans.length) * 100).toFixed(2));
+      this.isLoading = false;
+    });
+  }
+
+  getDuLieuInTest(id: number): void {
+    this.isLoading = true;
+    this.resultChiTietSanPhamTiepNhans = [];
+
+    this.http.get<any>(`${this.chiTietSanPhamTiepNhanUrl}/${id}`).subscribe(res => {
+      this.chiTietSanPhamTiepNhans = res;
+
+      this.http.get<any>(this.danhSachTinhTrangUrl).subscribe(resTT => {
+        this.danhSachTinhTrangs = resTT;
+
+        for (const chiTiet of this.chiTietSanPhamTiepNhans) {
+          const item = {
+            id: chiTiet.id,
+            tenSanPham: chiTiet.sanPham?.name,
+            donVi: chiTiet.sanPham?.donVi,
+            slKhachGiao: chiTiet.soLuongKhachHang,
+            slTiepNhanTong: 0,
+            slTiepNhan: chiTiet.slTiepNhan,
+            slDoiMoi: 0,
+            slSuaChua: 0,
+            slKhongBaoHanh: 0,
+            chiTietSanPhamTiepNhan: chiTiet,
+            tinhTrangBaoHanh: chiTiet.tinhTrangBaoHanh === 'true',
+          };
+
+          this.resultChiTietSanPhamTiepNhans.push(item);
+        }
+
+        this.isLoading = false;
+      });
+    });
+  }
+  getDuLieuInChinhThuc(id: number): void {
+    this.isLoading = true;
+    this.resultChiTietSanPhamTiepNhans = [];
+
+    this.http.get<any>(`${this.chiTietSanPhamTiepNhanUrl}/${id}`).subscribe(res => {
+      this.chiTietSanPhamTiepNhans = res;
+
+      this.http.get<any>(this.danhSachTinhTrangUrl).subscribe(resTT => {
+        this.danhSachTinhTrangs = resTT;
+
+        for (const chiTiet of this.chiTietSanPhamTiepNhans) {
+          const item = {
+            id: chiTiet.id,
+            tenSanPham: chiTiet.sanPham?.name,
+            donVi: chiTiet.sanPham?.donVi,
+            slKhachGiao: chiTiet.soLuongKhachHang,
+            slTiepNhanTong: 0,
+            slTiepNhan: chiTiet.slTiepNhan,
+            slDoiMoi: 0,
+            slSuaChua: 0,
+            slKhongBaoHanh: 0,
+            chiTietSanPhamTiepNhan: chiTiet,
+            tinhTrangBaoHanh: chiTiet.tinhTrangBaoHanh === 'true',
+          };
+
+          this.resultChiTietSanPhamTiepNhans.push(item);
+        }
+
+        this.isLoading = false;
+      });
+    });
+  }
+
+  //get thông tin phân loại
+  // getChiTietPhanLoais(id: number): void {
+  //   console.log('→ URL chiTiet$ =', `${this.chiTietSanPhamTiepNhanUrl}/${id}`);
+  //   const chiTiet$ = this.http.get<IChiTietSanPhamTiepNhan[]>(`${this.chiTietSanPhamTiepNhanUrl}/${id}`).pipe(
+  //     catchError(e => {
+  //       console.error('[ERROR] chiTiet$ failed', e);
+  //       return of([]);
+  //     })
+  //   );
+
+  //   console.log('→ URL tinhTrang$ =', this.danhSachTinhTrangUrl);
+  //   const tinhTrang$ = this.http.get<IDanhSachTinhTrang[]>(this.danhSachTinhTrangUrl).pipe(
+  //     catchError(e => {
+  //       console.error('[ERROR] tinhTrang$ failed', e);
+  //       return of([]);
+  //     })
+  //   );
+
+  //   console.log('→ URL phanLoai$ =', `${this.phanLoaiChiTietTiepNhanUrl}?donBaoHanhId=${id}`);
+  //   const phanLoai$ = this.http.get<IPhanLoaiChiTietTiepNhan[]>(`${this.phanLoaiChiTietTiepNhanUrl}?donBaoHanhId=${id}`).pipe(
+  //     catchError(e => {
+  //       console.error('[ERROR] phanLoai$ failed', e);
+  //       return of([]);
+  //     })
+  //   );
+
+  //   forkJoin({ chiTiet: chiTiet$, tinhTrang: tinhTrang$, phanLoai: phanLoai$ })
+  //     .pipe(tap(() => console.log('[DEBUG] forkJoin bắt đầu')))
+  //     .subscribe(
+  //       ({ chiTiet, tinhTrang, phanLoai }) => {
+  //         console.log(
+  //           '[DEBUG] forkJoin result lengths:',
+  //           'chiTiet=',
+  //           chiTiet.length,
+  //           'tinhTrang=',
+  //           tinhTrang.length,
+  //           'phanLoai=',
+  //           phanLoai.length
+  //         );
+  //         this.chiTietSanPhamTiepNhans = chiTiet;
+  //         this.phanLoaiChiTietTiepNhans = phanLoai;
+  //         // (Nếu bạn cần danhSachTinhTrang sau này thì gán vào property tương ứng)
+  //         this.processDataAndRender();
+  //       },
+  //       err => console.error('[ERROR] forkJoin subscribe', err)
+  //     );
+  // }
+
+  processDataAndRender(): void {
+    // 1) Group phân loại theo chi tiết
+    // 1) Lọc out những ct.id == null
+    const validChiTiets = this.chiTietSanPhamTiepNhans.filter((ct): ct is IChiTietSanPhamTiepNhan & { id: number } => ct.id != null);
+
+    // 2) Build a lookup map trước
+    const mapPL: Record<number, IPhanLoaiChiTietTiepNhan[]> = {};
+    for (const pl of this.phanLoaiChiTietTiepNhans) {
+      const key = pl.chiTietSanPhamTiepNhan?.id;
+      if (key == null) {
+        continue;
+      }
+      (mapPL[key] ||= []).push(pl);
+    }
+
+    // 3) Tạo result với kiểu an toàn
+    this.resultChiTietSanPhamTiepNhans = validChiTiets.map((ct): IResultItem => {
+      const pls = mapPL[ct.id] ?? [];
+      const item: IResultItem = {
+        id: ct.id,
+        tenSanPham: ct.sanPham?.name ?? undefined,
+        donVi: ct.sanPham?.donVi ?? undefined,
+        slKhachGiao: ct.soLuongKhachHang ?? undefined,
+        slTiepNhanTong: 0,
+        slTiepNhan: 0,
+        slDoiMoi: 0,
+        slSuaChua: 0,
+        slKhongBaoHanh: 0,
+        chiTietSanPhamTiepNhan: ct,
+        tinhTrangBaoHanh: ct.tinhTrangBaoHanh === 'true',
+      };
+
+      for (const pl of pls) {
+        const qty = pl.soLuong as number;
+        switch (pl.danhSachTinhTrang?.id) {
+          case 1:
+            item.slDoiMoi += qty;
+            break;
+          case 2:
+            item.slSuaChua += qty;
+            break;
+          case 3:
+            item.slKhongBaoHanh += qty;
+            break;
+        }
+        item.slTiepNhan += qty;
+      }
+
+      return item;
+    });
+    console.log('[DEBUG] processed result rows:', this.resultChiTietSanPhamTiepNhans.length);
+
+    // 3) Tính progress
+    this.countItem = this.resultChiTietSanPhamTiepNhans.filter(x => x.tinhTrangBaoHanh).length;
+    this.tienDo = Number(((this.countItem / this.resultChiTietSanPhamTiepNhans.length) * 100).toFixed(2));
+
+    this.isLoading = false;
+    this.cdr.markForCheck();
   }
   // ================================= popup chỉnh sửa thông tin ==================================
   openPopupEdit(id: number): void {
@@ -891,9 +1102,38 @@ export class DonBaoHanhComponent implements OnInit {
     // console.log("ket qua thu duoc: ",this.thongTinDonBaoHanh)
     this.resultChiTietSanPhamTiepNhans = JSON.parse(result as string);
   }
+  openGridMenu(event?: MouseEvent): void {
+    if (!this.angularGrid) {
+      console.warn('angularGrid chưa được gán');
+      return;
+    }
+
+    const gridMenuInstance = this.angularGrid.extensionService?.getExtensionInstanceByName(ExtensionName.gridMenu);
+    console.log('GridMenu Instance:', gridMenuInstance);
+
+    if (gridMenuInstance) {
+      const mouseEvent = event ?? new MouseEvent('click');
+      gridMenuInstance.showGridMenu(mouseEvent);
+    } else {
+      console.warn('GridMenu chưa được khởi tạo hoặc extension chưa sẵn sàng');
+    }
+  }
 
   closePopupEdit(): void {
     this.popupChinhSuaThongTin = false;
+    console.log('Đã click Huỷ hoặc X');
+  }
+  getStyle(status: string): any {
+    switch (status) {
+      case 'Chờ phân tích':
+        return { backgroundColor: '#f0ad4e', color: '#fff' };
+      case 'Đang phân tích':
+        return { backgroundColor: '#4da3bdff', color: '#fff' };
+      case 'Hoàn thành phân tích':
+        return { backgroundColor: '#49a849ff', color: '#fff' };
+      default:
+        return { backgroundColor: '#777', color: '#fff' };
+    }
   }
   capNhatThongTinKhachHang(tenKhachHang: string): void {
     // console.log(tenKhachHang);
@@ -1085,7 +1325,7 @@ export class DonBaoHanhComponent implements OnInit {
 
     //reset bien dem signal
     this.countItem = 0;
-    this.getChiTietPhanLoais(id);
+    this.getDuLieuPhanLoai(id);
   }
   // cập nhật tên sản phẩm
   updateTenSanPham(tenSanPham: string, index: number): void {
@@ -1238,6 +1478,11 @@ export class DonBaoHanhComponent implements OnInit {
   //   }
   // }
   searchInPopupPhanLoai(): void {
+    if (!this.searchKey || this.searchKey.trim() === '') {
+      this.resultChiTietSanPhamTiepNhans = [...this.danhSachGocPopupPhanLoai];
+      return;
+    }
+
     this.resultChiTietSanPhamTiepNhans = this.danhSachGocPopupPhanLoai.filter(a => a.tenSanPham.includes(this.searchKey));
   }
 
@@ -1339,7 +1584,7 @@ export class DonBaoHanhComponent implements OnInit {
     this.navBarComponent.toggleSidebar2();
 
     // lấy dữ liệu từ sessision
-    this.getChiTietPhanLoais(id);
+    this.getDuLieuInChinhThuc(id);
   }
 
   openPopupInBBTNTest(id: number): void {
@@ -1406,7 +1651,7 @@ export class DonBaoHanhComponent implements OnInit {
       this.resultChiTietSanPhamTiepNhans.sort((a, b) => b.slSuaChua - a.slSuaChua)
     );
     // lấy dữ liệu từ sessision
-    this.getChiTietPhanLoais(id);
+    this.getDuLieuInTest(id);
   }
 
   closePopupInBBTNTest(): void {
@@ -1554,6 +1799,7 @@ export class DonBaoHanhComponent implements OnInit {
   }
 
   openPopupInBBTN4(): void {
+    console.log('[DEBUG] openPopupInBBTN4, idDonBaoHanh=', this.idDonBaoHanh);
     this.maBienBan = '';
     this.loaiBienBan = 'Tiếp nhận';
     for (let i = 0; i < this.danhSachBienBan.length; i++) {
@@ -1883,7 +2129,9 @@ export class DonBaoHanhComponent implements OnInit {
     }
   }
   angularGridReady(angularGrid: any): void {
-    this.angularGrid = angularGrid;
+    this.angularGrid = (event as CustomEvent).detail;
+    console.log('AngularGrid đã sẵn sàng:', this.angularGrid);
+    console.log('onAngularGridCreated event:', event);
     // the Angular Grid Instance exposes both Slick Grid & DataView objects
     this.gridObj = angularGrid.slickGrid;
     // setInterval(()=>{

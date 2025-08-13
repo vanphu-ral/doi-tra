@@ -665,24 +665,26 @@
       </div>
       <div id="BBTN">
         <div id="lien1">
-          <header>
+          <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
             <div class="row">
               <div class="col-6" align="left" style="height: 0px">
                 <img
                   src="../../../../content/images/logoRD.png"
                   alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
                   width="150"
-                  style="margin-top: -30px; margin-left: 30px"
+                  style="margin-top: 0"
                 />
               </div>
-              <div class="col-6" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
             </div>
           </header>
-          <div align="center">
-            <h3 style="margin-top: -20px">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
+          <div align="center" style="text-align: center; margin-top: 1rem">
+            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
             <p style="text-align: center">Liên 1: Lưu tổ phục vụ đổi sản phẩm</p>
           </div>
-          <div align="right" style="margin-right: 80px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
+          <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
+          <br />
+          <br />
+          <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
           <br />
           <div style="display: flex; justify-content: space-between">
             <div>
@@ -695,11 +697,13 @@
               <div>Kèm giấy đề nghị đổi sản phẩm (nếu có) ngày ... tháng ... năm 20...</div>
             </div>
             <div>
-              <div align="right" style="margin-right: 92px">
+              <div align="right" style="margin-right: 50px">
                 <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
               </div>
               <br />
-              <div align="right" style="margin-right: 94px; font-size: 14px; margin-top: -30px">{{ donBaoHanh.maTiepNhan }}</div>
+              <div style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+                {{ donBaoHanh.maTiepNhan }}
+              </div>
             </div>
           </div>
           <div>
@@ -798,26 +802,28 @@
           <br />
           <br />
 
-          <header>
+          <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
             <div class="row">
               <div class="col-6" align="left" style="height: 0px">
                 <img
                   src="../../../../content/images/logoRD.png"
                   alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
                   width="150"
-                  style="margin-top: -30px; margin-left: 30px"
+                  style="margin-top: 0"
                 />
               </div>
-              <div class="col-6" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
             </div>
           </header>
-          <div align="center">
-            <h3 style="margin-top: -20px">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
+          <div align="center" style="text-align: center; margin-top: 1rem">
+            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
             <p style="text-align: center">Liên 2: Khách hàng</p>
           </div>
-          <div align="right" style="margin-right: 80px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
+          <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
           <br />
-          <div style="display: flex; justify-content: space-between; margin-bottom: 5px">
+          <br />
+          <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
+          <br />
+          <div style="display: flex; justify-content: space-between">
             <div>
               <p>
                 Ngày {{ dateTN }} tháng {{ monthTN }} năm 20{{ yearTN }}
@@ -828,11 +834,13 @@
               <div>Kèm giấy đề nghị đổi sản phẩm (nếu có) ngày ... tháng ... năm 20...</div>
             </div>
             <div>
-              <div align="right" style="margin-right: 92px">
+              <div align="right" style="margin-right: 50px">
                 <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
               </div>
               <br />
-              <div align="right" style="margin-right: 94px; font-size: 14px; margin-top: -30px">{{ donBaoHanh.maTiepNhan }}</div>
+              <div style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+                {{ donBaoHanh.maTiepNhan }}
+              </div>
             </div>
           </div>
           <div>
@@ -923,26 +931,28 @@
           <br />
           <br />
 
-          <header>
+          <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
             <div class="row">
               <div class="col-6" align="left" style="height: 0px">
                 <img
                   src="../../../../content/images/logoRD.png"
                   alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
                   width="150"
-                  style="margin-top: -30px; margin-left: 30px"
+                  style="margin-top: 0"
                 />
               </div>
-              <div class="col-6" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
             </div>
           </header>
-          <div align="center">
-            <h3 style="margin-top: -20px">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
+          <div align="center" style="text-align: center; margin-top: 1rem">
+            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
             <p style="text-align: center">Liên 3: P. KHTT</p>
           </div>
-          <div align="right" style="margin-right: 80px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
+          <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
           <br />
-          <div style="display: flex; justify-content: space-between; margin-bottom: 5px">
+          <br />
+          <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
+          <br />
+          <div style="display: flex; justify-content: space-between">
             <div>
               <p>
                 Ngày {{ dateTN }} tháng {{ monthTN }} năm 20{{ yearTN }}
@@ -953,11 +963,13 @@
               <div>Kèm giấy đề nghị đổi sản phẩm (nếu có) ngày ... tháng ... năm 20...</div>
             </div>
             <div>
-              <div align="right" style="margin-right: 92px">
+              <div align="right" style="margin-right: 50px">
                 <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
               </div>
               <br />
-              <div align="right" style="margin-right: 94px; font-size: 14px; margin-top: -30px">{{ donBaoHanh.maTiepNhan }}</div>
+              <div style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+                {{ donBaoHanh.maTiepNhan }}
+              </div>
             </div>
           </div>
           <div>

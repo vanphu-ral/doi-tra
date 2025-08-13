@@ -280,3 +280,21 @@
   font-size: 12px;
   height: 28px;
 }
+@media print {
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .print-title {
+    margin-top: 1rem;
+    text-align: center;
+  }
+}

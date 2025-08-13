@@ -363,6 +363,7 @@ export class PhanTichSanPhamComponent implements OnInit {
         sortable: true,
         filterable: true,
         type: FieldType.string,
+        cssClass: 'wrap-text-cell',
         filter: {
           placeholder: 'search',
           model: Filters.compoundInputText,
@@ -383,8 +384,9 @@ export class PhanTichSanPhamComponent implements OnInit {
         field: 'khachHang.tenKhachHang',
         sortable: true,
         filterable: true,
-        minWidth: 300,
-        maxWidth: 400,
+        minWidth: 350,
+        width: 350,
+        cssClass: 'wrap-text-cell',
         formatter: Formatters.complexObject,
         type: FieldType.string,
         filter: {
@@ -406,6 +408,7 @@ export class PhanTichSanPhamComponent implements OnInit {
         name: 'Tổng tiếp nhận',
         field: 'slTiepNhan',
         sortable: true,
+        cssClass: 'wrap-text-cell',
         filterable: true,
         minWidth: 80,
         formatter: Formatters.complexObject,
@@ -421,6 +424,7 @@ export class PhanTichSanPhamComponent implements OnInit {
         name: 'Số lượng phân tích',
         field: 'slPhanTich',
         sortable: true,
+        cssClass: 'wrap-text-cell',
         filterable: true,
         minWidth: 80,
         formatter: Formatters.complexObject,
@@ -436,6 +440,8 @@ export class PhanTichSanPhamComponent implements OnInit {
         name: 'Đã xử lý',
         field: 'slDaPhanTich',
         sortable: true,
+        cssClass: 'wrap-text-cell',
+        minWidth: 80,
         filterable: true,
         formatter: Formatters.complexObject,
         type: FieldType.string,
@@ -451,8 +457,8 @@ export class PhanTichSanPhamComponent implements OnInit {
         field: 'tienDo',
         sortable: true,
         filterable: true,
-        minWidth: 200,
-
+        minWidth: 120,
+        cssClass: 'wrap-text-cell',
         formatter: Formatters.progressBar,
         type: FieldType.number,
         filter: {
@@ -467,8 +473,8 @@ export class PhanTichSanPhamComponent implements OnInit {
         field: 'ngayTiepNhan',
         sortable: true,
         filterable: true,
-        minWidth: 200,
-
+        minWidth: 110,
+        cssClass: 'wrap-text-cell',
         type: FieldType.object,
         formatter: Formatters.dateTimeIso,
         filter: {
@@ -492,7 +498,7 @@ export class PhanTichSanPhamComponent implements OnInit {
         sortable: true,
         filterable: true,
         minWidth: 200,
-
+        cssClass: 'wrap-text-cell',
         type: FieldType.string,
         filter: {
           placeholder: 'search',
@@ -536,7 +542,10 @@ export class PhanTichSanPhamComponent implements OnInit {
       enableFiltering: true,
       enablePagination: true,
       enableAutoSizeColumns: true,
+      enableHeaderMenu: false,
+      enableColumnPicker: false,
       enableGridMenu: true,
+      rowHeight: 60,
       gridMenu: {
         // iconCssClass: 'd-none',
         hideClearAllFiltersCommand: false,
@@ -587,7 +596,7 @@ export class PhanTichSanPhamComponent implements OnInit {
       // autoHeight: true,
       // autoFitColumnsOnFirstLoad: true,
       // asyncEditorLoading: true,
-      forceFitColumns: true,
+      forceFitColumns: false,
       frozenColumn: 3,
     };
     this.getLois();
@@ -598,6 +607,18 @@ export class PhanTichSanPhamComponent implements OnInit {
       this.account = account;
     });
     // this.loadAll();
+  }
+  getStyle(status: string): any {
+    switch (status) {
+      case 'Chờ phân tích':
+        return { backgroundColor: '#f0ad4e', color: '#fff' };
+      case 'Đang phân tích':
+        return { backgroundColor: '#4da3bdff', color: '#fff' };
+      case 'Hoàn thành phân tích':
+        return { backgroundColor: '#49a849ff', color: '#fff' };
+      default:
+        return { backgroundColor: '#777', color: '#fff' };
+    }
   }
   //lấy danh sách biên bản
   getDanhSachBienBan(): void {
@@ -823,6 +844,7 @@ export class PhanTichSanPhamComponent implements OnInit {
 
   closePopupPTMTN(): void {
     this.popupPTMTN = false;
+    document.body.classList.remove('popup-open');
   }
 
   // mở popup chọn loại biên bản
@@ -873,7 +895,7 @@ export class PhanTichSanPhamComponent implements OnInit {
 
   openPopupPTMTN(): void {
     this.navBarComponent.toggleSidebar2();
-
+    document.body.classList.add('popup-open');
     this.popupPTMTN = true;
     setTimeout(() => {
       // console.log('chi tiet san pham phan tich: ', this.listOfChiTietSanPhamPhanTich);
@@ -1300,6 +1322,22 @@ export class PhanTichSanPhamComponent implements OnInit {
       input.focus();
     }
   }
+  activateScan(type: 'lot' | 'serial'): void {
+    this.scanType = type;
+    if (type === 'lot') {
+      this.scanLot = true;
+      this.scanSerial = false;
+    } else {
+      this.scanSerial = true;
+      this.scanLot = false;
+    }
+
+    const input = document.getElementById(type);
+    if (input) {
+      input.focus();
+    }
+  }
+
   // Bắt sự kiện scan LOT
   scanLotEvent(): void {
     this.saveTheLoai = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].theLoaiPhanTich = 'Lot';

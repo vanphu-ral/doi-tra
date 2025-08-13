@@ -4,6 +4,7 @@
     <button class="btn btn-outline-primary btn-option btn-addTN me-2" (click)="openPopupThemMoi()">Thêm mới</button>
   </div>
   <angular-slickgrid
+    gridId="giaThanhGrid"
     [columnDefinitions]="columnDefinitions"
     [gridOptions]="gridOption"
     (onAngularGridCreated)="angularGridReady($event)"

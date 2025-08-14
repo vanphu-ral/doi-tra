@@ -23,14 +23,14 @@
   </div>
 </div>
 <!---------------------------------------------------------- popup chi tiết sản phẩm phân tích --------------------------------------------------->
-<div class="table-responsive popup-background" role="dialog" *ngIf="popupPTMTN === true">
-  <div class="popup-container" style="width: 92vw; max-width: 100%; overflow: auto">
+<div class="table-responsive popup-background full-overlay" role="dialog" *ngIf="popupPTMTN === true">
+  <div class="popup-container full-container">
     <div class="popup-header">
       <h2>Thông tin mã tiếp nhận</h2>
       <hr />
       <span class="close-btn" (click)="closePopupPTMTN()">&times;</span>
     </div>
-    <div class="popup-content">
+    <div class="popup-content full-body">
       <form>
         <div class="fixed-header-table">
           <table class="table table-striped" aria-describedby="page-heading">
@@ -39,22 +39,22 @@
                 <th scope="col" jhiSortBy="id" style="width: 3rem">
                   <span class="span-table-phantich">Mã tiếp nhận</span>
                 </th>
-                <th scope="col" jhiSortBy="id" style="width: 5rem">
+                <th scope="col" jhiSortBy="id" style="width: 20rem">
                   <span class="span-table-phantich">Khách hàng</span>
                 </th>
-                <th scope="col" jhiSortBy="id" style="width: 11rem">
+                <th scope="col" jhiSortBy="id" style="width: 5rem">
                   <span class="span-table-phantich">Số lượng phân tích</span>
                 </th>
-                <th scope="col" jhiSortBy="id" style="width: 9rem">
+                <th scope="col" jhiSortBy="id" style="width: 5rem">
                   <span class="span-table-phantich">Đã phân tích</span>
                 </th>
-                <th scope="col" jhiSortBy="id" style="width: 5rem">
+                <th scope="col" jhiSortBy="id" style="width: 3rem">
                   <span class="span-table-phantich">Tiến độ</span>
                 </th>
-                <th scope="col" jhiSortBy="id" style="width: 18rem">
+                <th scope="col" jhiSortBy="id" style="width: 7rem">
                   <span class="span-table-phantich">Ngày tiếp nhận</span>
                 </th>
-                <th scope="col" jhiSortBy="id">
+                <th scope="col" jhiSortBy="id" style="width: 8rem">
                   <span class="span-table-phantich">Trạng thái</span>
                 </th>
               </tr>
@@ -62,40 +62,44 @@
             <tbody>
               <tr>
                 <td>
-                  <input
+                  <!-- <input
                     type="text"
                     class="inp-ptich-sp"
                     style="background-color: #f2f2f2; width: 9rem; border: none"
                     value="{{ donBaoHanh.maTiepNhan }}"
                     disabled
-                  />
+                  /> -->
+                  {{ donBaoHanh.maTiepNhan }}
                 </td>
                 <td>
-                  <input
+                  <!-- <input
                     type="text"
                     class="inp-ptich-sp"
-                    style="background-color: #f2f2f2; width: 30rem; border: none"
+                    style="background-color: #f2f2f2; width: 20rem; border: none"
                     value="{{ donBaoHanh.khachHang?.tenKhachHang }}"
                     disabled
-                  />
+                  /> -->
+                  {{ donBaoHanh.khachHang?.tenKhachHang }}
                 </td>
                 <td>
-                  <input
+                  <!-- <input
                     type="text"
                     class="inp-ptich-sp"
                     style="background-color: #f2f2f2; border: none"
                     value="{{ donBaoHanh.slCanPhanTich }}"
                     disabled
-                  />
+                  /> -->
+                  {{ donBaoHanh.slCanPhanTich }}
                 </td>
                 <td>
-                  <input
+                  <!-- <input
                     type="text"
                     class="inp-ptich-sp"
                     style="background-color: #f2f2f2; border: none"
                     value="{{ donBaoHanh.slDaPhanTich }}"
                     disabled
-                  />
+                  /> -->
+                  {{ donBaoHanh.slDaPhanTich }}
                 </td>
                 <td>
                   <input
@@ -111,8 +115,9 @@
                   <input
                     type="text"
                     class="inp-ptich-sp"
-                    style="background-color: #f2f2f2; border: none"
-                    value="{{ donBaoHanh.trangThai }}"
+                    [ngStyle]="getStyle(donBaoHanh.trangThai)"
+                    [(ngModel)]="donBaoHanh.trangThai"
+                    [ngModelOptions]="{ standalone: true }"
                     disabled
                   />
                 </td>
@@ -156,25 +161,25 @@
                   <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 3rem">
                     <span class="span-table-phantich">Option</span>
                   </th>
-                  <th scope="col" jhiSortBy="id" style="width: 3rem">
+                  <th scope="col" jhiSortBy="id" style="width: 6rem; font-size: 12px">
                     <span class="span-table-phantich">STT</span>
                   </th>
-                  <th scope="col" jhiSortBy="id" style="width: 45rem">
+                  <th scope="col" jhiSortBy="id" style="width: 25rem; font-size: 12px">
                     <span class="span-table-phantich">Tên sản phẩm</span>
                   </th>
-                  <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 8rem">
+                  <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 12rem; font-size: 12px">
                     <span class="span-table-phantich">Tình trạng</span>
                   </th>
-                  <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 9rem">
-                    <span class="span-table-phantich">Số lượng nhận</span>
+                  <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 6rem; font-size: 12px">
+                    <span class="span-table-phantich">SL nhận</span>
                   </th>
-                  <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 15rem">
-                    <span class="span-table-phantich">Số lượng đã phân tích</span>
+                  <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 6rem; font-size: 12px">
+                    <span class="span-table-phantich">SL đã phân tích</span>
                   </th>
-                  <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 12rem">
-                    <span class="span-table-phantich">Số lượng còn lại</span>
+                  <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 6rem; font-size: 12px">
+                    <span class="span-table-phantich">SL còn lại</span>
                   </th>
-                  <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 8rem">
+                  <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 8rem; font-size: 12px">
                     <span class="span-table-phantich">Tiến độ (%)</span>
                   </th>
                   <th scope="col" jhiSortBy="id" class="header-table-custom">
@@ -191,7 +196,7 @@
                     </button>
                   </td>
                   <td><input type="text" class="inp-ptich-sp" value="{{ i + 1 }}" disabled /></td>
-                  <td><input type="text" class="inp-ptich-sp" value="{{ data.tenSanPham }}" style="width: 45rem" disabled /></td>
+                  <td><input type="text" class="inp-ptich-sp" value="{{ data.tenSanPham }}" style="width: 25rem" disabled /></td>
                   <td><input type="text" class="inp-ptich-sp" value="{{ data.tinhTrang }}" disabled /></td>
                   <td><input type="text" class="inp-ptich-sp" value="{{ data.slTiepNhan }}" disabled /></td>
                   <td><input type="text" class="inp-ptich-sp" value="{{ data.slDaPhanTich }}" disabled /></td>
@@ -217,131 +222,108 @@
   </div>
 </div>
 <!------------------------------------------------------------ popup khai báo lỗi  ---------------------------------------------------------------->
-<div class="table-responsive popup-background" role="dialog" *ngIf="popupChiTietLoi === true">
-  <div class="popup-container" style="min-width: 90vw; width: 96vw">
-    <div class="popup-header">
-      <h2>Phân tích chi tiết sản phẩm</h2>
-      <hr />
-      <span class="close-btn" (click)="closePopup()">&times;</span>
-    </div>
-    <div class="popup-content">
-      <form>
-        <table class="table table-striped" aria-describedby="page-heading">
-          <thead style="background-color: #006699">
-            <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending">
-              <th scope="col" jhiSortBy="id">
-                <span class="span-table-phantich">Mã tiếp nhận</span>
-              </th>
-              <th scope="col" jhiSortBy="id" style="width: 25em">
-                <span class="span-table-phantich">Tên khách hàng</span>
-              </th>
-              <th scope="col" jhiSortBy="id">
-                <span class="span-table-phantich">Mã sản phẩm</span>
-              </th>
-              <th scope="col" jhiSortBy="id" style="width: 40em">
-                <span class="span-table-phantich">Tên sản phẩm</span>
-              </th>
-              <th scope="col" jhiSortBy="id">
-                <span class="span-table-phantich">Tình trạng</span>
-              </th>
-              <th scope="col" jhiSortBy="id">
-                <span class="span-table-phantich">Số lượng nhận</span>
-              </th>
-              <th scope="col" jhiSortBy="id">
-                <span class="span-table-phantich">Số lượng đã phân tích</span>
-              </th>
-              <th scope="col" jhiSortBy="id">
-                <span class="span-table-phantich">Số lượng còn lại</span>
-              </th>
-              <th scope="col" jhiSortBy="id">
-                <span class="span-table-phantich">Tiến độ (%)</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].maTiepNhan }}</td>
-              <td>{{ donBaoHanh.khachHang?.tenKhachHang }}</td>
-              <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].sanPham?.sapCode }}</td>
-              <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].tenSanPham }}</td>
-              <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].tinhTrang }}</td>
-              <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].slTiepNhan }}</td>
-              <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].slDaPhanTich }}</td>
-              <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].slConLai }}</td>
-              <td>
-                <input
-                  type="range"
-                  [(ngModel)]="listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].tienDo"
-                  [ngModelOptions]="{ standalone: true }"
-                  id="chiTietDonBaoHanh"
-                />{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].tienDo.toFixed(2) }}%
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
-
-      <div class="group-btn-scan">
-        <!-- <div class="popup-footer">
-          <button class="btn btn-danger btn-option" (click)="closePopup()"><fa-icon icon="ban"></fa-icon>Huỷ</button>
-          <button class="btn btn-primary btn-option" *ngIf="fixKhaiBaoLoi === true" (click)="saveKhaiBaoLoi()">
-            <fa-icon icon="save"></fa-icon>&nbsp;Lưu
-          </button>
-          <button class="btn btn-success btn-option" (click)="postChiTietPhanTichSanPham()">
-            <fa-icon icon="check"></fa-icon>&nbsp;Xác nhận
-          </button>
-        </div> -->
-
-        <div class="group-scan">
-          <div class="group-scan-child">
-            <div class="group-btn-lot">
-              <button class="btn btn-primary btn-scan" (click)="buttonScanLot()" *ngIf="scanLot">Scan LOT</button>
-              <button class="btn btn-primary btn-scan" (click)="buttonScanSerial()" *ngIf="scanSerial">Scan Serial</button>
-              <div class="container-serial">
-                <div class="custom-input" style="width: 35%">
+<div class="popup-background nested-overlay" role="dialog" *ngIf="popupChiTietLoi === true">
+  <div class="popup-container nested-container fixed-layout">
+    <div class="fixed-top">
+      <div class="popup-header">
+        <h2 class="dialog-title">Phân tích chi tiết sản phẩm</h2>
+        <hr />
+        <span class="close-btn" (click)="closePopup()">&times;</span>
+      </div>
+      <div class="popup-content header-content">
+        <form>
+          <table class="table table-striped" aria-describedby="page-heading">
+            <thead style="background-color: #006699">
+              <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending">
+                <th scope="col" jhiSortBy="id" style="width: 6em">
+                  <span class="span-table-phantich">Mã tiếp nhận</span>
+                </th>
+                <th scope="col" jhiSortBy="id" style="width: 30em">
+                  <span class="span-table-phantich">Tên khách hàng</span>
+                </th>
+                <th scope="col" jhiSortBy="id" style="width: 6em">
+                  <span class="span-table-phantich">Mã sản phẩm</span>
+                </th>
+                <th scope="col" jhiSortBy="id" style="width: 30em">
+                  <span class="span-table-phantich">Tên sản phẩm</span>
+                </th>
+                <th scope="col" jhiSortBy="id" style="width: 10em">
+                  <span class="span-table-phantich">Tình trạng</span>
+                </th>
+                <th scope="col" jhiSortBy="id" style="width: 6em">
+                  <span class="span-table-phantich">SL nhận</span>
+                </th>
+                <th scope="col" jhiSortBy="id" style="width: 6em">
+                  <span class="span-table-phantich">SL đã phân tích</span>
+                </th>
+                <th scope="col" jhiSortBy="id" style="width: 6em">
+                  <span class="span-table-phantich">SL còn lại</span>
+                </th>
+                <th scope="col" jhiSortBy="id" style="width: 6em">
+                  <span class="span-table-phantich">Tiến độ (%)</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].maTiepNhan }}</td>
+                <td>{{ donBaoHanh.khachHang?.tenKhachHang }}</td>
+                <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].sanPham?.sapCode }}</td>
+                <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].tenSanPham }}</td>
+                <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].tinhTrang }}</td>
+                <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].slTiepNhan }}</td>
+                <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].slDaPhanTich }}</td>
+                <td>{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].slConLai }}</td>
+                <td>
                   <input
-                    type="text"
-                    required=""
-                    name="text"
-                    autocomplete="off"
-                    class="inp-err-nsx container-lot-serial"
-                    id="serial"
-                    [disabled]="!scanSerial"
-                    [(ngModel)]="saveSerial"
+                    type="range"
+                    [(ngModel)]="listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].tienDo"
                     [ngModelOptions]="{ standalone: true }"
-                    (change)="scanSerialEvent()"
-                  />
-                  <label class="form-label" style="margin-bottom: 0.5rem">Serrial</label>
-                </div>
+                    id="chiTietDonBaoHanh"
+                  />{{ listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham].tienDo.toFixed(2) }}%
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </form>
 
-                <div class="custom-input" style="width: 35%">
-                  <input
-                    type="text"
-                    required=""
-                    name="text"
-                    autocomplete="off"
-                    class="inp-err-nsx container-lot-serial"
-                    id="lot"
-                    [(ngModel)]="saveLOT"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="scanLotEvent()"
-                  />
-                  <label class="form-label" style="margin-bottom: 0.5rem">LOT</label>
-                </div>
+        <div class="group-btn-scan">
+          <div class="group-scan">
+            <div class="group-scan-child">
+              <div class="group-btn-lot">
+                <!-- <button class="btn btn-primary btn-scan" (click)="buttonScanLot()" *ngIf="scanLot">Scan LOT</button>
+                <button class="btn btn-primary btn-scan" (click)="buttonScanSerial()" *ngIf="scanSerial">Scan Serial</button> -->
+                <div class="container-serial">
+                  <div class="custom-input" style="width: 35%">
+                    <input
+                      type="text"
+                      inputmode="none"
+                      class="inp-err-nsx container-lot-serial"
+                      id="serial"
+                      (focus)="activateScan('serial')"
+                    />
+                    <label class="form-label" style="margin-bottom: 0.5rem">Serrial</label>
+                  </div>
 
-                <div class="custom-input" style="width: 10%">
-                  <input
-                    type="text"
-                    required=""
-                    name="text"
-                    autocomplete="off"
-                    class="inp-err-nsx container-lot-serial"
-                    id="field_namSanXuat"
-                    data-cy="namSanXuat"
-                    [(ngModel)]="saveYear"
-                    [ngModelOptions]="{ standalone: true }"
-                  />
-                  <label class="form-label" style="margin-bottom: 0.5rem">Năm sản xuất</label>
+                  <div class="custom-input" style="width: 35%">
+                    <input type="text" inputmode="none" class="inp-err-nsx container-lot-serial" id="lot" (focus)="activateScan('lot')" />
+                    <label class="form-label" style="margin-bottom: 0.5rem">LOT</label>
+                  </div>
+
+                  <div class="custom-input" style="width: 10%">
+                    <input
+                      type="text"
+                      required=""
+                      name="text"
+                      autocomplete="off"
+                      class="inp-err-nsx container-lot-serial"
+                      id="field_namSanXuat"
+                      data-cy="namSanXuat"
+                      [(ngModel)]="saveYear"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
+                    <label class="form-label" style="margin-bottom: 0.5rem">Năm sản xuất</label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -349,263 +331,199 @@
         </div>
       </div>
     </div>
-
-    <!-- danh sach loi -->
-
-    <h2>Chi tiết lỗi</h2>
-    <!-- <p>Sản phẩm đang được phân tích: {{ indexOfChiTietPhanTichSanPham + 1 }}</p> -->
-    <!-- <button class="btn btn-primary btn-option" (click)="updatePhanTichSanPham()"><fa-icon icon="save"></fa-icon>&nbsp;Chuyển tiếp</button> -->
-
-    <form class="form-loi">
-      <div class="loi-ky-thuat">
-        <table class="table table-striped">
-          <tbody>
-            <!-- cột 1 -->
-            <td>
-              <tr *ngFor="let data of catchChangeOfListKhaiBaoLoi; let i = index" style="border: none">
-                <td *ngIf="i < catchChangeOfListKhaiBaoLoi!.length / 3" style="display: flex; padding: 10px 10px">
-                  <button
-                    class="btn-name-error"
-                    style="width: 238px; font-size: 16px; font-weight: 700; min-width: 238px; text-align: center"
-                    (click)="catchEventKhaiBaoLoi(i)"
-                  >
-                    {{ data.loi.tenLoi }}
-                  </button>
-                  <span style="padding: 0 5px; line-height: 35px; margin: auto 0">{{ data.ghiChu }}</span>
-                  <input
-                    type="number"
-                    class="form-control inp-name-error"
-                    [(ngModel)]="data.soLuong"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="catchEventKhaiBaoLois(i)"
-                  />
-                </td>
-              </tr>
-            </td>
-            <!-- cột 2 -->
-            <td>
-              <tr *ngFor="let data of catchChangeOfListKhaiBaoLoi; let i = index" style="border: none">
-                <td
-                  *ngIf="catchChangeOfListKhaiBaoLoi!.length / 3 < i && i < (2 * catchChangeOfListKhaiBaoLoi!.length) / 3"
-                  style="display: flex; padding: 10px 10px"
-                >
-                  <button
-                    class="btn-name-error"
-                    style="width: 238px; font-size: 16px; font-weight: 700; min-width: 238px; text-align: center"
-                    (click)="catchEventKhaiBaoLoi(i)"
-                  >
-                    {{ data.loi.tenLoi }}
-                  </button>
-                  <span style="padding: 0 5px; line-height: 35px; margin: auto 0">{{ data.ghiChu }}</span>
-                  <input
-                    type="number"
-                    class="form-control inp-name-error"
-                    [(ngModel)]="data.soLuong"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="catchEventKhaiBaoLois(i)"
-                  />
-                </td>
-              </tr>
-            </td>
-
-            <!-- cột 3 -->
-            <td>
-              <tr *ngFor="let data of catchChangeOfListKhaiBaoLoi; let i = index" style="border: none">
-                <td *ngIf="i > (2 * catchChangeOfListKhaiBaoLoi!.length) / 3" style="display: flex; padding: 10px 10px">
-                  <button
-                    class="btn-name-error"
-                    style="width: 238px; font-size: 16px; font-weight: 700; min-width: 238px; text-align: center"
-                    (click)="catchEventKhaiBaoLoi(i)"
-                  >
-                    {{ data.loi.tenLoi }}
-                  </button>
-                  <span style="padding: 0 5px; line-height: 35px; margin: auto 0">{{ data.ghiChu }}</span>
-                  <input
-                    type="number"
-                    class="form-control inp-name-error"
-                    [(ngModel)]="data.soLuong"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="catchEventKhaiBaoLois(i)"
-                  />
-                </td>
-              </tr>
-            </td>
-          </tbody>
-        </table>
-      </div>
-    </form>
+    <div class="scrollable-middle">
+      <h2 class="section-title">Chi tiết lỗi</h2>
+      <form>
+        <div class="error-grid">
+          <div *ngFor="let data of catchChangeOfListKhaiBaoLoi; let i = index" class="error-item">
+            <button class="btn-name-error" (click)="catchEventKhaiBaoLoi(i)">
+              {{ data.loi.tenLoi }}
+            </button>
+            <span class="error-note">{{ data.ghiChu }}</span>
+            <input
+              type="number"
+              class="form-control inp-name-error"
+              [(ngModel)]="data.soLuong"
+              [ngModelOptions]="{ standalone: true }"
+              (change)="catchEventKhaiBaoLois(i)"
+            />
+          </div>
+        </div>
+      </form>
+    </div>
     <!-- --------------------------------------------- Table chi tiết phân tích sản phẩm--------------------------------------------------- -->
-    <h2>Chi tiết thông tin sản phẩm</h2>
-
-    <form action="">
-      <div class="fixed-header-table">
-        <table class="table table-striped">
-          <thead style="background-color: #006699">
-            <tr>
-              <th scope="col">
-                <span class="span-table-phantich">STT</span>
-                <input class="inp-hidden" style="height: 35px; width: 3rem" disabled />
-              </th>
-              <th scope="col" style="width: 40em">
-                <span class="span-table-phantich">Tên sản phẩm</span>
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  class="form-control"
-                  list="ten_san_pham"
-                  [(ngModel)]="searchKey"
-                  [ngModelOptions]="{ standalone: true }"
-                />
-              </th>
-              <th scope="col">
-                <span class="span-table-phantich">LOT Number</span>
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  class="form-control"
-                  list="ten_san_pham"
-                  [(ngModel)]="searchKey"
-                  [ngModelOptions]="{ standalone: true }"
-                />
-              </th>
-              <th scope="col">
-                <span class="span-table-phantich">Serial</span>
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  class="form-control"
-                  list="ten_san_pham"
-                  [(ngModel)]="searchKey"
-                  [ngModelOptions]="{ standalone: true }"
-                />
-              </th>
-              <th scope="col">
-                <span class="span-table-phantich">Năm sản xuất</span>
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  class="form-control"
-                  list="ten_san_pham"
-                  [(ngModel)]="searchKey"
-                  [ngModelOptions]="{ standalone: true }"
-                />
-              </th>
-              <th scope="col">
-                <span class="span-table-phantich">Tổng lỗi</span>
-                <!-- <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  class="form-control"
-                  list="ten_san_pham"
-                  [(ngModel)]="searchKey"
-                  [ngModelOptions]="{ standalone: true }"
-                /> -->
-                <input class="inp-hidden" style="height: 35px; width: 3rem" disabled />
-              </th>
-              <th scope="col">
-                <span class="span-table-phantich">Nhân viên phân tích</span>
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  class="form-control"
-                  list="ten_san_pham"
-                  [(ngModel)]="searchKey"
-                  [ngModelOptions]="{ standalone: true }"
-                />
-              </th>
-              <th scope="col">
-                <span class="span-table-phantich">Ngày kiểm tra</span>
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  class="form-control"
-                  list="ten_san_pham"
-                  [(ngModel)]="searchKey"
-                  [ngModelOptions]="{ standalone: true }"
-                />
-              </th>
-              <th scope="col">
-                <span class="span-table-phantich">Username</span>
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  class="form-control"
-                  list="ten_san_pham"
-                  [(ngModel)]="searchKey"
-                  [ngModelOptions]="{ standalone: true }"
-                />
-              </th>
-              <th scope="col">
-                <span class="span-table-phantich">Trạng thái</span>
-                <!-- <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  class="form-control"
-                  list="ten_san_pham"
-                  [(ngModel)]="searchKey"
-                  [ngModelOptions]="{ standalone: true }"
-                /> -->
-                <input class="inp-hidden" style="height: 35px; width: 3rem" disabled />
-              </th>
-              <th scope="col">
-                <span class="span-table-phantich">Lỗi kỹ thuật</span>
-                <!-- <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  class="form-control"
-                  list="ten_san_pham"
-                  [(ngModel)]="searchKey"
-                  [ngModelOptions]="{ standalone: true }"
-                /> -->
-                <input class="inp-hidden" style="height: 35px; width: 3rem" disabled />
-              </th>
-              <th scope="col">
-                <span class="span-table-phantich">Lỗi linh động</span>
-                <!-- <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  class="form-control"
-                  list="ten_san_pham"
-                  [(ngModel)]="searchKey"
-                  [ngModelOptions]="{ standalone: true }"
-                /> -->
-                <input class="inp-hidden" style="height: 35px; width: 3rem" disabled />
-              </th>
-              <th scope="col">
-                <span class="span-table-phantich">Option</span>
-                <input class="inp-hidden" style="height: 35px; width: 3rem" disabled />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let data of listOfPhanTichSanPhamByPLCTTN; let i = index">
-              <td class="body-column">{{ i + 1 }}</td>
-              <td class="body-column">{{ data.tenSanPham }}</td>
-              <td class="body-column">{{ data.lotNumber }}</td>
-              <td class="body-column">{{ data.detail }}</td>
-              <td class="body-column">{{ data.namSanXuat }}</td>
-              <td class="body-column">{{ data.soLuong }}</td>
-              <td class="body-column">{{ data.tenNhanVienPhanTich }}</td>
-              <td class="body-column">{{ data.ngayKiemTra | date: 'YYYY-MM-dd hh:mm:ss' }}</td>
-              <td class="body-column">{{ data.username }}</td>
-              <td class="body-column"><input type="checkbox" [(ngModel)]="data.trangThai" [ngModelOptions]="{ standalone: true }" /></td>
-              <td class="body-column">{{ data.loiKyThuat }}</td>
-              <td class="body-column">{{ data.loiLinhDong }}</td>
-              <td class="body-column">
-                <div class="btn-table">
-                  <button class="btn btn-success" (click)="chinhSuaKhaiBaoLoi(i)">
-                    <fa-icon icon="pencil"></fa-icon>
-                  </button>
-                  <button class="btn btn-danger" (click)="deleteKhaiBaoLoi(i)">
-                    <fa-icon [icon]="faTrash"></fa-icon>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </form>
+    <div class="fixed-bottom">
+      <h2 class="section-title">Chi tiết thông tin sản phẩm</h2>
+      <form action="">
+        <div class="fixed-header-table">
+          <table class="table table-striped">
+            <thead style="background-color: #006699">
+              <tr>
+                <th scope="col">
+                  <span class="span-table-phantich">STT</span>
+                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
+                </th>
+                <th scope="col" style="width: 27em">
+                  <span class="span-table-phantich">Tên sản phẩm</span>
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm"
+                    class="form-control"
+                    list="ten_san_pham"
+                    [(ngModel)]="searchKey"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </th>
+                <th scope="col">
+                  <span class="span-table-phantich">LOT</span>
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm"
+                    class="form-control"
+                    list="ten_san_pham"
+                    [(ngModel)]="searchKey"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </th>
+                <th scope="col">
+                  <span class="span-table-phantich">Serial</span>
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm"
+                    class="form-control"
+                    list="ten_san_pham"
+                    [(ngModel)]="searchKey"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </th>
+                <th scope="col" style="width: 10em">
+                  <span class="span-table-phantich">Năm sản xuất</span>
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm"
+                    class="form-control"
+                    list="ten_san_pham"
+                    [(ngModel)]="searchKey"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </th>
+                <th scope="col">
+                  <span class="span-table-phantich">Tổng lỗi</span>
+                  <!-- <input
+                    type="text"
+                    placeholder="Tìm kiếm"
+                    class="form-control"
+                    list="ten_san_pham"
+                    [(ngModel)]="searchKey"
+                    [ngModelOptions]="{ standalone: true }"
+                  /> -->
+                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
+                </th>
+                <th scope="col" style="width: 13em">
+                  <span class="span-table-phantich">Nhân viên phân tích</span>
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm"
+                    class="form-control"
+                    list="ten_san_pham"
+                    [(ngModel)]="searchKey"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </th>
+                <th scope="col" style="width: 9em">
+                  <span class="span-table-phantich">Ngày kiểm tra</span>
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm"
+                    class="form-control"
+                    list="ten_san_pham"
+                    [(ngModel)]="searchKey"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </th>
+                <th scope="col">
+                  <span class="span-table-phantich">Username</span>
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm"
+                    class="form-control"
+                    list="ten_san_pham"
+                    [(ngModel)]="searchKey"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </th>
+                <th scope="col">
+                  <span class="span-table-phantich">Trạng thái</span>
+                  <!-- <input
+                    type="text"
+                    placeholder="Tìm kiếm"
+                    class="form-control"
+                    list="ten_san_pham"
+                    [(ngModel)]="searchKey"
+                    [ngModelOptions]="{ standalone: true }"
+                  /> -->
+                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
+                </th>
+                <th scope="col">
+                  <span class="span-table-phantich">Lỗi kỹ thuật</span>
+                  <!-- <input
+                    type="text"
+                    placeholder="Tìm kiếm"
+                    class="form-control"
+                    list="ten_san_pham"
+                    [(ngModel)]="searchKey"
+                    [ngModelOptions]="{ standalone: true }"
+                  /> -->
+                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
+                </th>
+                <th scope="col">
+                  <span class="span-table-phantich">Lỗi linh động</span>
+                  <!-- <input
+                    type="text"
+                    placeholder="Tìm kiếm"
+                    class="form-control"
+                    list="ten_san_pham"
+                    [(ngModel)]="searchKey"
+                    [ngModelOptions]="{ standalone: true }"
+                  /> -->
+                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
+                </th>
+                <th scope="col">
+                  <span class="span-table-phantich">Option</span>
+                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let data of listOfPhanTichSanPhamByPLCTTN; let i = index">
+                <td class="body-column">{{ i + 1 }}</td>
+                <td class="body-column">{{ data.tenSanPham }}</td>
+                <td class="body-column">{{ data.lotNumber }}</td>
+                <td class="body-column">{{ data.detail }}</td>
+                <td class="body-column">{{ data.namSanXuat }}</td>
+                <td class="body-column">{{ data.soLuong }}</td>
+                <td class="body-column">{{ data.tenNhanVienPhanTich }}</td>
+                <td class="body-column">{{ data.ngayKiemTra | date: 'YYYY-MM-dd hh:mm:ss' }}</td>
+                <td class="body-column">{{ data.username }}</td>
+                <td class="body-column"><input type="checkbox" [(ngModel)]="data.trangThai" [ngModelOptions]="{ standalone: true }" /></td>
+                <td class="body-column">{{ data.loiKyThuat }}</td>
+                <td class="body-column">{{ data.loiLinhDong }}</td>
+                <td class="body-column">
+                  <div class="btn-table">
+                    <button class="btn btn-success" (click)="chinhSuaKhaiBaoLoi(i)">
+                      <fa-icon icon="pencil"></fa-icon>
+                    </button>
+                    <button class="btn btn-danger" (click)="deleteKhaiBaoLoi(i)">
+                      <fa-icon [icon]="faTrash"></fa-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -1063,7 +981,7 @@
         </div>
 
         <div id="BBkhoA">
-          <header>
+          <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
             <div class="row">
               <div class="col-6" align="left" style="height: 0px">
                 <img
@@ -1073,14 +991,16 @@
                   style="margin-top: -30px; margin-left: 30px"
                 />
               </div>
-              <div class="col-6" align="right">RĐ.QID05.BM02 Ban hành lần 1</div>
             </div>
           </header>
-          <div align="center">
-            <h5 style="margin-top: -20px">BIÊN BẢN KIỂM NGHIỆM SẢN PHẨM BẢO HÀNH</h5>
+          <div align="center" style="text-align: center; margin-top: 1rem">
+            <h5 style="margin: 0">BIÊN BẢN KIỂM NGHIỆM SẢN PHẨM BẢO HÀNH</h5>
             <p>{{ tenKho }}</p>
           </div>
-          <div align="right" style="margin-right: 86px; font-size: 12px; margin-top: -30px">Số: {{ maBienBan }}</div>
+          <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
+          <br />
+          <br />
+          <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
           <br />
           <div style="display: flex; justify-content: space-between">
             <div>
@@ -1092,11 +1012,13 @@
               </p>
             </div>
             <div>
-              <div align="right" style="margin-right: 104px">
+              <div align="right" style="margin-right: 50px">
                 <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
               </div>
               <br />
-              <div align="right" style="margin-right: 110px; font-size: 12px; margin-top: -30px">{{ donBaoHanh.maTiepNhan }}</div>
+              <div align="right" style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+                {{ donBaoHanh.maTiepNhan }}
+              </div>
             </div>
           </div>
           <!-- <div align="right" style="margin-right: 62px">
@@ -1376,24 +1298,26 @@
         </div>
         <div id="BBTL">
           <div id="BBkhoA">
-            <header>
+            <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
               <div class="row">
                 <div class="col-6" align="left" style="height: 0px">
                   <img
                     src="../../../../content/images/logoRD.png"
                     alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
                     width="150"
-                    style="margin-top: -30px; margin-left: 30px"
+                    style="margin-top: 0"
                   />
                 </div>
-                <div class="col-6" align="right">RĐ.QID05.BM02 Ban hành lần 1</div>
               </div>
             </header>
-            <div align="center">
-              <h5 style="margin-top: -20px">BIÊN BẢN THANH LÝ SẢN PHẨM MẤT PHẨM CHẤT</h5>
+            <div align="center" style="text-align: center; margin-top: 1rem">
+              <h5 style="margin: 0">BIÊN BẢN THANH LÝ SẢN PHẨM MẤT PHẨM CHẤT</h5>
               <p>{{ tenKho }}</p>
             </div>
-            <div align="right" style="margin-right: 86px; font-size: 12px; margin-top: -30px">Số: {{ maBienBan }}</div>
+            <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
+            <br />
+            <br />
+            <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
             <br />
             <div style="display: flex; justify-content: space-between">
               <div>
@@ -1420,11 +1344,13 @@
                 </div>
               </div>
               <div>
-                <div align="right" style="margin-right: 104px">
+                <div align="right" style="margin-right: 50px">
                   <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
                 </div>
                 <br />
-                <div align="right" style="margin-right: 110px; font-size: 12px; margin-top: -30px">{{ donBaoHanh.maTiepNhan }}</div>
+                <div align="right" style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+                  {{ donBaoHanh.maTiepNhan }}
+                </div>
               </div>
             </div>
 
@@ -1605,24 +1531,26 @@
         </div>
         <div id="BBTN">
           <div id="lien1">
-            <header>
+            <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
               <div class="row">
                 <div class="col-6" align="left" style="height: 0px">
                   <img
                     src="../../../../content/images/logoRD.png"
                     alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
                     width="150"
-                    style="margin-top: -30px; margin-left: 30px"
+                    style="margin-top: 0"
                   />
                 </div>
-                <div class="col-6" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
               </div>
             </header>
-            <div align="center">
-              <h3 style="margin-top: -20px">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
+            <div align="center" style="text-align: center; margin-top: 1rem">
+              <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
               <p style="text-align: center">Liên 1: Lưu tổ phục vụ đổi sản phẩm</p>
             </div>
-            <div align="right" style="margin-right: 80px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
+            <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
+            <br />
+            <br />
+            <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
             <br />
             <div style="display: flex; justify-content: space-between">
               <div>
@@ -1635,11 +1563,13 @@
                 <div>Kèm giấy đề nghị đổi sản phẩm (nếu có) ngày ... tháng ... năm 20...</div>
               </div>
               <div>
-                <div align="right" style="margin-right: 92px">
+                <div align="right" style="margin-right: 50px">
                   <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
                 </div>
                 <br />
-                <div align="right" style="margin-right: 94px; font-size: 14px; margin-top: -30px">{{ donBaoHanh.maTiepNhan }}</div>
+                <div style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+                  {{ donBaoHanh.maTiepNhan }}
+                </div>
               </div>
             </div>
             <div>
@@ -1885,26 +1815,28 @@
           <br />
           <br />
 
-          <header>
+          <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
             <div class="row">
               <div class="col-6" align="left" style="height: 0px">
                 <img
                   src="../../../../content/images/logoRD.png"
                   alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
                   width="150"
-                  style="margin-top: -30px; margin-left: 30px"
+                  style="margin-top: 0"
                 />
               </div>
-              <div class="col-6" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
             </div>
           </header>
-          <div align="center">
-            <h3 style="margin-top: -20px">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
+          <div align="center" style="text-align: center; margin-top: 1rem">
+            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
             <p style="text-align: center">Liên 2: Khách hàng</p>
           </div>
-          <div align="right" style="margin-right: 80px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
+          <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
           <br />
-          <div style="display: flex; justify-content: space-between; margin-bottom: 5px">
+          <br />
+          <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
+          <br />
+          <div style="display: flex; justify-content: space-between">
             <div>
               <p>
                 Ngày {{ dateTN }} tháng {{ monthTN }} năm 20{{ yearTN }}
@@ -1915,11 +1847,13 @@
               <div>Kèm giấy đề nghị đổi sản phẩm (nếu có) ngày ... tháng ... năm 20...</div>
             </div>
             <div>
-              <div align="right" style="margin-right: 92px">
+              <div align="right" style="margin-right: 50px">
                 <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
               </div>
               <br />
-              <div align="right" style="margin-right: 94px; font-size: 14px; margin-top: -30px">{{ donBaoHanh.maTiepNhan }}</div>
+              <div style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+                {{ donBaoHanh.maTiepNhan }}
+              </div>
             </div>
           </div>
           <div>
@@ -2147,26 +2081,28 @@
           <br />
           <br />
 
-          <header>
+          <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
             <div class="row">
               <div class="col-6" align="left" style="height: 0px">
                 <img
                   src="../../../../content/images/logoRD.png"
                   alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
                   width="150"
-                  style="margin-top: -30px; margin-left: 30px"
+                  style="margin-top: 0"
                 />
               </div>
-              <div class="col-6" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
             </div>
           </header>
-          <div align="center">
-            <h3 style="margin-top: -20px">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
+          <div align="center" style="text-align: center; margin-top: 1rem">
+            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
             <p style="text-align: center">Liên 3: P. KHTT</p>
           </div>
-          <div align="right" style="margin-right: 80px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
+          <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
           <br />
-          <div style="display: flex; justify-content: space-between; margin-bottom: 5px">
+          <br />
+          <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
+          <br />
+          <div style="display: flex; justify-content: space-between">
             <div>
               <p>
                 Ngày {{ dateTN }} tháng {{ monthTN }} năm 20{{ yearTN }}
@@ -2177,11 +2113,13 @@
               <div>Kèm giấy đề nghị đổi sản phẩm (nếu có) ngày ... tháng ... năm 20...</div>
             </div>
             <div>
-              <div align="right" style="margin-right: 92px">
+              <div align="right" style="margin-right: 50px">
                 <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
               </div>
               <br />
-              <div align="right" style="margin-right: 94px; font-size: 14px; margin-top: -30px">{{ donBaoHanh.maTiepNhan }}</div>
+              <div style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+                {{ donBaoHanh.maTiepNhan }}
+              </div>
             </div>
           </div>
           <div>

@@ -116,6 +116,12 @@ export class GiaThanhCongXuongComponent implements OnInit {
         },
       },
     ];
+    this.gridOption = {
+      gridId: 'giaThanhGrid',
+      enableFiltering: true,
+      enableColumnPicker: true,
+      enableGridMenu: true,
+    };
   }
 
   openPopupThemMoi(): void {

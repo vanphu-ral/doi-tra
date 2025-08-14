@@ -49,6 +49,24 @@
 ::ng-deep .slickgrid-container .slick-cell.number-cell {
   justify-content: center !important;
 }
+@media print {
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .print-title {
+    margin-top: 1rem;
+    text-align: center;
+  }
+}
 
 // ::ng-deep div.wrap-text-cell {
 //     white-space: normal !important;

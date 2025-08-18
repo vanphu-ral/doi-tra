@@ -4,7 +4,11 @@ import com.mycompany.myapp.domain.ChiTietSanPhamTiepNhan;
 import com.mycompany.myapp.domain.TongHopResponse;
 import java.time.LocalDate;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -13,7 +17,20 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface ChiTietSanPhamTiepNhanRepository extends JpaRepository<ChiTietSanPhamTiepNhan, Long> {
-    List<ChiTietSanPhamTiepNhan> findAllByDonBaoHanhId(Long id);
+    //    @EntityGraph(attributePaths = {
+    //        "sanPham",
+    //        "phanLoaiChiTietTiepNhans",
+    //        "phanLoaiChiTietTiepNhans.danhSachTinhTrang"
+    //    })
+    //    List<ChiTietSanPhamTiepNhan> findAllByDonBaoHanhId(Long id);
+    @Query(
+        "SELECT ct FROM ChiTietSanPhamTiepNhan ct " +
+        "LEFT JOIN FETCH ct.sanPham " +
+        "LEFT JOIN FETCH ct.phanLoaiChiTietTiepNhans pl " +
+        "LEFT JOIN FETCH pl.danhSachTinhTrang " +
+        "WHERE ct.donBaoHanh.id = :id"
+    )
+    List<ChiTietSanPhamTiepNhan> findAllByDonBaoHanhId(@Param("id") Long id);
 
     @Query(value = "select " + "ct.id from `chi_tiet_san_pham_tiep_nhan` as ct where don_bao_hanh_id =?1 ;", nativeQuery = true)
     List<Long> getListOfId(Long id);

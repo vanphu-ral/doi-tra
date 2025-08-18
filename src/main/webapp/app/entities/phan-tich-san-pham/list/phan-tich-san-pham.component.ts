@@ -611,13 +611,13 @@ export class PhanTichSanPhamComponent implements OnInit {
   getStyle(status: string): any {
     switch (status) {
       case 'Chờ phân tích':
-        return { backgroundColor: '#f0ad4e', color: '#fff' };
+        return { backgroundColor: '#f0ad4e', color: '#fff', fontSize: '10px' };
       case 'Đang phân tích':
-        return { backgroundColor: '#4da3bdff', color: '#fff' };
+        return { backgroundColor: '#4da3bdff', color: '#fff', fontSize: '10px' };
       case 'Hoàn thành phân tích':
-        return { backgroundColor: '#49a849ff', color: '#fff' };
+        return { backgroundColor: '#49a849ff', color: '#fff', fontSize: '10px' };
       default:
-        return { backgroundColor: '#777', color: '#fff' };
+        return { backgroundColor: '#777', color: '#fff', fontSize: '10px' };
     }
   }
   //lấy danh sách biên bản
@@ -730,9 +730,18 @@ export class PhanTichSanPhamComponent implements OnInit {
           this.resultOfSanPhamTheoKho = Array.from(khoMap.entries()).map(([key, value]) => ({ key, value }));
           this.resultOfSanPhamTheoKhoTL = [...this.resultOfSanPhamTheoKho];
 
+          // Loại bỏ các entry có key rỗng hoặc "Không xác định"
+          this.resultOfSanPhamTheoKho = this.resultOfSanPhamTheoKho.filter(
+            item => item.key && item.key.trim() !== '' && item.key !== 'Không xác định'
+          );
+          this.resultOfSanPhamTheoKhoTL = this.resultOfSanPhamTheoKhoTL.filter(
+            item => item.key && item.key.trim() !== '' && item.key !== 'Không xác định'
+          );
+
           this.resultOfSanPhamTheoKho = this.resultOfSanPhamTheoKho.filter(item => item.key !== '');
           this.resultOfSanPhamTheoKhoTL = this.resultOfSanPhamTheoKhoTL.filter(item => item.key !== '');
           this.listOfChiTietSanPhamPhanTich = this.listOfChiTietSanPhamPhanTich.filter(item => item.slTiepNhan !== 0);
+          this.listOfChiTietSanPhamPhanTichGoc = [...this.listOfChiTietSanPhamPhanTich];
 
           this.updateDanhSachBienBanTheoKho();
 
@@ -1043,11 +1052,21 @@ export class PhanTichSanPhamComponent implements OnInit {
   }
 
   showGroupOptionsKN(): void {
+    if (this.trangThaiInTN !== 'Đã in') {
+      this.openPopupNoti('Vui lòng in biên bản tiếp nhận trước');
+      return;
+    }
     this.groupOptionsKN = true;
+    this.groupOptionsTL = false;
   }
 
   showGroupOptionsTL(): void {
-    this.groupOptionsTL = true;
+    if (this.trangThaiInTN !== 'Đã in') {
+      this.openPopupNoti('Vui lòng in biên bản tiếp nhận trước');
+      return;
+    }
+    this.groupOptionsKN = true;
+    this.groupOptionsTL = false;
   }
   caculateErrors(index: any): void {
     for (let j = 0; j < this.resultOfSanPhamTheoKho[index].value.length; j++) {
@@ -1483,11 +1502,25 @@ export class PhanTichSanPhamComponent implements OnInit {
     // cập nhật số lượng đã phân tích ở đơn bảo hành
   }
   timKiemPhanTichSanPham(): void {
-    this.listOfChiTietSanPhamPhanTich = this.listOfChiTietSanPhamPhanTichGoc.filter(
-      item => item.tenSanPham.includes(this.tenSanPham) && item.tinhTrang.includes(this.tinhTrang)
-    );
-    // console.log({ result: this.listOfChiTietSanPhamPhanTich, SP: this.tenSanPham, tt: this.tinhTrang });
+    setTimeout(() => {
+      const ten = (this.tenSanPham ?? '').trim().toLowerCase();
+      const tinhTrang = (this.tinhTrang ?? '').trim().toLowerCase();
+
+      this.listOfChiTietSanPhamPhanTich = this.listOfChiTietSanPhamPhanTichGoc.filter(item => {
+        const tenSP = (item.tenSanPham ?? '').toLowerCase();
+        const ttSP = (item.tinhTrang ?? '').toLowerCase();
+
+        const matchTen = tenSP.includes(ten);
+        const matchTinhTrang = !tinhTrang || ttSP.includes(tinhTrang);
+
+        return matchTen && matchTinhTrang;
+      });
+
+      // console.log('🔍 Giá trị tìm:', this.tenSanPham, this.tinhTrang);
+      // console.log('📦 Dữ liệu sau lọc:', this.listOfChiTietSanPhamPhanTich);
+    }, 0);
   }
+
   addItemForChiTietPhanTichSanPham(): void {
     this.catchChangeOfListKhaiBaoLoi = [];
     const item = {

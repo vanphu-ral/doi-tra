@@ -4,6 +4,7 @@ import com.mycompany.myapp.domain.DonBaoHanh;
 import com.mycompany.myapp.domain.DonBaoHanhResponse;
 import com.mycompany.myapp.domain.SanPhamResponse;
 import java.util.List;
+import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -97,4 +98,22 @@ public interface DonBaoHanhRepository extends JpaRepository<DonBaoHanh, Long> {
 
     @Query(value = "SELECT max(don_bao_hanh_id) FROM `don_bao_hanh` ;", nativeQuery = true)
     public Integer selectMaxId();
+
+    @Modifying
+    @Transactional
+    @Query(
+        value = "DELETE FROM phan_loai_chi_tiet_tiep_nhan WHERE chi_tiet_san_pham_tiep_nhan_id IN (SELECT id FROM chi_tiet_san_pham_tiep_nhan WHERE don_bao_hanh_id = ?1)",
+        nativeQuery = true
+    )
+    void deletePhanLoaiByDonBaoHanhId(Long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM chi_tiet_san_pham_tiep_nhan WHERE don_bao_hanh_id = ?1", nativeQuery = true)
+    void deleteChiTietByDonBaoHanhId(Long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM don_bao_hanh WHERE id = ?1", nativeQuery = true)
+    void deleteDonBaoHanhItem(Long id);
 }

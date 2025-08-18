@@ -11,6 +11,7 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,9 @@ public class FullServices {
     @Autowired
     private final ChiTietXuatKhoRepository chiTietXuatKhoRepository;
 
+    @Autowired
+    private KhachHangRepository khachHangRepository;
+
     public FullServices(
         DonBaoHanhRepository donBaoHanhRepository,
         PhanTichSanPhamRepository phanTichSanPhamRepository,
@@ -64,7 +68,8 @@ public class FullServices {
         MaBienBanRepository maBienBanRepository,
         PhanTichLoiRepository phanTichLoiRepository,
         DanhSachXuatKhoRepository danhSachXuatKhoRepository,
-        ChiTietXuatKhoRepository chiTietXuatKhoRepository
+        ChiTietXuatKhoRepository chiTietXuatKhoRepository,
+        KhachHangRepository khachHangRepository
     ) {
         this.donBaoHanhRepository = donBaoHanhRepository;
         this.phanTichSanPhamRepository = phanTichSanPhamRepository;
@@ -76,6 +81,7 @@ public class FullServices {
         this.phanTichLoiRepository = phanTichLoiRepository;
         this.danhSachXuatKhoRepository = danhSachXuatKhoRepository;
         this.chiTietXuatKhoRepository = chiTietXuatKhoRepository;
+        this.khachHangRepository = khachHangRepository;
     }
 
     // * ============================ Template Tiếp nhận =================================
@@ -144,6 +150,7 @@ public class FullServices {
     //☺ Lấy chi tiết đơn bảo hành
     public List<ChiTietSanPhamTiepNhan> getChiTietDonBaoHanh(Long id) {
         List<ChiTietSanPhamTiepNhan> chiTietSanPhamTiepNhanList = this.chiTietSanPhamTiepNhanRepository.findAllByDonBaoHanhId(id);
+
         return chiTietSanPhamTiepNhanList;
     }
 
@@ -152,23 +159,49 @@ public class FullServices {
         this.donBaoHanhRepository.save(request);
     }
 
+    @Transactional
+    public void deleteDonBaoHanhItem(Long id) {
+        this.donBaoHanhRepository.deletePhanLoaiByDonBaoHanhId(id);
+        this.donBaoHanhRepository.deleteChiTietByDonBaoHanhId(id);
+        this.donBaoHanhRepository.deleteDonBaoHanhItem(id);
+    }
+
     //☺ cập nhật đơn bảo hành
-    public void updateDonBaoHanh(DonBaoHanh request) {
+    public DonBaoHanh updateDonBaoHanh(DonBaoHanh request) {
         DonBaoHanh donBaoHanh = this.donBaoHanhRepository.findById(request.getId()).orElse(null);
-        //        donBaoHanh.setKhachHang(request.getKhachHang());
+        if (donBaoHanh == null) {
+            throw new RuntimeException("Không tìm thấy đơn bảo hành với ID: " + request.getId());
+        }
+
+        if (request.getKhachHang() != null && request.getKhachHang().getId() != null) {
+            KhachHang khachHang =
+                this.khachHangRepository.findById(request.getKhachHang().getId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + request.getKhachHang().getId()));
+
+            if (!Objects.equals(khachHang.getTenKhachHang(), request.getKhachHang().getTenKhachHang())) {
+                khachHang.setTenKhachHang(request.getKhachHang().getTenKhachHang());
+                khachHang.setDiaChi(request.getKhachHang().getDiaChi());
+                khachHang.setSoDienThoai(request.getKhachHang().getSoDienThoai());
+                this.khachHangRepository.save(khachHang);
+            }
+
+            donBaoHanh.setKhachHang(khachHang);
+        }
+
         donBaoHanh.setSlTiepNhan(request.getSlTiepNhan());
         donBaoHanh.setNhanVienGiaoHang(request.getNhanVienGiaoHang());
         donBaoHanh.setTrangThai(request.getTrangThai());
         donBaoHanh.setNguoiTaoDon(request.getNguoiTaoDon());
         donBaoHanh.setNgaykhkb(request.getNgaykhkb());
         donBaoHanh.setTrangThaiIn(request.getTrangThaiIn());
-        this.donBaoHanhRepository.save(donBaoHanh);
+
+        return this.donBaoHanhRepository.save(donBaoHanh);
     }
 
     //☺ cập nhật đơn bảo hành
     public void updateDonBaoHanhPhanLoai(DonBaoHanh request) {
         DonBaoHanh donBaoHanh = this.donBaoHanhRepository.findById(request.getId()).orElse(null);
-        //        donBaoHanh.setKhachHang(request.getKhachHang());
+        donBaoHanh.setKhachHang(request.getKhachHang());
         donBaoHanh.setSlTiepNhan(request.getSlTiepNhan());
         donBaoHanh.setNhanVienGiaoHang(request.getNhanVienGiaoHang());
         donBaoHanh.setTrangThai(request.getTrangThai());

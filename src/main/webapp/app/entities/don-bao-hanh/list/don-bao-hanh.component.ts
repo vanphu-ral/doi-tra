@@ -63,6 +63,7 @@ export class DonBaoHanhComponent implements OnInit {
   chiTietSanPhamTiepNhanUrl = this.applicationConfigService.getEndpointFor('api/chi-tiet-don-bao-hanhs');
   danhSachTinhTrangUrl = this.applicationConfigService.getEndpointFor('api/danh-sach-tinh-trangs');
   updateDonBaoHanhUrl = this.applicationConfigService.getEndpointFor('api/update-don-bao-hanh');
+  deleteDonBaoHanhUrl = this.applicationConfigService.getEndpointFor('api/don-bao-hanh/delete');
   updateDonBaoHanhPhanLoaiUrl = this.applicationConfigService.getEndpointFor('api/update-don-bao-hanh-phan-loai');
   postDonBaoHanhUrl = this.applicationConfigService.getEndpointFor('api/don-bao-hanh/them-moi');
   postDonBaoHanhNewUrl = this.applicationConfigService.getEndpointFor('api/don-bao-hanh/them-moi-new');
@@ -214,7 +215,7 @@ export class DonBaoHanhComponent implements OnInit {
 
   popupInBBTNtest = false;
   loading = false;
-
+  isAdmin = false;
   faPrint = faPrint;
 
   constructor(
@@ -256,8 +257,8 @@ export class DonBaoHanhComponent implements OnInit {
 
   buttonDelete: Formatter<any> = (_row, _cell, value) =>
     value
-      ? `<button class="btn btn-danger fa fa-pencil" style="height: 28px; line-height: 14px; width: 15px"></button>`
-      : { text: '<button class="btn btn-danger fa fa-trash" style="height: 28px; line-height: 14px"></button>' };
+      ? `<button class="btn btn-danger fa fa-trash" style="height: 28px; line-height: 14px; width: 15px"></button>`
+      : { text: '<button class="btn btn-danger fa fa-trash" style="height: 28px; line-height: 14px" title="Xoá"></button>' };
 
   loadAll(): void {
     this.navBarComponent.toggleSidebar2();
@@ -299,6 +300,7 @@ export class DonBaoHanhComponent implements OnInit {
       }
     });
     // this.loadAll();
+
     this.columnDefinitions = [];
     this.columnDefinitions1 = [
       {
@@ -360,24 +362,6 @@ export class DonBaoHanhComponent implements OnInit {
           this.angularGrid?.gridService.setSelectedRow(args.row);
         },
       },
-
-      // {
-      //   id: 'delete',
-      //   field: 'idDelete',
-      //   excludeFromColumnPicker: true,
-      //   excludeFromGridMenu: true,
-      //   excludeFromHeaderMenu: true,
-      //   formatter: this.buttonDelete,
-      //   minWidth: 60,
-      //   maxWidth: 60,
-      //   onCellClick: (e: Event, args: OnEventArgs) => {
-      //     console.log(args);
-      //     if (confirm('Are u sure?')) {
-      //       this.angularGrid?.gridService.deleteItemById(args.dataContext.id);
-      //     }
-      //   },
-      // },
-
       {
         id: 'id',
         name: 'Mã tiếp nhận',
@@ -659,78 +643,94 @@ export class DonBaoHanhComponent implements OnInit {
         },
       },
     ];
-    this.gridOptions1 = {
-      enableAutoResize: true,
-      enableSorting: true,
-      enableFiltering: true,
-      enablePagination: true,
-      // enableAutoSizeColumns: true,
-      asyncEditorLoadDelay: 2000,
-      frozenColumn: 2,
-      enableGridMenu: true,
-      gridMenu: {
-        iconCssClass: 'd-none',
-        hideClearAllFiltersCommand: false,
-        hideClearAllSortingCommand: false,
-        hideExportCsvCommand: false,
-        hideExportExcelCommand: false,
-        commandTitle: 'Tác vụ lưới',
-        columnTitle: 'Hiển thị cột',
-      },
+    this.accountService.identity().subscribe(account => {
+      this.account = account;
 
-      // enableColumnPicker: true,
-      // enableRowDetailView: true,
-      // rowDetailView: {
-      //   columnIndexPosition: 3,
-      //   process: items => this.simulateServerAsyncCall(items),
-      //   loadOnce: false,
-      //   singleRowExpand: true,
-      //   useRowClick: true,
-      //   panelRows: 10,
-      //   // Preload View Component
-      //   preloadComponent: RowDetailPreloadComponent,
-      //   viewComponent: RowDetailViewComponent,
-      //   parent: true,
-      // },
-      pagination: {
-        pageSizes: [30, 50, 100],
-        pageSize: this.donBaoHanhs.length,
-      },
-      // columnPicker: {
-      //   hideForceFitButton: true,
-      //   hideSyncResizeButton: true,
-      //   onColumnsChanged(e, args) {
-      //     console.log(args.visibleColumns);
-      //   },
-      // },
-      editable: true,
-      enableCellNavigation: true,
-      gridHeight: 620,
-      rowHeight: 48,
-      gridWidth: '100%',
-      // autoHeight: true,
-      autoFitColumnsOnFirstLoad: true,
-      asyncEditorLoading: true,
-      forceFitColumns: false,
-      presets: {
-        columns: [
-          { columnId: 'bbtn' },
-          { columnId: 'phanLoai' },
-          { columnId: 'edit' },
-          { columnId: 'id' },
-          { columnId: 'khachHang' },
-          { columnId: 'ngayTiepNhan' },
-          { columnId: 'slTiepNhan' },
-          { columnId: 'slDaPhanTich' },
-          { columnId: 'tienDo' },
-          { columnId: 'ngaykhkb' },
-          { columnId: 'ngayTraBienBan' },
-          { columnId: 'nguoiTaoDon' },
-          { columnId: 'nhanVienGiaoHang' },
-          { columnId: 'trangThai' },
-        ],
-      },
-    };
+      const hasDeletePermission = this.accountService.hasAnyAuthority('ROLE_ADMIN_TEM');
+
+      if (hasDeletePermission) {
+        this.columnDefinitions1.push({
+          id: 'delete',
+          field: 'idDelete',
+          excludeFromColumnPicker: true,
+          excludeFromGridMenu: true,
+          excludeFromHeaderMenu: true,
+          cssClass: 'wrap-text',
+          formatter: this.buttonDelete,
+          minWidth: 55,
+          maxWidth: 55,
+          onCellClick: (e: Event, args: OnEventArgs) => {
+            if (confirm('Bạn có chắc chắn muốn xóa?')) {
+              const id: number = args.dataContext.id;
+
+              this.http.delete(`${this.deleteDonBaoHanhUrl}/${id}`).subscribe({
+                next: () => {
+                  this.angularGrid?.gridService.deleteItemById(id);
+                  alert('Xóa thành công!');
+                },
+                error: () => {
+                  alert('Xóa thất bại. Vui lòng thử lại.');
+                },
+              });
+            }
+          },
+        });
+      }
+      const presetColumns: { columnId: string }[] = [{ columnId: 'bbtn' }, { columnId: 'phanLoai' }, { columnId: 'edit' }];
+
+      if (hasDeletePermission) {
+        presetColumns.push({ columnId: 'delete' });
+      }
+
+      presetColumns.push(
+        { columnId: 'id' },
+        { columnId: 'khachHang' },
+        { columnId: 'ngayTiepNhan' },
+        { columnId: 'slTiepNhan' },
+        { columnId: 'slDaPhanTich' },
+        { columnId: 'tienDo' },
+        { columnId: 'ngaykhkb' },
+        { columnId: 'ngayTraBienBan' },
+        { columnId: 'nguoiTaoDon' },
+        { columnId: 'nhanVienGiaoHang' },
+        { columnId: 'trangThai' }
+      );
+      this.gridOptions1 = {
+        enableAutoResize: true,
+        enableSorting: true,
+        enableFiltering: true,
+        enablePagination: true,
+        // enableAutoSizeColumns: true,
+        asyncEditorLoadDelay: 2000,
+        frozenColumn: hasDeletePermission ? 3 : 2,
+        enableGridMenu: true,
+        gridMenu: {
+          iconCssClass: 'd-none',
+          hideClearAllFiltersCommand: false,
+          hideClearAllSortingCommand: false,
+          hideExportCsvCommand: false,
+          hideExportExcelCommand: false,
+          commandTitle: 'Tác vụ lưới',
+          columnTitle: 'Hiển thị cột',
+        },
+        pagination: {
+          pageSizes: [30, 50, 100],
+          pageSize: this.donBaoHanhs.length,
+        },
+        editable: true,
+        enableCellNavigation: true,
+        gridHeight: 620,
+        rowHeight: 48,
+        gridWidth: '100%',
+        autoFitColumnsOnFirstLoad: true,
+        asyncEditorLoading: true,
+        forceFitColumns: false,
+
+        presets: {
+          columns: presetColumns,
+        },
+      };
+    });
     this.columnDefinitions1 = this.columnDefinitions1.map(col => {
       const isTextType = ['string', 'object'].includes(col.type ?? '');
       if (isTextType && !col.formatter) {
@@ -904,6 +904,7 @@ export class DonBaoHanhComponent implements OnInit {
         }
 
         this.resultChiTietSanPhamTiepNhans.push(item);
+        this.danhSachGocPopupPhanLoai = [...this.resultChiTietSanPhamTiepNhans];
       }
 
       // Tính tiến độ
@@ -917,34 +918,54 @@ export class DonBaoHanhComponent implements OnInit {
     this.isLoading = true;
     this.resultChiTietSanPhamTiepNhans = [];
 
-    this.http.get<any>(`${this.chiTietSanPhamTiepNhanUrl}/${id}`).subscribe(res => {
-      this.chiTietSanPhamTiepNhans = res;
+    // 1) Fetch chi tiết cùng phân loại (eager load phanLoaiChiTietTiepNhans)
+    this.http.get<ChiTietSanPhamTiepNhan[]>(`${this.chiTietSanPhamTiepNhanUrl}/${id}?eagerload=true`).subscribe(chiTiets => {
+      chiTiets.forEach(ct => {
+        // Cơ bản
+        let slTiepNhan = 0;
+        let slDoiMoi = 0;
+        let slSuaChua = 0;
+        let slKhongBH = 0;
 
-      this.http.get<any>(this.danhSachTinhTrangUrl).subscribe(resTT => {
-        this.danhSachTinhTrangs = resTT;
+        // 2) Duyệt bộ phân loại để cộng số
+        ct.phanLoaiChiTietTiepNhans?.forEach(pl => {
+          const qty = pl.soLuong ?? 0;
+          console.log('Tinh trạng:', pl.danhSachTinhTrang);
+          switch (pl.danhSachTinhTrang?.id) {
+            case 1:
+              slDoiMoi += qty;
+              break;
+            case 2:
+              slSuaChua += qty;
+              break;
+            case 3:
+              slKhongBH += qty;
+              break;
+          }
+          slTiepNhan += qty;
+        });
 
-        for (const chiTiet of this.chiTietSanPhamTiepNhans) {
-          const item = {
-            id: chiTiet.id,
-            tenSanPham: chiTiet.sanPham?.name,
-            donVi: chiTiet.sanPham?.donVi,
-            slKhachGiao: chiTiet.soLuongKhachHang,
-            slTiepNhanTong: 0,
-            slTiepNhan: chiTiet.slTiepNhan,
-            slDoiMoi: 0,
-            slSuaChua: 0,
-            slKhongBaoHanh: 0,
-            chiTietSanPhamTiepNhan: chiTiet,
-            tinhTrangBaoHanh: chiTiet.tinhTrangBaoHanh === 'true',
-          };
-
-          this.resultChiTietSanPhamTiepNhans.push(item);
-        }
-
-        this.isLoading = false;
+        // 3) Đẩy vào mảng kết quả
+        this.resultChiTietSanPhamTiepNhans.push({
+          id: ct.id!,
+          tenSanPham: ct.sanPham?.name ?? '',
+          donVi: ct.sanPham?.donVi ?? '',
+          slKhachGiao: ct.soLuongKhachHang ?? 0,
+          slTiepNhan: slTiepNhan,
+          slDoiMoi: slDoiMoi,
+          slSuaChua: slSuaChua,
+          slKhongBaoHanh: slKhongBH,
+          slTiepNhanTong: slTiepNhan,
+          chiTietSanPhamTiepNhan: ct,
+          tinhTrangBaoHanh: ct.tinhTrangBaoHanh === 'true',
+        });
       });
+
+      this.isLoading = false;
+      this.cdr.markForCheck();
     });
   }
+
   getDuLieuInChinhThuc(id: number): void {
     this.isLoading = true;
     this.resultChiTietSanPhamTiepNhans = [];
@@ -1090,21 +1111,41 @@ export class DonBaoHanhComponent implements OnInit {
     this.popupChinhSuaThongTin = true;
     this.navBarComponent.toggleSidebar2();
 
-    // lấy thông tin đơn bảo hành
     const result = sessionStorage.getItem(`TiepNhan ${id.toString()}`);
-    // console.log('chinh sua don bao hanh: ', this.khachHangs);
-    // lấy dữ liệu đối tượng cần chỉnh sửa
-    for (let i = 0; i < this.donBaoHanhs.length; i++) {
-      if (id === this.donBaoHanhs[i].id) {
-        this.thongTinDonBaoHanh = this.donBaoHanhs[i];
-      }
+
+    // Tìm đơn bảo hành theo ID
+    const don = this.donBaoHanhs.find(d => d.id === id);
+    if (!don) {
+      // console.warn('❌ Không tìm thấy đơn bảo hành với ID:', id);
+      return;
     }
-    // console.log("ket qua thu duoc: ",this.thongTinDonBaoHanh)
+
+    // Gán thông tin đơn bảo hành
+    this.thongTinDonBaoHanh = { ...don };
+
+    // Tìm khách hàng theo tên (vì maKhachHang đang null)
+    const tenKH = don.tenKhachHang?.trim();
+    const khachHangTimDuoc = this.khachHangs?.find(kh => kh.tenKhachHang?.trim() === tenKH);
+
+    if (khachHangTimDuoc) {
+      this.thongTinDonBaoHanh.khachHang = khachHangTimDuoc;
+      this.thongTinDonBaoHanh.tenKhachHang = khachHangTimDuoc.tenKhachHang ?? '';
+    } else {
+      this.thongTinDonBaoHanh.khachHang = null;
+      this.thongTinDonBaoHanh.tenKhachHang = don.tenKhachHang ?? '';
+    }
+
+    // Gán dữ liệu chi tiết sản phẩm tiếp nhận
     this.resultChiTietSanPhamTiepNhans = JSON.parse(result as string);
+
+    // Debug log
+    // console.log('📦 Đơn bảo hành:', this.thongTinDonBaoHanh);
+    // console.log('👤 Khách hàng tìm được:', khachHangTimDuoc);
   }
+
   openGridMenu(event?: MouseEvent): void {
     if (!this.angularGrid) {
-      console.warn('angularGrid chưa được gán');
+      // console.warn('angularGrid chưa được gán');
       return;
     }
 
@@ -1115,7 +1156,7 @@ export class DonBaoHanhComponent implements OnInit {
       const mouseEvent = event ?? new MouseEvent('click');
       gridMenuInstance.showGridMenu(mouseEvent);
     } else {
-      console.warn('GridMenu chưa được khởi tạo hoặc extension chưa sẵn sàng');
+      // console.warn('GridMenu chưa được khởi tạo hoặc extension chưa sẵn sàng');
     }
   }
 
@@ -1136,21 +1177,43 @@ export class DonBaoHanhComponent implements OnInit {
     }
   }
   capNhatThongTinKhachHang(tenKhachHang: string): void {
-    // console.log(tenKhachHang);
-    // cập nhật lại thông tin khách hàng
     for (let i = 0; i < this.khachHangs!.length; i++) {
       if (this.khachHangs![i].tenKhachHang === tenKhachHang) {
-        this.thongTinDonBaoHanh.khachHang = this.khachHangs![i];
-        // console.log({ goc: this.khachHangs![i], capNhat: this.thongTinDonBaoHanh.khachHang });
-        // console.log('cập nhật: ', this.thongTinDonBaoHanh);
+        const khachHangGoc = this.khachHangs?.[i];
+        const khachHangClone = {
+          ...khachHangGoc,
+          tenKhachHang: this.thongTinDonBaoHanh.tenKhachHang,
+        };
+        this.thongTinDonBaoHanh.khachHang = khachHangClone;
+
+        console.log({ goc: this.khachHangs![i], capNhat: this.thongTinDonBaoHanh.khachHang });
       }
     }
   }
   xacNhanCapNhatDonBaoHanh(): void {
-    this.http.put<any>(this.updateDonBaoHanhUrl, this.thongTinDonBaoHanh).subscribe(() => {
-      // console.log('thanh cong');
+    if (this.thongTinDonBaoHanh.khachHang) {
+      this.thongTinDonBaoHanh.khachHang = {
+        ...this.thongTinDonBaoHanh.khachHang,
+        tenKhachHang: this.thongTinDonBaoHanh.tenKhachHang,
+      };
+    }
+
+    this.http.put<any>(this.updateDonBaoHanhUrl, this.thongTinDonBaoHanh).subscribe({
+      next: updated => {
+        if (updated?.id) {
+          const idx = this.donBaoHanhs.findIndex(d => d.id === updated.id);
+          if (idx !== -1) {
+            this.donBaoHanhs[idx] = updated;
+          }
+        }
+        alert('Cập nhật thành công!');
+        this.closePopupEdit();
+        window.location.reload();
+      },
+      error: err => {
+        alert(err.message);
+      },
     });
-    window.location.reload();
   }
 
   // ========================================= popup thêm mới đơn bảo hành và chi tiết đơn bảo hành =======================================

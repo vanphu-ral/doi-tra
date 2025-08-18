@@ -1,11 +1,11 @@
 <div id="demo-container" class="container-slickgrid col-md-12 content">
   <div class="phan-tich-san-pham-header">
     <h2 id="page-heading">{{ title }}</h2>
-    <div class="btn-header">
+    <!-- <div class="btn-header">
       <button class="btn btn-outline-dark btn-option btn-addTN me-2 btn-menu" (click)="openGridMenu($event)">
         <i class="fa fa-filter"></i>
       </button>
-    </div>
+    </div> -->
   </div>
   <angular-slickgrid
     gridId="phan-tich-san-pham"
@@ -126,8 +126,8 @@
           </table>
         </div>
       </form>
-      <br />
-      <br />
+      <!-- <br />
+      <br /> -->
       <form>
         <div class="info-card">
           <h2>Thông tin sản phẩm mã tiếp nhận</h2>
@@ -142,6 +142,7 @@
                   list="PTSP_ten_san_pham"
                   [(ngModel)]="tenSanPham"
                   [ngModelOptions]="{ standalone: true }"
+                  (input)="timKiemPhanTichSanPham()"
                   (change)="timKiemPhanTichSanPham()"
                 />
                 <datalist id="PTSP_ten_san_pham">
@@ -182,7 +183,7 @@
                   <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 8rem; font-size: 12px">
                     <span class="span-table-phantich">Tiến độ (%)</span>
                   </th>
-                  <th scope="col" jhiSortBy="id" class="header-table-custom">
+                  <th scope="col" jhiSortBy="id" class="header-table-custom" style="width: 6rem; font-size: 12px">
                     <span class="span-table-phantich">Checked</span>
                     <!-- <input type="checkbox" class="ui-checkbox" [checked]="checkedAll" (change)="checkAll()" /> -->
                   </th>
@@ -557,7 +558,7 @@
             <tbody>
               <td class="inventory-name">
                 <tr *ngFor="let data of resultOfSanPhamTheoKho; let i = index" style="border: none">
-                  <button class="btn btn-primary btn-options-in btn-options-in-pt" (click)="openPopupInBBKN(i, data.key)">
+                  <button *ngIf="data.key" class="btn btn-primary btn-options-in btn-options-in-pt" (click)="openPopupInBBKN(i, data.key)">
                     {{ data.key }}: {{ data.value.length }} SP
                   </button>
                 </tr>
@@ -590,7 +591,7 @@
             <tbody>
               <td class="inventory-name">
                 <tr *ngFor="let data of resultOfSanPhamTheoKhoTL; let i = index" style="border: none">
-                  <button class="btn btn-primary btn-options-in btn-options-in-pt" (click)="openPopupInBBTL(i, data.key)">
+                  <button *ngIf="data.key" class="btn btn-primary btn-options-in btn-options-in-pt" (click)="openPopupInBBTL(i, data.key)">
                     {{ data.key }}: {{ data.value.length }} SP
                   </button>
                 </tr>

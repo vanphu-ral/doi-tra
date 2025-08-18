@@ -1,5 +1,7 @@
 package com.mycompany.myapp.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -38,7 +40,7 @@ public class DanhSachTinhTrang implements Serializable {
     private String trangThai;
 
     @OneToMany(mappedBy = "danhSachTinhTrang")
-    @JsonIgnoreProperties(value = { "phanTichSanPhams", "chiTietSanPhamTiepNhan", "danhSachTinhTrang" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "danhSachTinhTrang" }, allowSetters = true)
     private Set<PhanLoaiChiTietTiepNhan> phanLoaiChiTietTiepNhans = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

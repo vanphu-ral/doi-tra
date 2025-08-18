@@ -3645,11 +3645,11 @@ body .slickgrid-container .slick-header-columns .slick-header-column.ui-state-de
   position: absolute;
   top: 0;
   left: 0;
-  width: 103vw;
+  width: 105vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
   z-index: 10;
-  margin-left: -7rem;
+  margin-left: -6.5rem;
   overflow: auto;
   padding-left: 5rem;
   animation: fadeIn 0.3s ease;

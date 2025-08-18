@@ -1,16 +1,19 @@
 package com.mycompany.myapp.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 /**
  * A PhanLoaiChiTietTiepNhan.
  */
 @Entity
 @Table(name = "phan_loai_chi_tiet_tiep_nhan")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class PhanLoaiChiTietTiepNhan implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -32,7 +35,7 @@ public class PhanLoaiChiTietTiepNhan implements Serializable {
     @JsonIgnoreProperties(value = { "sanPham", "donBaoHanh", "phanLoaiChiTietTiepNhans" }, allowSetters = true)
     private ChiTietSanPhamTiepNhan chiTietSanPhamTiepNhan;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JsonIgnoreProperties(value = { "phanLoaiChiTietTiepNhans" }, allowSetters = true)
     private DanhSachTinhTrang danhSachTinhTrang;
 

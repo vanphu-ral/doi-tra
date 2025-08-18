@@ -22,3 +22,18 @@
   overflow-wrap: break-word !important;
   line-height: 1.4;
 }
+#tong-hop .slick-header,
+#chiTietLoi .slick-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: white;
+}
+.popup-background {
+  max-height: 100vh;
+  overflow-y: auto;
+  position: relative;
+}
+// ::ng-deep .card{
+//   overflow: hidden;
+// }

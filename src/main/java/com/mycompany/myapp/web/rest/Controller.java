@@ -69,8 +69,15 @@ public class Controller {
 
     //☺ cập nhật đơn bảo hành
     @PutMapping("/update-don-bao-hanh")
-    public void updateDonBaoHanh(@RequestBody DonBaoHanh request) {
-        this.fullServices.updateDonBaoHanh(request);
+    public ResponseEntity<DonBaoHanh> updateDonBaoHanh(@RequestBody DonBaoHanh request) {
+        DonBaoHanh updated = fullServices.updateDonBaoHanh(request);
+        return ResponseEntity.ok(updated);
+    }
+
+    //☺ delete khai bao loi
+    @DeleteMapping("/don-bao-hanh/delete/{id}")
+    public void deleteDonBaoHanhItem(@PathVariable Long id) {
+        this.fullServices.deleteDonBaoHanhItem(id);
     }
 
     //☺ cập nhật đơn bảo hành

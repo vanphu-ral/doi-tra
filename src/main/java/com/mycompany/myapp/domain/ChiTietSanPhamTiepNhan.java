@@ -58,12 +58,13 @@ public class ChiTietSanPhamTiepNhan implements Serializable {
     private DonBaoHanh donBaoHanh;
 
     @OneToMany(mappedBy = "chiTietSanPhamTiepNhan")
-    @JsonIgnoreProperties(value = { "phanTichSanPhams", "chiTietSanPhamTiepNhan", "danhSachTinhTrang" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "phanTichSanPhams", "chiTietSanPhamTiepNhan" }, allowSetters = true)
     private Set<PhanLoaiChiTietTiepNhan> phanLoaiChiTietTiepNhans = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
     @Column(name = "trang_thai_in")
     private String trangThaiIn;
+
     public Long getId() {
         return this.id;
     }
@@ -72,7 +73,6 @@ public class ChiTietSanPhamTiepNhan implements Serializable {
         this.setId(id);
         return this;
     }
-
 
     public String getTrangThaiIn() {
         return trangThaiIn;
@@ -278,5 +278,4 @@ public class ChiTietSanPhamTiepNhan implements Serializable {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
-
 }

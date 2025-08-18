@@ -58,19 +58,18 @@
   <!-- <h1 class="display-4"><span>Đổi trả</span></h1> -->
 
   <!-- <p class="lead">This is your homepage</p> -->
+  <div *ngIf="account === null">
+    <!-- Giao diện chưa đăng nhập -->
+    <img src="../../content/images/logo-rang-dong-icon.webp" alt="logo-RD" />
+    <h2>Công ty cổ phần bóng đèn và phích nước rạng đông</h2>
+    <p>Vui lòng thực hiện đăng nhập để sử dụng hệ thống!</p>
+    <button (click)="login()" data-cy="login" id="loginButton">Đăng nhập</button>
+  </div>
 
-  <div [ngSwitch]="account !== null">
-    <!-- <div class="alert alert-success" *ngSwitchCase="true">
-        <span id="home-logged-message" *ngIf="account">Bạn đã đăng nhập với tài khoản là "{{ account.login }}".</span>
-      </div> -->
-
-    <div *ngSwitchCase="false">
-      <img src="../../content/images/logo-rang-dong-icon.webp" alt="logo-RD" />
-      <h2>Công ty cổ phần bóng đèn và phích nước rạng đông</h2>
-      <p>Vui lòng thực hiện đăng nhập để sử dụng hệ thống!</p>
-      <button (click)="login()" data-cy="login" id="loginButton">Đăng nhập</button>
-
-      <!-- <a class="alert-link" (click)="login()">Đăng nhập </a><span>để bắt đầu sử dụng hệ thống</span> -->
-    </div>
+  <div *ngIf="account !== null">
+    <!-- Giao diện sau khi đăng nhập -->
+    <img src="../../content/images/logo-rang-dong-icon.webp" alt="logo-RD" />
+    <h2>Công ty cổ phần bóng đèn và phích nước rạng đông</h2>
+    <p>Chào mừng đến với hệ thống đổi trả!</p>
   </div>
 </div>

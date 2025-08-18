@@ -214,15 +214,10 @@
           <input
             type="text"
             class="form-control"
-            list="field_khachHang"
             data-cy="khachHang"
             [(ngModel)]="thongTinDonBaoHanh.tenKhachHang"
             [ngModelOptions]="{ standalone: true }"
-            (change)="capNhatThongTinKhachHang(thongTinDonBaoHanh.tenKhachHang)"
           />
-          <datalist id="field_khachHang">
-            <option *ngFor="let item of khachHangs" value="{{ item.tenKhachHang }}"></option>
-          </datalist>
         </div>
         <div class="row mb-3">
           <label for="field_tongTiepNhan" class="form-label-header">Tổng tiếp nhận</label>
@@ -261,6 +256,7 @@
             [(ngModel)]="thongTinDonBaoHanh.trangThai"
             [ngModelOptions]="{ standalone: true }"
             (change)="capNhatThongTinKhachHang(thongTinDonBaoHanh.tenKhachHang)"
+            disabled
           />
         </div>
       </form>

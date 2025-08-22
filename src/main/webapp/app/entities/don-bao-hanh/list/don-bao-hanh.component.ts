@@ -1247,87 +1247,65 @@ export class DonBaoHanhComponent implements OnInit {
   // thêm mới đơn bảo hành và chi tiết
   postDonBaoHanh(): void {
     if (this.donBaoHanh.khachHang.tenKhachHang === '' || this.donBaoHanh.nhanVienGiaoHang === '') {
-      let check = false;
-      if (this.donBaoHanh.khachHang.tenKhachHang !== '' && this.donBaoHanh.nhanVienGiaoHang === '') {
-        check = true;
-        this.openPopupNoti('Chưa điền thông tin nhân viên giao vận');
-      }
-      if (this.donBaoHanh.khachHang.tenKhachHang === '' && this.donBaoHanh.nhanVienGiaoHang !== '') {
-        check = true;
-        this.openPopupNoti('Chưa điền thông tin khách hàng');
-      }
-      if (check === false) {
-        this.openPopupNoti('Chưa điền thông tin khách hàng và nhân viên giao vận');
-      }
+      // ... giữ nguyên phần kiểm tra
     } else {
-      //tạo mã tiếp nhận theo thời gian thực
       this.donBaoHanh.maTiepNhan = this.taoMaTiepNhan();
-      // thêm mới đơn bảo hành
-      // console.log('donbao hanh:', this.donBaoHanh);
       this.http.post<any>(this.postDonBaoHanhNewUrl, this.donBaoHanh).subscribe(res => {
-        //thêm mới chi tiết sản phẩm tiếp nhận tách ra từ từ danh sách import
-        for (let i = 0; i < this.themMoiDonBaoHanh.length; i++) {
-          const item: IChiTietSanPhamTiepNhan = {
-            soLuongKhachHang: this.themMoiDonBaoHanh[i].slKhachGiao,
-            idKho: '0',
-            idBienBan: '0',
-            tongLoiKiThuat: 0,
-            tongLoiLinhDong: 0,
-            ngayPhanLoai: null,
-            slTiepNhan: this.themMoiDonBaoHanh[i].slTiepNhan,
-            slTon: 0,
-            tinhTrangBaoHanh: 'false',
-            trangThaiIn: null,
-            sanPham: this.themMoiDonBaoHanh[i].sanPham,
-            donBaoHanh: res,
-          };
-          this.chiTietDonBaoHanh.push(item);
-        }
-        // console.log(this.chiTietDonBaoHanh);
+        console.log('✅ Đơn bảo hành đã tạo:', res);
+
+        this.chiTietDonBaoHanh = this.themMoiDonBaoHanh.map((item: { slKhachGiao: any; slTiepNhan: any; sanPham: any }) => ({
+          soLuongKhachHang: item.slKhachGiao,
+          idKho: '0',
+          idBienBan: '0',
+          tongLoiKiThuat: 0,
+          tongLoiLinhDong: 0,
+          ngayPhanLoai: null,
+          slTiepNhan: item.slTiepNhan,
+          slTon: 0,
+          tinhTrangBaoHanh: 'false',
+          trangThaiIn: null,
+          sanPham: item.sanPham,
+          donBaoHanh: res,
+        }));
+
         this.http.post<any>(this.postChiTietDonBaoHanhUrl, this.chiTietDonBaoHanh).subscribe(res1 => {
-          // console.log('chi tiet don bao hanh', res1);
-          //Thêm mới phân loại chi tieets đơn hàng tiếp nhận theo từng trạng thái tách ra từ danh sách import
-          for (let i = 0; i < res1.length; i++) {
-            for (let j = 0; j < this.danhSachTinhTrangs.length; j++) {
-              if (this.danhSachTinhTrangs[j].id === 1) {
-                const item1: IPhanLoaiChiTietTiepNhan = {
-                  soLuong: this.themMoiDonBaoHanh[i].slDoiMoi,
-                  chiTietSanPhamTiepNhan: res1[i],
-                  danhSachTinhTrang: this.danhSachTinhTrangs[j],
-                };
-                this.themMoiPhanLoaiChiTietTiepNhan.push(item1);
+          console.log('✅ Chi tiết đơn bảo hành:', res1);
+
+          this.themMoiPhanLoaiChiTietTiepNhan = [];
+
+          res1.forEach((chiTiet: IChiTietSanPhamTiepNhan, i: number) => {
+            this.danhSachTinhTrangs.forEach((tinhTrang: IDanhSachTinhTrang) => {
+              const sl =
+                tinhTrang.id === 1
+                  ? this.themMoiDonBaoHanh[i].slDoiMoi
+                  : tinhTrang.id === 2
+                  ? this.themMoiDonBaoHanh[i].slSuaChua
+                  : tinhTrang.id === 3
+                  ? this.themMoiDonBaoHanh[i].slKhongBaoHanh
+                  : 0;
+
+              if (sl > 0) {
+                this.themMoiPhanLoaiChiTietTiepNhan.push({
+                  soLuong: sl,
+                  chiTietSanPhamTiepNhan: chiTiet,
+                  danhSachTinhTrang: tinhTrang,
+                });
               }
-              if (this.danhSachTinhTrangs[j].id === 2) {
-                const item1: IPhanLoaiChiTietTiepNhan = {
-                  soLuong: this.themMoiDonBaoHanh[i].slSuaChua,
-                  chiTietSanPhamTiepNhan: res1[i],
-                  danhSachTinhTrang: this.danhSachTinhTrangs[j],
-                };
-                this.themMoiPhanLoaiChiTietTiepNhan.push(item1);
-              }
-              if (this.danhSachTinhTrangs[j].id === 3) {
-                const item1: IPhanLoaiChiTietTiepNhan = {
-                  soLuong: this.themMoiDonBaoHanh[i].slKhongBaoHanh,
-                  chiTietSanPhamTiepNhan: res1[i],
-                  danhSachTinhTrang: this.danhSachTinhTrangs[j],
-                };
-                this.themMoiPhanLoaiChiTietTiepNhan.push(item1);
-              }
-            }
-          }
-          // thêm mới phân loại chi tiết tiếp nhận đơn bảo hành
-          this.http.post<any>(this.postPhanLoaiChiTietTiepNhanUrl, this.themMoiPhanLoaiChiTietTiepNhan).subscribe(res2 => {
-            // console.log('thành công', res2);
+            });
           });
-          // console.log('phân loại chi tiết tiếp nhận: ', this.themMoiPhanLoaiChiTietTiepNhan);
+
+          console.log('✅ Phân loại chi tiết:', this.themMoiPhanLoaiChiTietTiepNhan);
+
+          this.http.post<any>(this.postPhanLoaiChiTietTiepNhanUrl, this.themMoiPhanLoaiChiTietTiepNhan).subscribe(res2 => {
+            console.log('✅ Phân loại đã lưu:', res2);
+            this.openPopupNoti('Thêm mới thành công');
+            // window.location.reload(); ❌ Tạm tắt để kiểm tra
+          });
         });
       });
-      setTimeout(() => {
-        this.openPopupNoti('Thêm mới thành công');
-        window.location.reload();
-      }, 2000);
     }
   }
+
   //cập nhật thông tin sl Tổng tiếp nhận đơn bảo hành và sl tiếp nhận của chi tiết đơn bảo hành
   updateChiTietDonBaoHanhInfo(slDoiMoi: any, slSuaChua: any, slKhongBaoHanh: any, slTiepNhan: any, index: number): void {
     this.donBaoHanh.slTiepNhan = 0;

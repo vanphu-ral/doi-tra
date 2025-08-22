@@ -38,8 +38,7 @@ public interface ChiTietSanPhamTiepNhanRepository extends JpaRepository<ChiTietS
     void deleteByDonBaoHanhId(Long id);
 
     @Query(
-        value = "SELECT * FROM chi_tiet_san_pham_tiep_nhan ChiTietSanPhamTiepNhan" +
-        " WHERE id = (SELECT MAX(id) FROM chi_tiet_san_pham_tiep_nhan)",
+        value = "SELECT * FROM chi_tiet_san_pham_tiep_nhan WHERE id = (SELECT MAX(id) FROM chi_tiet_san_pham_tiep_nhan)",
         nativeQuery = true
     )
     ChiTietSanPhamTiepNhan getMaxID();

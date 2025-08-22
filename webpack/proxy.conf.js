@@ -6,6 +6,12 @@ function setupProxy({ tls }) {
       secure: false,
       changeOrigin: tls,
     },
+    {
+      context: ['/graphql'],
+      target: 'http://192.168.68.61:8081',
+      secure: false,
+      changeOrigin: true,
+    },
   ];
   return conf;
 }

@@ -8,6 +8,7 @@ import { ILoi } from './../../loi/loi.model';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { DonBaoHanhService } from 'app/entities/don-bao-hanh/service/don-bao-hanh.service';
 import { FormBuilder } from '@angular/forms';
+import { PqcCheckDetailComponent } from '../detail/pqc-check-detail.component';
 import {
   Column,
   GridOption,
@@ -22,7 +23,7 @@ import {
   ExtensionName,
 } from 'angular-slickgrid';
 import { IDonBaoHanh } from './../../don-bao-hanh/don-bao-hanh.model';
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { HttpResponse, HttpClient } from '@angular/common/http';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -34,10 +35,12 @@ import { Account } from 'app/core/auth/account.model';
 import dayjs from 'dayjs/esm';
 import { IKho } from 'app/entities/kho/kho.model';
 import { KhoService } from 'app/entities/kho/service/kho.service';
-import { faBarcode, faL, faPrint, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faBarcode, faL, faPrint, faTrash, faInfoCircle, faEye } from '@fortawesome/free-solid-svg-icons';
 import { NavbarComponent } from 'app/layouts/navbar/navbar.component';
 import { ConstantPool } from '@angular/compiler';
 import { forkJoin } from 'rxjs';
+import { Apollo } from 'apollo-angular';
+import { GET_WORK_ORDER_BY_LOT } from '../service/phan-tich-san-pham-graphql.service';
 
 type DonBaoHanh = {
   id: number;
@@ -98,6 +101,10 @@ export class PhanTichSanPhamComponent implements OnInit {
   phanTichChiTietSanPham?: { tenSanPham: string; tinhTrang: string; slTiepNhan: number; slTon: number };
   predicate!: string;
   ascending!: boolean;
+  lotValue = '';
+  listBomErrorDetails: any[] = [];
+  listDrawTestNvls: any[] = [];
+  listOfSanPhamTrongDialog: any[] = [];
   //-----------------------------------------------------------------------------------------------------------------------------------------
   @Input() searchKey = '';
   //Biến chứa thông tin biên bản
@@ -125,7 +132,7 @@ export class PhanTichSanPhamComponent implements OnInit {
   listOfChiTietSanPhamPhanTichTL: any[] = [];
   // biến chứa thông tin đơn bảo hành
   donBaoHanh: any = {};
-
+  lotInput = '';
   scanLot = true;
   scanSerial = true;
   // lưu thông tin account
@@ -211,6 +218,9 @@ export class PhanTichSanPhamComponent implements OnInit {
   faPrint = faPrint;
   faBarcode = faBarcode;
   faTrash = faTrash;
+  faEye = faEye;
+  faInfoCircle = faInfoCircle;
+  @ViewChild('scanLotModal') scanLotModal?: TemplateRef<any>;
 
   constructor(
     protected phanTichSanPhamService: PhanTichSanPhamService,
@@ -222,7 +232,9 @@ export class PhanTichSanPhamComponent implements OnInit {
     protected http: HttpClient,
     protected accountService: AccountService,
     protected khoService: KhoService,
-    protected navBarComponent: NavbarComponent
+    protected navBarComponent: NavbarComponent,
+    private apollo: Apollo,
+    private cdr: ChangeDetectorRef
   ) {}
 
   buttonIn: Formatter<any> = (_row, _cell, value) =>
@@ -1052,22 +1064,31 @@ export class PhanTichSanPhamComponent implements OnInit {
   }
 
   showGroupOptionsKN(): void {
-    if (this.trangThaiInTN !== 'Đã in') {
+    if (this.trangThaiInTN !== 'Đã in' || !this.bienBanTiepNhan) {
       this.openPopupNoti('Vui lòng in biên bản tiếp nhận trước');
       return;
     }
     this.groupOptionsKN = true;
     this.groupOptionsTL = false;
+    this.groupOptionsTN = false;
+    console.log('trangThaiInTN:', this.trangThaiInTN);
+    console.log('bienBanTiepNhan:', this.bienBanTiepNhan);
+    console.log('bienBanKiemNghiem:', this.bienBanKiemNghiem);
   }
 
   showGroupOptionsTL(): void {
-    if (this.trangThaiInTN !== 'Đã in') {
-      this.openPopupNoti('Vui lòng in biên bản tiếp nhận trước');
+    if (this.trangThaiInTN !== 'Đã in' || !this.bienBanTiepNhan || !this.bienBanKiemNghiem) {
+      this.openPopupNoti('Vui lòng in biên bản tiếp nhận và kiểm nghiệm trước');
       return;
     }
-    this.groupOptionsKN = true;
-    this.groupOptionsTL = false;
+    this.groupOptionsTL = true;
+    this.groupOptionsKN = false;
+    this.groupOptionsTN = false;
+    console.log('trangThaiInTN:', this.trangThaiInTN);
+    console.log('bienBanTiepNhan:', this.bienBanTiepNhan);
+    console.log('bienBanKiemNghiem:', this.bienBanKiemNghiem);
   }
+
   caculateErrors(index: any): void {
     for (let j = 0; j < this.resultOfSanPhamTheoKho[index].value.length; j++) {
       this.http.get<any>(`api/tinh-toan-so-luong-loi/${this.resultOfSanPhamTheoKho[index].value[j].id as number}`).subscribe(res => {
@@ -1079,34 +1100,58 @@ export class PhanTichSanPhamComponent implements OnInit {
   }
   openPopupInBBKN(index: number, tenKho: string): void {
     this.isLoading = true;
+    console.log('🔍 Bắt đầu openPopupInBBKN với index:', index, 'tenKho:', tenKho);
+
+    if (!this.resultOfSanPhamTheoKho[index]) {
+      console.warn('⚠️ Không tìm thấy dữ liệu kho kiểm nghiệm tại index:', index);
+      this.openPopupNoti('Không tìm thấy dữ liệu kho kiểm nghiệm');
+      this.isLoading = false;
+      return;
+    }
+
     const maKho = this.getMaKhoFromTenKho(tenKho);
+    console.log('📦 Mã kho lấy từ tên kho:', maKho);
+
     this.loaiBienBan = 'Kiểm nghiệm';
 
     const khoInfo = this.danhSachKho.find(k => k.tenKho === tenKho);
+    console.log('📦 Thông tin kho tìm thấy:', khoInfo);
+
     this.maKho = khoInfo?.maKho ?? '';
     this.tenKho = khoInfo?.tenKho ?? '';
 
     this.danhSachBienBanSanPhamTheoKho = this.resultOfSanPhamTheoKho[index].value;
+    console.log('📦 Danh sách biên bản sản phẩm theo kho:', this.danhSachBienBanSanPhamTheoKho);
+
     const id = String(this.donBaoHanh.id);
+    console.log('📦 ID đơn bảo hành:', id);
+
     forkJoin({
       bienBanTiepNhan: this.http.get(`api/danh-sach-bien-ban/tiep-nhan/${id}`),
       danhSachBienBan: this.http.get<any[]>('api/ma-bien-bans'),
     }).subscribe(({ bienBanTiepNhan, danhSachBienBan }) => {
-      this.bienBanTiepNhan = bienBanTiepNhan;
-      this.danhSachBienBan = danhSachBienBan;
+      console.log('✅ Dữ liệu biên bản tiếp nhận trả về:', bienBanTiepNhan);
+      console.log('✅ Danh sách biên bản trả về:', danhSachBienBan);
 
-      if (!this.bienBanTiepNhan) {
+      const bienBanTN = bienBanTiepNhan as { maKho: string };
+      console.log('📌 Biên bản tiếp nhận sau ép kiểu:', bienBanTN);
+
+      if (!bienBanTN || bienBanTN.maKho !== maKho) {
+        console.warn('❌ Mã kho không khớp hoặc không có biên bản tiếp nhận. maKho:', maKho, 'bienBanTN.maKho:', bienBanTN?.maKho);
         this.openPopupNoti('Vui lòng in biên bản tiếp nhận trước');
+        this.isLoading = false;
         return;
       }
 
       const bienBanKN = danhSachBienBan.find(
         b => b.loaiBienBan === this.loaiBienBan && b.donBaoHanh.id === this.donBaoHanh.id && b.maKho === maKho
       );
+      console.log('🔍 Biên bản kiểm nghiệm tìm thấy:', bienBanKN);
 
       if (bienBanKN) {
         this.maBienBan = bienBanKN.maBienBan;
         this.themMoiBienBan = bienBanKN;
+        console.log('📄 Đã có biên bản kiểm nghiệm, sử dụng lại:', this.maBienBan);
       } else {
         this.maBienBan = this.generateMaBienBan('KN', maKho);
         this.themMoiBienBan = {
@@ -1117,19 +1162,28 @@ export class PhanTichSanPhamComponent implements OnInit {
           donBaoHanh: this.donBaoHanh,
           maKho: maKho,
         };
+        console.log('🆕 Tạo mới biên bản kiểm nghiệm:', this.themMoiBienBan);
       }
 
       this.yearTN = this.donBaoHanh.ngayTiepNhan.substr(2, 2);
       this.monthTN = this.donBaoHanh.ngayTiepNhan.substr(5, 2);
       this.dateTN = this.donBaoHanh.ngayTiepNhan.substr(8, 2);
+      console.log('📅 Ngày tiếp nhận:', this.dateTN, '/', this.monthTN, '/', this.yearTN);
 
       this.popupInBBKN = true;
       this.isLoading = false;
+      console.log('✅ Hoàn tất xử lý openPopupInBBKN');
     });
   }
 
   openPopupInBBTL(index: number, tenKho: string): void {
     this.isLoading = true;
+    if (!this.resultOfSanPhamTheoKhoTL[index]) {
+      this.openPopupNoti('Không tìm thấy dữ liệu kho thanh lý');
+      this.isLoading = false;
+      return;
+    }
+
     const maKho = this.getMaKhoFromTenKho(tenKho);
     this.loaiBienBan = 'Thanh lý';
 
@@ -1150,8 +1204,12 @@ export class PhanTichSanPhamComponent implements OnInit {
       this.bienBanKiemNghiem = danhSachBBKN.find(b => b.maKho === maKho);
       this.danhSachBienBan = danhSachBienBan;
 
-      if (!this.bienBanTiepNhan || !this.bienBanKiemNghiem) {
+      // const bienBanTNTheoKho = (bienBanTiepNhan as any[]).find(b => b.maKho === maKho);
+
+      const bienBanTN = bienBanTiepNhan as { maKho: string };
+      if (!bienBanTN || bienBanTN.maKho !== maKho || !this.bienBanKiemNghiem) {
         this.openPopupNoti('Vui lòng in biên bản tiếp nhận và kiểm nghiệm trước');
+        this.isLoading = false;
         return;
       }
 
@@ -1182,6 +1240,7 @@ export class PhanTichSanPhamComponent implements OnInit {
       this.isLoading = false;
     });
   }
+
   getMaKhoFromTenKho(tenKho: string): string {
     const mapping: { [key: string]: string } = {
       Kho1: '01',
@@ -1323,15 +1382,145 @@ export class PhanTichSanPhamComponent implements OnInit {
       }
     }, 500);
   }
-  //focus con trỏ chuột vào ô input Lot
-  buttonScanLot(): void {
-    this.scanSerial = !this.scanSerial;
-    this.scanType = 'lot';
-    const input = document.getElementById(this.scanType);
-    if (input) {
-      input.focus();
+  openScanLotDialog(): void {
+    this.lotInput = this.saveLOT?.trim();
+
+    const modalRef = this.modalService.open(this.scanLotModal, { size: 'md' });
+
+    if (this.lotInput) {
+      this.handleScanLot(modalRef);
     }
   }
+
+  handleScanLot(modal: any): void {
+    this.isLoading = true;
+    if (!this.lotInput || this.lotInput.trim().length === 0) {
+      this.openPopupNoti('Vui lòng nhập mã LOT');
+      this.isLoading = false;
+      return;
+    }
+
+    this.onScanLotChange(this.lotInput.trim());
+  }
+  //focus con trỏ chuột vào ô input Lot
+  onScan(type: 'lot' | 'serial', value: string): void {
+    const product = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham];
+    // Lấy năm: 2 ký tự đầu của mã → 20xx
+    this.saveYear = `20${value.substr(0, 2)}`;
+    product.namSanXuat = this.saveYear;
+
+    if (type === 'lot') {
+      this.saveLOT = value;
+      product.lotNumber = value;
+    } else {
+      this.saveSerial = value;
+      // Ví dụ bạn chỉ lấy 13 ký tự đầu để gán lại cho LOT nếu cần
+      this.saveLOT = value.substr(0, 13);
+      product.detail = value;
+      product.lotNumber = this.saveLOT;
+    }
+  }
+  parseQR(qr: string): { vendor: string; sap: string } {
+    const parts = qr?.split('#') || [];
+    // console.log('QR parts:', parts);
+
+    return {
+      sap: parts.length > 14 ? parts[14] : '',
+      vendor: parts.length > 2 ? parts[2] : '',
+    };
+  }
+
+  onScanLotChange(lot: string): void {
+    if (!lot || lot.trim().length === 0) {
+      return;
+    }
+
+    this.apollo
+      .watchQuery({
+        query: GET_WORK_ORDER_BY_LOT,
+        variables: { lotNumber: lot },
+      })
+      .valueChanges.subscribe(
+        (result: any) => {
+          const data = result?.data?.qmsToDoiTraInfoByLotNumber;
+          if (!data) {
+            return;
+          }
+
+          const testNVLs = data.pqcCheckTestNVL || [];
+          const bomErrors = data.pqcBomErrorDetail || [];
+          const checkNVLInfo = data.pqcCheckNVL?.[0] || {};
+
+          this.listOfSanPhamTrongDialog = [
+            ...testNVLs.map((item: any, index: number) => {
+              const qrRaw = data.pqcScan100Pass?.[0]?.qr || '';
+              const { sap, vendor } = this.parseQR(qrRaw);
+
+              return {
+                stt: index + 1,
+                tenSanPham: item.itemName,
+                lotNumber: item.lot,
+                sap: sap,
+                vendor: vendor,
+                partNumber: item.partNumber || '',
+                detail: item.itemCode,
+                namSanXuat: checkNVLInfo.createdAt?.slice(0, 4) || '',
+                slThucNhap: item.qty,
+                ngayKiemTra: item.checkDate,
+                ghiChu: item.note,
+                nhomLoi: 0,
+                tenLoi: 0,
+                soLuongLoi: 0,
+                ngayCapNhat: checkNVLInfo.createdAt,
+                trangThai: false,
+                username: checkNVLInfo.CheckPerson || '',
+                tenNhanVienPhanTich: checkNVLInfo.note || '',
+                loiKyThuat: 0,
+                loiLinhDong: 0,
+                type: 'testNVL',
+                raw: item,
+              };
+            }),
+
+            ...bomErrors.map((item: any, index: number) => ({
+              stt: index + 1 + (testNVLs.length as number),
+              tenSanPham: null,
+              lotNumber: null,
+              sap: null,
+              vendor: null,
+              partNumber: null,
+              detail: null,
+              namSanXuat: null,
+              slThucNhap: null,
+              ngayKiemTra: null,
+              ghiChu: item.note,
+              nhomLoi: item.errorCode,
+              tenLoi: item.errorName,
+              soLuongLoi: item.quantity,
+              ngayCapNhat: item.updatedAt,
+              trangThai: false,
+              username: null,
+              tenNhanVienPhanTich: null,
+              loiKyThuat: null,
+              loiLinhDong: null,
+              type: 'bomError',
+              raw: item,
+            })),
+          ];
+          this.isLoading = false;
+        },
+        error => {
+          this.isLoading = false;
+        }
+      );
+  }
+  openChiTiet(data: any): void {
+    if (data.type === 'testNVL') {
+      const modalRef = this.modalService.open(PqcCheckDetailComponent, { size: 'lg' });
+      modalRef.componentInstance.data = data.raw;
+    }
+  }
+
   //focus con trỏ chuột vào ô input Serial
   buttonScanSerial(): void {
     this.scanLot = !this.scanLot;
@@ -1359,20 +1548,28 @@ export class PhanTichSanPhamComponent implements OnInit {
 
   // Bắt sự kiện scan LOT
   scanLotEvent(): void {
-    this.saveTheLoai = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].theLoaiPhanTich = 'Lot';
-    this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber = this.saveLOT;
-    this.saveSanPham = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].tenSanPham =
-      this.listOfChiTietSanPhamPhanTich[this.indexOfPhanTichSanPham].tenSanPham;
-    this.saveYear = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].namSanXuat = `20${this.saveLOT.substr(0, 2)}`;
+    const idx = this.indexOfChiTietPhanTichSanPham;
+    const lot = this.saveLOT?.trim() || '';
+    this.saveTheLoai = this.listOfPhanTichSanPhamByPLCTTN[idx].theLoaiPhanTich = 'Lot';
+    this.listOfPhanTichSanPhamByPLCTTN[idx].lotNumber = lot;
+    // gán lại tên sản phẩm
+    this.listOfPhanTichSanPhamByPLCTTN[idx].tenSanPham = this.listOfChiTietSanPhamPhanTich[this.indexOfPhanTichSanPham].tenSanPham;
+    // Năm sản xuất lấy 2 ký tự đầu của lot
+    this.listOfPhanTichSanPhamByPLCTTN[idx].namSanXuat = lot.length >= 2 ? `20${lot.substr(0, 2)}` : '';
   }
   //Bắt sự kiện scan serial
   scanSerialEvent(): void {
-    this.saveTheLoai = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].theLoaiPhanTich = 'Serial';
-    this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail = this.saveSerial;
-    this.saveLOT = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber = this.saveSerial.substr(0, 13);
-    this.saveSanPham = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].tenSanPham =
-      this.listOfChiTietSanPhamPhanTich[this.indexOfPhanTichSanPham].tenSanPham;
-    this.saveYear = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].namSanXuat = `20${this.saveLOT.substr(0, 2)}`;
+    const idx = this.indexOfChiTietPhanTichSanPham;
+    const serial = this.saveSerial?.trim() || '';
+    this.saveTheLoai = this.listOfPhanTichSanPhamByPLCTTN[idx].theLoaiPhanTich = 'Serial';
+    // detail = serial, lotNumber = prefix của serial
+    this.listOfPhanTichSanPhamByPLCTTN[idx].detail = serial;
+    const lot = serial.substr(0, 13);
+    this.listOfPhanTichSanPhamByPLCTTN[idx].lotNumber = lot;
+    // gán lại tên sản phẩm
+    this.listOfPhanTichSanPhamByPLCTTN[idx].tenSanPham = this.listOfChiTietSanPhamPhanTich[this.indexOfPhanTichSanPham].tenSanPham;
+    // Năm sản xuất
+    this.listOfPhanTichSanPhamByPLCTTN[idx].namSanXuat = lot.length >= 2 ? `20${lot.substr(0, 2)}` : '';
   }
   //Cập nhật thông tin sau khi khai báo lỗi
   updatePhanTichSanPham(): void {
@@ -1575,75 +1772,61 @@ export class PhanTichSanPhamComponent implements OnInit {
     // console.log('check item', this.listOfChiTietSanPhamPhanTich[index]);
     this.checkedAll = this.listOfChiTietSanPhamPhanTich.every(item => item.check);
   }
-  catchEventKhaiBaoLois(index: any): void {
-    // console.log('kiểm tra mã LOT', this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham]);
-    if (
-      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === '' &&
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === '') ||
-      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === undefined &&
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === undefined)
-    ) {
-      this.openPopupNoti('Chưa có thông tin LOT/SERIAL !!!');
-      const input = document.getElementById(this.scanType);
-      if (input) {
-        input.focus();
-      }
-    } else {
-      //reset kết quả
-      this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat = 0;
-      this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong = 0;
-      //cập nhật số lượng lỗi linh động, lỗi kĩ thuật
-      for (let i = 0; i < this.catchChangeOfListKhaiBaoLoi.length; i++) {
-        if (this.catchChangeOfListKhaiBaoLoi[i].loi.chiChu === 'Lỗi kỹ thuật') {
-          this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat += this.catchChangeOfListKhaiBaoLoi[i].soLuong;
-        }
-        if (this.catchChangeOfListKhaiBaoLoi[i].loi.chiChu === 'Lỗi linh động') {
-          this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong += this.catchChangeOfListKhaiBaoLoi[i].soLuong;
-        }
-      }
-      this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].soLuong =
-        Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat) +
-        Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong);
-    }
+  recalculateErrorSummary(product: { loiKyThuat: number; loiLinhDong: number; soLuong: number }): void {
+    const loiKyThuatList = this.catchChangeOfListKhaiBaoLoi
+      .filter(e => e.loi?.chiChu === 'Lỗi kỹ thuật')
+      .map(e => Math.max(Number(e.soLuong), 0));
+
+    const loiLinhDongList = this.catchChangeOfListKhaiBaoLoi
+      .filter(e => e.loi?.chiChu === 'Lỗi linh động')
+      .map(e => Math.max(Number(e.soLuong), 0));
+
+    const totalKyThuat = loiKyThuatList.reduce((a: number, b: number) => a + b, 0);
+    const totalLinhDong = loiLinhDongList.reduce((a: number, b: number) => a + b, 0);
+
+    product.loiKyThuat = totalKyThuat;
+    product.loiLinhDong = totalLinhDong;
+    product.soLuong = totalKyThuat + totalLinhDong;
   }
-  // cập nhật số lượng lỗi trong button
-  catchEventKhaiBaoLoi(index: any): void {
-    // console.log('kiểm tra mã LOT', this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham]);
-    if (
-      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === '' &&
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === '') ||
-      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === undefined &&
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === undefined)
-    ) {
-      this.openPopupNoti('Chưa có thông tin LOT/SERIAL !!!');
-      const input = document.getElementById(this.scanType);
-      if (input) {
-        input.focus();
-      }
-    } else {
-      this.catchChangeOfListKhaiBaoLoi[index].soLuong++;
-      // console.log(index);
-      //cập nhật số lượng lỗi linh động, lỗi kĩ thuật
-      if (this.catchChangeOfListKhaiBaoLoi[index].loi.chiChu === 'Lỗi kỹ thuật') {
-        // console.log({
-        //   tenLoi: this.indexOfChiTietPhanTichSanPham,
-        //   nLoi: this.catchChangeOfListKhaiBaoLoi[index].tenNhomLoi,
-        //   sl: this.catchChangeOfListKhaiBaoLoi[index].soLuong,
-        // });
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat++;
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].soLuong =
-          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat) +
-          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong);
-      }
-      if (this.catchChangeOfListKhaiBaoLoi[index].loi.chiChu === 'Lỗi linh động') {
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong++;
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].soLuong =
-          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat) +
-          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong);
-      }
-      this.updatePhanTichSanPham();
+  catchEventKhaiBaoLoi(index: number): void {
+    // console.log('Clicked', index);
+    // 1. Lấy product đang thao tác từ listOfPhanTichSanPhamByPLCTTN
+    const prodIdx = this.indexOfChiTietPhanTichSanPham;
+    const product = this.listOfPhanTichSanPhamByPLCTTN[prodIdx];
+    if (typeof product.detail !== 'object') {
+      product.detail = {};
     }
+
+    if (!product?.lotNumber) {
+      // this.openPopupNoti('Chưa có thông tin LOT !!!');
+      document.getElementById(this.scanType)?.focus();
+      return;
+    }
+
+    // 2. Tăng số lượng lỗi trong mảng lỗi popup
+    const errItem = this.catchChangeOfListKhaiBaoLoi[index];
+    const current = Number(errItem.soLuong) || 0;
+    errItem.soLuong = Math.max(current + 1, 0);
+
+    // 3. Tính lại 3 cột lỗi trên product
+    this.recalculateErrorSummary(product);
+
+    // 4. Cập nhật tiến độ cá nhân
+    const detail = this.listOfChiTietSanPhamPhanTich[this.indexOfPhanTichSanPham];
+    detail.slDaPhanTich = (Number(detail.slDaPhanTich) || 0) + 1;
+    detail.slConLai = (Number(detail.slTiepNhan) || 0) - detail.slDaPhanTich;
+    detail.tienDo = detail.slTiepNhan ? (detail.slDaPhanTich / detail.slTiepNhan) * 100 : 100;
+
+    // 5. Cập nhật tiến độ chung đơn bảo hành
+    this.donBaoHanh.slDaPhanTich = (Number(this.donBaoHanh.slDaPhanTich) || 0) + 1;
+    this.donBaoHanh.tienDo = this.donBaoHanh.slCanPhanTich ? (this.donBaoHanh.slDaPhanTich / this.donBaoHanh.slCanPhanTich) * 100 : 100;
+    console.log(errItem);
+    // 6. Ép Angular update view nếu cần (OnPush)
+    this.cdr.detectChanges();
   }
+
+  // 2. Phương thức chung để tính lại 3 cột trên bảng Chi tiết sản phẩm
+
   //Hàm cập nhật tiến độ sản phẩm phân tích
   updateTienDoSanPhamPhanTich(id: number, index: number): void {
     this.donBaoHanh.slDaPhanTich = 0;
@@ -1728,14 +1911,39 @@ export class PhanTichSanPhamComponent implements OnInit {
     }
   }
 
-  deleteKhaiBaoLoi(index: any): void {
-    const id: number = this.listOfPhanTichSanPhamByPLCTTN[index]?.id;
-    console.log('id', id);
+  deleteKhaiBaoLoi(index: number): void {
+    const product = this.listOfPhanTichSanPhamByPLCTTN[index];
+    const id = product.id;
+
+    // Nếu đã lưu backend, gọi API xóa
     if (id !== undefined) {
-      this.http.delete(`api/phan-tich-loi/delete/${id}`).subscribe();
+      this.http
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        .delete(`api/phan-tich-loi/delete/${id}`)
+        .subscribe(() => {
+          // sau khi xóa thành công, xóa khỏi UI
+          this.listOfPhanTichSanPhamByPLCTTN.splice(index, 1);
+          this.recalculateDonBaoHanh();
+        });
     } else {
-      console.log('invalid id');
+      // nếu chưa có id (chưa lưu lần nào), chỉ bỏ khỏi UI
+      this.listOfPhanTichSanPhamByPLCTTN.splice(index, 1);
+      this.recalculateDonBaoHanh();
     }
+  }
+
+  /**
+   * Cập nhật lại tổng slDaPhanTich và tienDo của donBaoHanh sau khi xóa
+   */
+  recalculateDonBaoHanh(): void {
+    // Tính tổng slDaPhanTich từ các product trong listOfPhanTichSanPhamByPLCTTN
+    this.donBaoHanh.slDaPhanTich = this.listOfPhanTichSanPhamByPLCTTN.reduce(
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-unsafe-return
+      (sum, p) => sum + (p.soLuong || 0),
+      0
+    );
+    this.donBaoHanh.tienDo = (this.donBaoHanh.slDaPhanTich / this.donBaoHanh.slCanPhanTich) * 100;
+    this.getColor(this.donBaoHanh.tienDo, 'donBaoHanh');
   }
 
   saveKhaiBaoLoi(): void {
@@ -1761,11 +1969,10 @@ export class PhanTichSanPhamComponent implements OnInit {
     }, 200);
   }
 
-  openPopupNoti(message: string): void {
-    this.popupMessage = message;
+  openPopupNoti(msg: string): void {
+    this.popupMessage = msg;
     this.isPopupVisible = true;
-    // console.log('popup thong bao', this.popupMessage);
-    document.getElementById('popupNoti')!.style.display = 'block';
+    setTimeout(() => (this.isPopupVisible = false), 2000);
   }
   closePopupNoti(): void {
     this.isPopupVisible = false;
@@ -1783,17 +1990,22 @@ export class PhanTichSanPhamComponent implements OnInit {
     // console.log('onGridMenuColumnsChanged11111', this.angularGrid);
   }
   getColor(value: number, index: any): void {
+    const el = document.getElementById(index as string);
+    if (!el) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      console.warn(`Không tìm thấy phần tử với id: ${index}`);
+      return;
+    }
+
     if (value >= 0 && value < 40) {
-      document.getElementById(index as string)!.style.accentColor = 'red';
-      // console.log('red', value, index);
+      el.style.backgroundColor = 'red';
     } else if (value >= 40 && value < 70) {
-      document.getElementById(index as string)!.style.accentColor = 'yellow';
-      // console.log('yellow', value, index);
-    } else if (value > 70) {
-      document.getElementById(index as string)!.style.accentColor = 'green';
-      // console.log('green', value, index);
+      el.style.backgroundColor = 'yellow';
+    } else if (value >= 70) {
+      el.style.backgroundColor = 'green';
     }
   }
+
   addRow(): void {
     this.isChanged = true;
     this.idAddRow++;

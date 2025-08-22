@@ -280,6 +280,16 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
         </dependency>
@@ -287,6 +297,23 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>mariadb</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.graphql-java-kickstart</groupId>
+            <artifactId>graphql-spring-boot-starter</artifactId>
+            <version>11.1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.graphql-java-kickstart</groupId>
+            <artifactId>graphql-java-tools</artifactId>
+            <version>11.1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.graphql-java</groupId>
+            <artifactId>graphql-java-extended-scalars</artifactId>
+            <version>17.0</version>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
@@ -297,6 +324,11 @@
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mycompany.myapp</groupId>
+            <artifactId>doi-tra-new</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <!-- jhipster-needle-maven-add-dependency -->
     </dependencies>

@@ -16,7 +16,7 @@ logging:
   level:
     ROOT: DEBUG
     tech.jhipster: DEBUG
-    org.hibernate.SQL: ERROR
+    org.hibernate.SQL: DEBUG
     com.mycompany.myapp: DEBUG
 
 spring:
@@ -40,19 +40,28 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      max-lifetime: 180000
+      connection-timeout: 30000
+      validation-timeout: 5000
+      leak-detection-threshold: 2000
+      connection-test-query: SELECT 1
       data-source-properties:
         cachePrepStmts: true
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
-partner:
+qms:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://192.168.68.92:3306/qms2?useSSL=false&serverTimezone=UTC
+    jdbc-url: jdbc:mysql://192.168.68.92:3306/qms2?useSSL=false&serverTimezone=UTC
     username: phudv
     password: 123456aA@@
+    driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      poolName: Hikari
+      poolName: QmsHikari
       auto-commit: false
       data-source-properties:
         cachePrepStmts: true
@@ -63,6 +72,10 @@ partner:
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev
+    change-log: classpath:config/liquibase/master.xml
+    enabled: true
+    asynchronous: false
+    run-on-startup: true
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
@@ -95,7 +108,7 @@ jhipster:
   # CORS is only enabled by default with the "dev" profile
   cors:
     # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
-    allowed-origins: 'http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000,http://localhost:4200,https://localhost:4200'
+    allowed-origins: 'http://192.168.68.92,http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000,http://localhost:4200,https://localhost:4200'
     # Enable CORS when running in GitHub Codespaces
     allowed-origin-patterns: 'https://*.githubpreview.dev'
     allowed-methods: '*'
@@ -110,6 +123,17 @@ jhipster:
       host: localhost
       port: 5000
       queue-size: 512
+graphql:
+  servlet:
+    enabled: true
+    mapping: /graphql
+  graphiql:
+    enabled: true
+    endpoint: /graphql
+    pageTitle: GraphiQL UI
+  tools:
+    schema-location-pattern: '**/*.graphqls'
+    introspection-enabled: true
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class

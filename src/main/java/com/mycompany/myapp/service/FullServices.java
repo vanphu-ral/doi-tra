@@ -217,23 +217,37 @@ public class FullServices {
     }
 
     //☺ Thêm mới đơn bảo hành theo quy tắc mới ( cập nhật thì bật lên )
+    @Transactional
     public DonBaoHanh postDonBaoHanhNew(DonBaoHanh donBaoHanh) {
         Integer max = this.donBaoHanhRepository.selectMaxId() + 1;
         donBaoHanh.setDonBaoHanhId(max);
+
+        // Xử lý định dạng mã tiếp nhận
+        String suffix;
         if (max < 1000) {
-            donBaoHanh.setMaTiepNhan(donBaoHanh.getMaTiepNhan() + "-000" + max.toString());
-            this.donBaoHanhRepository.save(donBaoHanh);
-        } else if ((1000 < max && max < 10000) || max == 1000) {
-            donBaoHanh.setMaTiepNhan(donBaoHanh.getMaTiepNhan() + "-00" + max.toString());
-            this.donBaoHanhRepository.save(donBaoHanh);
-        } else if ((10000 < max && max < 100000) || max == 10000) {
-            donBaoHanh.setMaTiepNhan(donBaoHanh.getMaTiepNhan() + "-0" + max.toString());
-            this.donBaoHanhRepository.save(donBaoHanh);
+            suffix = String.format("-000%d", max);
+        } else if (max < 10000) {
+            suffix = String.format("-00%d", max);
+        } else if (max < 100000) {
+            suffix = String.format("-0%d", max);
         } else {
-            donBaoHanh.setMaTiepNhan(donBaoHanh.getMaTiepNhan() + "-" + max.toString());
-            this.donBaoHanhRepository.save(donBaoHanh);
+            suffix = String.format("-%d", max);
         }
-        return donBaoHanh;
+        donBaoHanh.setMaTiepNhan(donBaoHanh.getMaTiepNhan() + suffix);
+
+        // Xử lý KhachHang trước khi lưu
+        KhachHang khachHang = donBaoHanh.getKhachHang();
+        if (khachHang != null) {
+            if (khachHang.getId() == null) {
+                khachHang = khachHangRepository.save(khachHang);
+            } else {
+                khachHang =
+                    khachHangRepository.findById(khachHang.getId()).orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại"));
+            }
+            donBaoHanh.setKhachHang(khachHang);
+        }
+
+        return donBaoHanhRepository.save(donBaoHanh);
     }
 
     // ☺ B1: Lấy danh sách phân loại chi tiết theo đơn bảo hành

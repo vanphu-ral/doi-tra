@@ -293,38 +293,57 @@
             <div class="group-scan-child">
               <div class="group-btn-lot">
                 <!-- <button class="btn btn-primary btn-scan" (click)="buttonScanLot()" *ngIf="scanLot">Scan LOT</button>
-                <button class="btn btn-primary btn-scan" (click)="buttonScanSerial()" *ngIf="scanSerial">Scan Serial</button> -->
+                <button class="btn btn-primary btn-scan" (click)="buttonScanSerial()" *ngIf="scanSerial">Scan
+                  Serial</button> -->
                 <div class="container-serial">
-                  <div class="custom-input" style="width: 35%">
+                  <button class="btn btn-info" (click)="openScanLotDialog()" style="height: 2rem; color: #fff">Thông tin sản phẩm</button>
+
+                  <div class="custom-input" style="width: 20%">
                     <input
+                      id="serial"
                       type="text"
                       inputmode="none"
                       class="inp-err-nsx container-lot-serial"
-                      id="serial"
-                      (focus)="activateScan('serial')"
+                      [(ngModel)]="saveSerial"
+                      (ngModelChange)="onScan('serial', $event)"
+                      [disabled]="!scanSerial"
                     />
-                    <label class="form-label" style="margin-bottom: 0.5rem">Serrial</label>
+                    <label class="form-label">Serial</label>
                   </div>
 
-                  <div class="custom-input" style="width: 35%">
-                    <input type="text" inputmode="none" class="inp-err-nsx container-lot-serial" id="lot" (focus)="activateScan('lot')" />
-                    <label class="form-label" style="margin-bottom: 0.5rem">LOT</label>
+                  <div class="custom-input" style="width: 20%">
+                    <input
+                      id="lot"
+                      type="text"
+                      inputmode="none"
+                      class="inp-err-nsx container-lot-serial"
+                      [(ngModel)]="saveLOT"
+                      (ngModelChange)="onScan('lot', $event)"
+                      [disabled]="!scanLot"
+                    />
+                    <label class="form-label">LOT</label>
                   </div>
 
                   <div class="custom-input" style="width: 10%">
                     <input
-                      type="text"
-                      required=""
-                      name="text"
-                      autocomplete="off"
-                      class="inp-err-nsx container-lot-serial"
                       id="field_namSanXuat"
-                      data-cy="namSanXuat"
+                      placeholder="Năm sản xuất"
+                      type="text"
+                      inputmode="none"
+                      class="inp-err-nsx container-lot-serial"
                       [(ngModel)]="saveYear"
                       [ngModelOptions]="{ standalone: true }"
+                      readonly
                     />
-                    <label class="form-label" style="margin-bottom: 0.5rem">Năm sản xuất</label>
                   </div>
+
+                  <button
+                    class="btn btn-success"
+                    *ngIf="listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham]?.tienDo === 100"
+                    (click)="saveKhaiBaoLoi()"
+                  >
+                    Lưu
+                  </button>
                 </div>
               </div>
             </div>
@@ -342,11 +361,11 @@
             </button>
             <span class="error-note">{{ data.ghiChu }}</span>
             <input
+              class="input-errors"
               type="number"
-              class="form-control inp-name-error"
               [(ngModel)]="data.soLuong"
               [ngModelOptions]="{ standalone: true }"
-              (change)="catchEventKhaiBaoLois(i)"
+              (ngModelChange)="recalculateErrorSummary(listOfPhanTichSanPhamByPLCTTN[indexOfChiTietPhanTichSanPham])"
             />
           </div>
         </div>
@@ -362,7 +381,6 @@
               <tr>
                 <th scope="col">
                   <span class="span-table-phantich">STT</span>
-                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
                 </th>
                 <th scope="col" style="width: 27em">
                   <span class="span-table-phantich">Tên sản phẩm</span>
@@ -410,15 +428,6 @@
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Tổng lỗi</span>
-                  <!-- <input
-                    type="text"
-                    placeholder="Tìm kiếm"
-                    class="form-control"
-                    list="ten_san_pham"
-                    [(ngModel)]="searchKey"
-                    [ngModelOptions]="{ standalone: true }"
-                  /> -->
-                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
                 </th>
                 <th scope="col" style="width: 13em">
                   <span class="span-table-phantich">Nhân viên phân tích</span>
@@ -455,43 +464,15 @@
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Trạng thái</span>
-                  <!-- <input
-                    type="text"
-                    placeholder="Tìm kiếm"
-                    class="form-control"
-                    list="ten_san_pham"
-                    [(ngModel)]="searchKey"
-                    [ngModelOptions]="{ standalone: true }"
-                  /> -->
-                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Lỗi kỹ thuật</span>
-                  <!-- <input
-                    type="text"
-                    placeholder="Tìm kiếm"
-                    class="form-control"
-                    list="ten_san_pham"
-                    [(ngModel)]="searchKey"
-                    [ngModelOptions]="{ standalone: true }"
-                  /> -->
-                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Lỗi linh động</span>
-                  <!-- <input
-                    type="text"
-                    placeholder="Tìm kiếm"
-                    class="form-control"
-                    list="ten_san_pham"
-                    [(ngModel)]="searchKey"
-                    [ngModelOptions]="{ standalone: true }"
-                  /> -->
-                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Option</span>
-                  <!-- <input class="inp-hidden" style="height: 35px; width: 3rem" disabled /> -->
                 </th>
               </tr>
             </thead>
@@ -500,7 +481,7 @@
                 <td class="body-column">{{ i + 1 }}</td>
                 <td class="body-column">{{ data.tenSanPham }}</td>
                 <td class="body-column">{{ data.lotNumber }}</td>
-                <td class="body-column">{{ data.detail }}</td>
+                <td class="body-column">{{ data.detail ? data.detail : '—' }}</td>
                 <td class="body-column">{{ data.namSanXuat }}</td>
                 <td class="body-column">{{ data.soLuong }}</td>
                 <td class="body-column">{{ data.tenNhanVienPhanTich }}</td>
@@ -511,9 +492,6 @@
                 <td class="body-column">{{ data.loiLinhDong }}</td>
                 <td class="body-column">
                   <div class="btn-table">
-                    <button class="btn btn-success" (click)="chinhSuaKhaiBaoLoi(i)">
-                      <fa-icon icon="pencil"></fa-icon>
-                    </button>
                     <button class="btn btn-danger" (click)="deleteKhaiBaoLoi(i)">
                       <fa-icon [icon]="faTrash"></fa-icon>
                     </button>
@@ -526,6 +504,68 @@
       </form>
     </div>
   </div>
+  <!-- Modal nhập LOT -->
+  <ng-template #scanLotModal let-modal>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Thông tin sản phẩm</h5>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- <input type="text" class="form-control" [(ngModel)]="lotInput" placeholder="LOT/Serial"
+          (keyup.enter)="handleScanLot(modal)" /> -->
+        <div class="text-center my-3" *ngIf="isLoading">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Đang tải...</span>
+          </div>
+          <p class="mt-2">Đang tải dữ liệu...</p>
+        </div>
+        <div *ngIf="listOfSanPhamTrongDialog.length == 0">
+          <h2 class="text-center my-3">Vui lòng scan mã ở ngoài để xem thêm thông tin</h2>
+        </div>
+        <table class="table table-striped mt-3" *ngIf="listOfSanPhamTrongDialog.length > 0">
+          <thead style="background-color: #006699; color: #fff">
+            <tr>
+              <th scope="col" style="width: 30px">STT</th>
+              <th style="width: 20rem">Tên sản phẩm</th>
+              <th>LOT</th>
+              <th>Vendor</th>
+              <th>PartNumber</th>
+              <th>Sap</th>
+              <th>Username</th>
+              <th>Nhân viên phân tích</th>
+              <th>Ngày kiểm tra</th>
+              <!-- <th style="width: 30px">Options</th> -->
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of listOfSanPhamTrongDialog">
+              <td class="body-column">{{ item.stt }}</td>
+              <td class="body-column">{{ item.tenSanPham }}</td>
+              <td class="body-column">{{ item.lotNumber }}</td>
+              <td class="body-column">{{ item.vendor }}</td>
+              <td class="body-column">{{ item.partNumber }}</td>
+              <td class="body-column">{{ item.sap }}</td>
+              <td class="body-column">{{ item.username }}</td>
+              <td class="body-column">{{ item.tenNhanVienPhanTich }}</td>
+              <td class="body-column">{{ item.ngayKiemTra | date: 'dd/MM/yyyy' }}</td>
+              <!-- <td class="body-column">
+                <button class="btn btn-sm btn-primary" (click)="openChiTiet(item)">
+                  <fa-icon [icon]="faEye"></fa-icon>
+                </button>
+              </td> -->
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="modal.dismiss()">Đóng</button>
+      </div>
+    </div>
+  </ng-template>
 </div>
 
 <!--------------------------------------------------------- popup in bb --------------------------------------------------------------------->
@@ -566,18 +606,6 @@
             </tbody>
           </table>
         </div>
-        <!-- <div class="alert" id="no-result" *ngIf="resultOfSanPhamTheoKho?.length === 0">
-          <div class="dot-spinner2">
-            <div class="dot-spinner__dot2"></div>
-            <div class="dot-spinner__dot2"></div>
-            <div class="dot-spinner__dot2"></div>
-            <div class="dot-spinner__dot2"></div>
-            <div class="dot-spinner__dot2"></div>
-            <div class="dot-spinner__dot2"></div>
-            <div class="dot-spinner__dot2"></div>
-            <div class="dot-spinner__dot2"></div>
-          </div>
-        </div> -->
       </div>
       <div>
         <div class="group-select-btn-in">
@@ -660,139 +688,139 @@
               <tr>
                 <th scope="col">
                   <span class="span-table-phantich">STT</span>
-                  <input class="inp-hidden" style="height: 35px" disabled />
+                  <!-- <input class="inp-hidden" style="height: 35px" disabled /> -->
                 </th>
                 <th scope="col" style="width: 40em">
-                  <span class="span-table-phantich">Tên sản phẩm</span>
-                  <input
+                  <span class="span-table-phantich">Tên sản phẩmdas</span>
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Mã sản phẩm</span>
-                  <input
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Số lô</span>
-                  <input
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">LOT Number</span>
-                  <input
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Năm sản xuất</span>
-                  <input
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Tổng lỗi</span>
-                  <input
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Nhân viên phân tích</span>
-                  <input
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Ngày kiểm tra</span>
-                  <input
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Username</span>
-                  <input
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Trạng thái</span>
-                  <input
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Lỗi kỹ thuật</span>
-                  <input
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
                 <th scope="col">
                   <span class="span-table-phantich">Lỗi linh động</span>
-                  <input
+                  <!-- <input
                     type="text"
                     placeholder="Tìm kiếm"
                     class="form-control"
                     list="ten_san_pham"
                     [(ngModel)]="searchKey"
                     [ngModelOptions]="{ standalone: true }"
-                  />
+                  /> -->
                 </th>
               </tr>
             </thead>
@@ -1503,10 +1531,10 @@
     </div>
   </div>
 
-  <div class="popup-overlay" id="popupNoti" [ngClass]="{ active: isPopupVisible }">
+  <div class="popup-overlay" id="popupNoti" [class.active]="isPopupVisible">
     <div class="popup">
       <h3>{{ popupMessage }}</h3>
-      <button (click)="closePopupNoti()">Close</button>
+      <button (click)="isPopupVisible = false">Close</button>
     </div>
   </div>
 

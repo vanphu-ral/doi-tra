@@ -12,9 +12,12 @@ import { PhanTichSanPhamDeleteDialogComponent } from './delete/phan-tich-san-pha
 import { PhanTichSanPhamRoutingModule } from './route/phan-tich-san-pham-routing.module';
 import { NavbarComponent } from 'app/layouts/navbar/navbar.component';
 import { QRCodeModule } from 'angularx-qrcode';
+import { ApolloModule, APOLLO_OPTIONS } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { InMemoryCache } from '@apollo/client/core';
 
 @NgModule({
-  imports: [SharedModule, PhanTichSanPhamRoutingModule, AngularSlickgridModule, NgxPrintModule, QRCodeModule],
+  imports: [SharedModule, ApolloModule, PhanTichSanPhamRoutingModule, AngularSlickgridModule, NgxPrintModule, QRCodeModule],
   declarations: [
     PhanTichSanPhamComponent,
     PhanTichSanPhamDetailComponent,
@@ -24,6 +27,17 @@ import { QRCodeModule } from 'angularx-qrcode';
     PhanTichThongTinSanPhamComponent,
   ],
   entryComponents: [PhanTichSanPhamDeleteDialogComponent],
-  providers: [ContainerService, NavbarComponent],
+  providers: [
+    ContainerService,
+    NavbarComponent,
+    {
+      provide: APOLLO_OPTIONS,
+      useFactory: (httpLink: HttpLink) => ({
+        cache: new InMemoryCache(),
+        link: httpLink.create({ uri: 'http://192.168.68.61:8081/graphql' }),
+      }),
+      deps: [HttpLink],
+    },
+  ],
 })
 export class PhanTichSanPhamModule {}

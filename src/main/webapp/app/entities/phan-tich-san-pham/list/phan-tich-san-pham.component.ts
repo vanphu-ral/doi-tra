@@ -658,6 +658,23 @@ export class PhanTichSanPhamComponent implements OnInit {
   }
   //=========================================================== popup chi tiết sản phẩm phân tích ======================================================
   // hàm xử lý thông tin chi tiết sản phẩm phân tích
+
+  openGridMenu(event?: MouseEvent): void {
+    if (!this.angularGrid) {
+      console.warn('angularGrid chưa được gán');
+      return;
+    }
+
+    const gridMenuInstance = this.angularGrid.extensionService?.getExtensionInstanceByName(ExtensionName.gridMenu);
+    console.log('GridMenu Instance:', gridMenuInstance);
+
+    if (gridMenuInstance) {
+      const mouseEvent = event ?? new MouseEvent('click');
+      gridMenuInstance.showGridMenu(mouseEvent);
+    } else {
+      console.warn('GridMenu chưa được khởi tạo hoặc extension chưa sẵn sàng');
+    }
+  }
   showData(id: number | undefined): void {
     this.listOfChiTietSanPhamPhanTich = [];
     this.resultOfSanPhamTheoKho = [{ key: '', value: [] }];
@@ -703,6 +720,15 @@ export class PhanTichSanPhamComponent implements OnInit {
                 return null;
               }
 
+              // Lấy kho từ danhSachSanPhams
+              let tenKho = 'Không xác định';
+              if (ct.sanPham?.id && this.danhSachSanPhams) {
+                const sp = this.danhSachSanPhams.find((s: any) => s.id === ct.sanPham.id);
+                if (sp?.kho?.tenKho) {
+                  tenKho = sp.kho.tenKho;
+                }
+              }
+
               const item = {
                 stt: count++,
                 donVi: ct.sanPham?.donVi ?? '',
@@ -717,6 +743,7 @@ export class PhanTichSanPhamComponent implements OnInit {
                 slConLai: 0,
                 tienDo: 0,
                 check: false,
+                tenKho: tenKho, // thêm trường này để gom nhóm
               };
               return item;
             })
@@ -727,20 +754,20 @@ export class PhanTichSanPhamComponent implements OnInit {
           this.listOfChiTietSanPhamPhanTich.forEach(item => {
             this.donBaoHanh.slCanPhanTich += item.slTiepNhan;
 
-            const tenKho =
-              item.phanLoaiChiTietTiepNhan?.kho?.tenKho ??
-              item.phanLoaiChiTietTiepNhan?.chiTietSanPhamTiepNhan?.kho?.tenKho ??
-              'Không xác định';
+            const tenKho = item.tenKho ?? 'Không xác định';
 
             if (!khoMap.has(tenKho)) {
               khoMap.set(tenKho, []);
             }
 
             khoMap.get(tenKho)?.push(item);
+            // console.log('KhoMap:', khoMap);
+            // console.log('resultOfSanPhamTheoKho trước lọc:', this.resultOfSanPhamTheoKho);
           });
 
           this.resultOfSanPhamTheoKho = Array.from(khoMap.entries()).map(([key, value]) => ({ key, value }));
           this.resultOfSanPhamTheoKhoTL = [...this.resultOfSanPhamTheoKho];
+          // console.log('resultOfSanPhamTheoKho sau lọc:', this.resultOfSanPhamTheoKho);
 
           // Loại bỏ các entry có key rỗng hoặc "Không xác định"
           this.resultOfSanPhamTheoKho = this.resultOfSanPhamTheoKho.filter(
@@ -763,23 +790,6 @@ export class PhanTichSanPhamComponent implements OnInit {
         });
       });
     });
-  }
-
-  openGridMenu(event?: MouseEvent): void {
-    if (!this.angularGrid) {
-      console.warn('angularGrid chưa được gán');
-      return;
-    }
-
-    const gridMenuInstance = this.angularGrid.extensionService?.getExtensionInstanceByName(ExtensionName.gridMenu);
-    console.log('GridMenu Instance:', gridMenuInstance);
-
-    if (gridMenuInstance) {
-      const mouseEvent = event ?? new MouseEvent('click');
-      gridMenuInstance.showGridMenu(mouseEvent);
-    } else {
-      console.warn('GridMenu chưa được khởi tạo hoặc extension chưa sẵn sàng');
-    }
   }
   updateDanhSachBienBanTheoKho(): void {
     //Lọc sản phẩm có sl Tiếp nhận rỗng và check = false
@@ -876,6 +886,9 @@ export class PhanTichSanPhamComponent implements OnInit {
     if (this.donBaoHanh?.id) {
       this.http.get<any>(`api/danh-sach-bien-ban/${this.donBaoHanh.id as number}`).subscribe(res => {
         console.log('res', res);
+        this.danhSachBienBan = res;
+        this.bienBanTiepNhan = res.find((item: any) => item.loaiBienBan === 'Tiếp nhận');
+        this.bienBanKiemNghiem = res.find((item: any) => item.loaiBienBan === 'Kiểm nghiệm');
         const maKhoArr = new Set<string>();
         let trangThaiInTNUpdate = false;
         let trangThaiInKNUpdate = false;
@@ -1100,44 +1113,41 @@ export class PhanTichSanPhamComponent implements OnInit {
   }
   openPopupInBBKN(index: number, tenKho: string): void {
     this.isLoading = true;
-    console.log('🔍 Bắt đầu openPopupInBBKN với index:', index, 'tenKho:', tenKho);
 
+    // Kiểm tra dữ liệu kho kiểm nghiệm
     if (!this.resultOfSanPhamTheoKho[index]) {
-      console.warn('⚠️ Không tìm thấy dữ liệu kho kiểm nghiệm tại index:', index);
       this.openPopupNoti('Không tìm thấy dữ liệu kho kiểm nghiệm');
       this.isLoading = false;
       return;
     }
 
+    // Lấy mã kho từ tên kho
     const maKho = this.getMaKhoFromTenKho(tenKho);
-    console.log('📦 Mã kho lấy từ tên kho:', maKho);
-
     this.loaiBienBan = 'Kiểm nghiệm';
 
     const khoInfo = this.danhSachKho.find(k => k.tenKho === tenKho);
-    console.log('📦 Thông tin kho tìm thấy:', khoInfo);
-
     this.maKho = khoInfo?.maKho ?? '';
     this.tenKho = khoInfo?.tenKho ?? '';
 
+    // Lưu danh sách sản phẩm theo kho
     this.danhSachBienBanSanPhamTheoKho = this.resultOfSanPhamTheoKho[index].value;
-    console.log('📦 Danh sách biên bản sản phẩm theo kho:', this.danhSachBienBanSanPhamTheoKho);
 
     const id = String(this.donBaoHanh.id);
-    console.log('📦 ID đơn bảo hành:', id);
 
+    // Gọi đồng thời 2 API: lấy biên bản tiếp nhận và danh sách biên bản
     forkJoin({
       bienBanTiepNhan: this.http.get(`api/danh-sach-bien-ban/tiep-nhan/${id}`),
       danhSachBienBan: this.http.get<any[]>('api/ma-bien-bans'),
     }).subscribe(({ bienBanTiepNhan, danhSachBienBan }) => {
-      console.log('✅ Dữ liệu biên bản tiếp nhận trả về:', bienBanTiepNhan);
-      console.log('✅ Danh sách biên bản trả về:', danhSachBienBan);
+      console.log('bienBanTiepNhan:', JSON.stringify(bienBanTiepNhan, null, 2));
 
-      const bienBanTN = bienBanTiepNhan as { maKho: string };
-      console.log('📌 Biên bản tiếp nhận sau ép kiểu:', bienBanTN);
+      const bienBanTN = Array.isArray(bienBanTiepNhan)
+        ? bienBanTiepNhan.find(b => b?.donBaoHanh?.id === this.donBaoHanh.id)
+        : (bienBanTiepNhan as any)?.donBaoHanh?.id === this.donBaoHanh.id
+        ? bienBanTiepNhan
+        : null;
 
-      if (!bienBanTN || bienBanTN.maKho !== maKho) {
-        console.warn('❌ Mã kho không khớp hoặc không có biên bản tiếp nhận. maKho:', maKho, 'bienBanTN.maKho:', bienBanTN?.maKho);
+      if (!bienBanTN) {
         this.openPopupNoti('Vui lòng in biên bản tiếp nhận trước');
         this.isLoading = false;
         return;
@@ -1146,12 +1156,10 @@ export class PhanTichSanPhamComponent implements OnInit {
       const bienBanKN = danhSachBienBan.find(
         b => b.loaiBienBan === this.loaiBienBan && b.donBaoHanh.id === this.donBaoHanh.id && b.maKho === maKho
       );
-      console.log('🔍 Biên bản kiểm nghiệm tìm thấy:', bienBanKN);
 
       if (bienBanKN) {
         this.maBienBan = bienBanKN.maBienBan;
         this.themMoiBienBan = bienBanKN;
-        console.log('📄 Đã có biên bản kiểm nghiệm, sử dụng lại:', this.maBienBan);
       } else {
         this.maBienBan = this.generateMaBienBan('KN', maKho);
         this.themMoiBienBan = {
@@ -1162,22 +1170,22 @@ export class PhanTichSanPhamComponent implements OnInit {
           donBaoHanh: this.donBaoHanh,
           maKho: maKho,
         };
-        console.log('🆕 Tạo mới biên bản kiểm nghiệm:', this.themMoiBienBan);
       }
+      const d = this.donBaoHanh.ngayTiepNhan;
+      this.yearTN = d.substr(2, 2);
+      this.monthTN = d.substr(5, 2);
+      this.dateTN = d.substr(8, 2);
 
-      this.yearTN = this.donBaoHanh.ngayTiepNhan.substr(2, 2);
-      this.monthTN = this.donBaoHanh.ngayTiepNhan.substr(5, 2);
-      this.dateTN = this.donBaoHanh.ngayTiepNhan.substr(8, 2);
-      console.log('📅 Ngày tiếp nhận:', this.dateTN, '/', this.monthTN, '/', this.yearTN);
-
+      // Mở popup
       this.popupInBBKN = true;
       this.isLoading = false;
-      console.log('✅ Hoàn tất xử lý openPopupInBBKN');
+      console.log('popupInBBKN:', this.popupInBBKN);
     });
   }
 
   openPopupInBBTL(index: number, tenKho: string): void {
     this.isLoading = true;
+
     if (!this.resultOfSanPhamTheoKhoTL[index]) {
       this.openPopupNoti('Không tìm thấy dữ liệu kho thanh lý');
       this.isLoading = false;
@@ -1191,23 +1199,28 @@ export class PhanTichSanPhamComponent implements OnInit {
     this.maKho = khoInfo?.maKho ?? '';
     this.tenKho = khoInfo?.tenKho ?? '';
 
-    this.danhSachBienBanSanPhamTheoKho = this.resultOfSanPhamTheoKho[index].value;
+    this.danhSachBienBanSanPhamTheoKho = this.resultOfSanPhamTheoKhoTL[index].value;
 
     const id = String(this.donBaoHanh.id);
+
     forkJoin({
       bienBanTiepNhan: this.http.get(`api/danh-sach-bien-ban/tiep-nhan/${id}`),
       bienBanKiemNghiem: this.http.get(`api/danh-sach-bien-ban/kiem-nghiem/${id}`),
       danhSachBienBan: this.http.get<any[]>('api/ma-bien-bans'),
     }).subscribe(({ bienBanTiepNhan, bienBanKiemNghiem, danhSachBienBan }) => {
-      const danhSachBBKN = bienBanKiemNghiem as { maKho: string }[];
-      this.bienBanTiepNhan = bienBanTiepNhan;
-      this.bienBanKiemNghiem = danhSachBBKN.find(b => b.maKho === maKho);
+      let bienBanTN: any = null;
+      if (Array.isArray(bienBanTiepNhan)) {
+        bienBanTN = bienBanTiepNhan.find(b => b?.donBaoHanh?.id === this.donBaoHanh.id);
+      } else if ((bienBanTiepNhan as any)?.donBaoHanh?.id === this.donBaoHanh.id) {
+        bienBanTN = bienBanTiepNhan;
+      }
+
+      const danhSachBBKN = bienBanKiemNghiem as any[];
+      this.bienBanKiemNghiem = danhSachBBKN.find(b => b?.maKho === maKho);
+
       this.danhSachBienBan = danhSachBienBan;
 
-      // const bienBanTNTheoKho = (bienBanTiepNhan as any[]).find(b => b.maKho === maKho);
-
-      const bienBanTN = bienBanTiepNhan as { maKho: string };
-      if (!bienBanTN || bienBanTN.maKho !== maKho || !this.bienBanKiemNghiem) {
+      if (!bienBanTN || !this.bienBanKiemNghiem) {
         this.openPopupNoti('Vui lòng in biên bản tiếp nhận và kiểm nghiệm trước');
         this.isLoading = false;
         return;
@@ -1232,9 +1245,10 @@ export class PhanTichSanPhamComponent implements OnInit {
         };
       }
 
-      this.yearTN = this.donBaoHanh.ngayTiepNhan.substr(2, 2);
-      this.monthTN = this.donBaoHanh.ngayTiepNhan.substr(5, 2);
-      this.dateTN = this.donBaoHanh.ngayTiepNhan.substr(8, 2);
+      const d = this.donBaoHanh.ngayTiepNhan;
+      this.yearTN = d.substr(2, 2);
+      this.monthTN = d.substr(5, 2);
+      this.dateTN = d.substr(8, 2);
 
       this.popupInBBTL = true;
       this.isLoading = false;

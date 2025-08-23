@@ -265,7 +265,7 @@ export class PhanTichSanPhamComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.time('load-phan-tich');
+    // console.time('load-phan-tich');
     this.http.get<DonBaoHanh[]>('api/phan-tich-san-pham').subscribe((res: DonBaoHanh[]) => {
       this.donBaoHanhs = res
         .sort((a, b) => b.id - a.id)

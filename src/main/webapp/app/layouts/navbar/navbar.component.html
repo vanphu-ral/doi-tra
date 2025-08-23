@@ -62,6 +62,19 @@
             <span class="dropdown-item-span">Tổng hợp</span>
           </a>
         </li>
+        <li class="nav-item">
+          <a
+            class="dropdown-item"
+            routerLink="tong-hop-qms"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="collapseNavbar()"
+            title="Tổng hợp QMS"
+          >
+            <fa-icon icon="search" [fixedWidth]="true"></fa-icon>
+            <span class="dropdown-item-span">Tổng hợp QMS</span>
+          </a>
+        </li>
 
         <!-- <li class="nav-item">
           <a

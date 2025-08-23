@@ -521,7 +521,7 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
         excludeFromColumnPicker: true,
         excludeFromGridMenu: true,
         excludeFromHeaderMenu: true,
-        maxWidth: 75,
+        maxWidth: 140,
         minWidth: 75,
       },
       {
@@ -534,7 +534,7 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
         excludeFromGridMenu: true,
         excludeFromHeaderMenu: true,
         minWidth: 50,
-        maxWidth: 50,
+        maxWidth: 150,
       },
       {
         id: 'ngayTiepNhan',
@@ -639,7 +639,7 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
         excludeFromColumnPicker: true,
         excludeFromGridMenu: true,
         excludeFromHeaderMenu: true,
-        maxWidth: 200,
+        maxWidth: 150,
         minWidth: 50,
       },
       {
@@ -651,7 +651,7 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
         excludeFromColumnPicker: true,
         excludeFromGridMenu: true,
         excludeFromHeaderMenu: true,
-        maxWidth: 200,
+        maxWidth: 150,
         minWidth: 50,
       },
       {

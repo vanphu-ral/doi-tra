@@ -41,6 +41,11 @@ import { RouterModule } from '@angular/router';
           import('./chi-tiet-san-pham-tiep-nhan/chi-tiet-san-pham-tiep-nhan.module').then(m => m.ChiTietSanPhamTiepNhanModule),
       },
       {
+        path: 'tong-hop-qms',
+        data: { pageTitle: 'Tổng hợp QMS' },
+        loadChildren: () => import('./tong-hop-qms/tong-hop-qms.module').then(m => m.TongHopQMSModule),
+      },
+      {
         path: 'phan-loai-chi-tiet-tiep-nhan',
         data: { pageTitle: 'Phân loại chi tiết tiếp nhận' },
         loadChildren: () =>

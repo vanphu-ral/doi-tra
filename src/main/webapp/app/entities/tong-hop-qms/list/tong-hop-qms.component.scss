@@ -1,0 +1,107 @@
+.container-fluid {
+  margin: auto;
+
+  h2 {
+    color: #333;
+  }
+
+  .form-inline {
+    display: flex;
+    gap: 1rem;
+    input.form-control {
+      width: 300px;
+    }
+  }
+
+  table {
+    font-size: 0.9rem;
+    th,
+    td {
+      vertical-align: middle;
+    }
+    th {
+      text-align: center;
+      background-color: #f7f7f7;
+    }
+    td {
+      &.text-muted {
+        font-style: italic;
+      }
+    }
+  }
+
+  .modal-body {
+    h6 {
+      color: #007bff;
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+::ng-deep .container-fluid {
+  overflow-x: hidden;
+}
+::ng-deep .modal.full-screen-modal .modal-dialog {
+  max-width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
+
+::ng-deep .modal.full-screen-modal .modal-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+::ng-deep .modal.full-screen-modal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+::ng-deep .modal.full-screen-modal .modal-header,
+::ng-deep .modal.full-screen-modal .modal-footer {
+  position: sticky;
+  background: white;
+  z-index: 10;
+}
+
+::ng-deep .modal.full-screen-modal .modal-header {
+  top: 0;
+}
+
+::ng-deep .modal.full-screen-modal .modal-footer {
+  bottom: 0;
+}
+.options-column {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  text-align: center;
+}
+.btn-custom {
+  width: 70px;
+  height: 25px;
+}
+.header-sm {
+  display: flex;
+  justify-content: space-between;
+}
+.btn-custom.btn-info {
+  color: #fff;
+}
+.center-cell {
+  text-align: center;
+  align-content: center;
+}
+.main-content {
+  padding-right: 3rem;
+}
+::ng-deep .modal.custom-modal .modal-dialog {
+  max-width: 1000px;
+  width: 1000px;
+  height: 700px;
+  overflow: auto;
+}
+.buttons-action {
+  float: right;
+  padding: 1rem;
+}

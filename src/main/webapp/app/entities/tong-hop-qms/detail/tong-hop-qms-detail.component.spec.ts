@@ -2,15 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 
-import { ChiTietSanPhamTiepNhanDetailComponent } from './tong-hop-qms-detail.component';
+import { TongHopQMSDetailComponent } from './tong-hop-qms-detail.component';
 
 describe('ChiTietSanPhamTiepNhan Management Detail Component', () => {
-  let comp: ChiTietSanPhamTiepNhanDetailComponent;
-  let fixture: ComponentFixture<ChiTietSanPhamTiepNhanDetailComponent>;
+  let comp: TongHopQMSDetailComponent;
+  let fixture: ComponentFixture<TongHopQMSDetailComponent>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ChiTietSanPhamTiepNhanDetailComponent],
+      declarations: [TongHopQMSDetailComponent],
       providers: [
         {
           provide: ActivatedRoute,
@@ -18,9 +18,9 @@ describe('ChiTietSanPhamTiepNhan Management Detail Component', () => {
         },
       ],
     })
-      .overrideTemplate(ChiTietSanPhamTiepNhanDetailComponent, '')
+      .overrideTemplate(TongHopQMSDetailComponent, '')
       .compileComponents();
-    fixture = TestBed.createComponent(ChiTietSanPhamTiepNhanDetailComponent);
+    fixture = TestBed.createComponent(TongHopQMSDetailComponent);
     comp = fixture.componentInstance;
   });
 

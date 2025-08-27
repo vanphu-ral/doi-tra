@@ -1,347 +1,355 @@
 <div class="container-fluid py-3 main-content">
   <div class="header-sm">
-    <h2 class="mb-3">Thống kê sản phẩm đổi trả theo LOT</h2>
+    <h2 class="mb-3">Thống kê vật tư theo LOT/Serial sản phẩm</h2>
 
-    <div class="form-inline mb-3">
-      <input
-        type="text"
-        class="form-control mr-2"
-        placeholder="Scan hoặc nhập mã LOT"
-        [(ngModel)]="scannedLot"
-        (keydown.enter)="addLot()"
-      />
-      <button class="btn btn-primary" (click)="addLot()">Thêm LOT</button>
+    <div class="d-flex justify-content-between align-items-end flex-wrap mb-3">
+      <form id="dateForm" class="formDate d-flex align-items-end gap-3 flex-wrap">
+        <div class="search-inp">
+          <label class="form-label-header">Ngày bắt đầu</label>
+          <input
+            class="form-control"
+            type="date"
+            id="startDate"
+            [(ngModel)]="startDates"
+            [ngModelOptions]="{ standalone: true }"
+            (change)="changeDate()"
+          />
+        </div>
+        <div class="search-inp">
+          <label class="form-label-header">Ngày kết thúc</label>
+          <input
+            class="form-control"
+            type="date"
+            id="endDate"
+            [(ngModel)]="endDates"
+            [ngModelOptions]="{ standalone: true }"
+            (change)="changeDate()"
+          />
+        </div>
+        <button class="btn btn-success" (click)="changeDate()">Áp dụng</button>
+      </form>
     </div>
   </div>
 
-  <table class="table table-bordered table-hover">
+  <table class="table table-bordered table-hover sticky-table">
     <thead class="thead-light">
       <tr>
         <th style="width: 3rem">STT</th>
-        <th>Mã LOT</th>
-        <th>Số lỗi BOM</th>
-        <th>Số lần test NVL</th>
-        <th>Số lần pass Scan100</th>
-        <th>Tổng số lượng trả</th>
-        <th style="width: 13rem">Chi tiết</th>
+        <th>
+          <span>Mã LOT</span>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            (keyup.enter)="filterData()"
+            [(ngModel)]="searchTerms.lotNumber"
+            placeholder="Tìm kiếm"
+          />
+        </th>
+        <th style="width: 9rem">
+          <span>Mã Tiếp Nhận</span>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            (keyup.enter)="filterData()"
+            [(ngModel)]="searchTerms.maTiepNhan"
+            placeholder="Tìm kiếm"
+          />
+        </th>
+        <th style="width: 9rem">
+          <span>Ngày Tiếp Nhận</span>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            (keyup.enter)="filterData()"
+            [(ngModel)]="searchTerms.ngayTiepNhan"
+            placeholder="Tìm kiếm"
+          />
+        </th>
+        <th style="width: 9rem">
+          <span>Nhân Viên Giao</span>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            (keyup.enter)="filterData()"
+            [(ngModel)]="searchTerms.nhanVienGiaoHang"
+            placeholder="Tìm kiếm"
+          />
+        </th>
+        <th style="width: 10rem">
+          <span>Nhóm Khách Hàng</span>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            (keyup.enter)="filterData()"
+            [(ngModel)]="searchTerms.nhomKhachHang"
+            placeholder="Tìm kiếm"
+          />
+        </th>
+        <th style="min-width: 9rem">
+          <span>Tên Khách Hàng</span>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            (keyup.enter)="filterData()"
+            [(ngModel)]="searchTerms.tenKhachHang"
+            placeholder="Tìm kiếm"
+          />
+        </th>
+        <th style="max-width: 6rem"><span>Số Lượng Khách Giao</span></th>
+        <th style="max-width: 6rem"><span>Số Lượng Thực Nhận</span></th>
+        <th style="max-width: 6rem"><span>Tổng Số Lô Sản Xuất</span></th>
+        <th style="max-width: 6rem">Chi tiết</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let lot of lotSummaries; let i = index">
-        <td class="center-cell">{{ i + 1 }}</td>
-        <td>{{ lot.lot }}</td>
-        <td>{{ lot.bomErrors.length }} lỗi</td>
-        <td>{{ lot.testNVL.length }} lần</td>
-        <td>{{ lot.scan100Pass.length }} lần</td>
-        <td>{{ lot.totalQty }}</td>
-        <td class="options-column">
-          <button class="btn btn-info btn-custom" (click)="openDetail(lot)">
-            <fa-icon [icon]="faFileAlt"></fa-icon>
-          </button>
-          <button class="btn btn-secondary btn-custom" (click)="openItemSummary(lot.lot)">
-            <fa-icon [icon]="faList"></fa-icon>
+      <tr *ngFor="let item of pagedData; let i = index">
+        <td>{{ (qmsPage - 1) * qmsPageSize + i + 1 }}</td>
+        <td>{{ item.maLot }}</td>
+        <td>{{ item.maTiepNhan }}</td>
+        <td>{{ item.ngayTiepNhan | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ item.nhanVienGiao }}</td>
+        <td>{{ item.nhomKhachHang || 'Chưa có' }}</td>
+        <td>{{ item.tenKhachHang }}</td>
+        <td>{{ item.soLuongKhachGiao }}</td>
+        <td>{{ item.soLuongThucNhan }}</td>
+        <td>{{ item.tongSoLoSanXuat }}</td>
+        <td>
+          <button class="btn btn-sm btn-primary" (click)="openLotDialog(item.maTiepNhan, lotModal)">
+            <fa-icon [icon]="faEye"></fa-icon>
           </button>
         </td>
       </tr>
-      <tr *ngIf="lotSummaries.length === 0">
-        <td colspan="7" class="text-center text-muted">Chưa có dữ liệu. Vui lòng nhập LOT.</td>
+      <tr *ngIf="baoCaoVatTuList.length === 0">
+        <td colspan="11" class="text-center text-muted">Đang load dữ liệu. Vui lòng đợi giây lát.</td>
       </tr>
     </tbody>
   </table>
 
-  <!-- Modal Template -->
+  <ng-template #lotModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Danh sách số lô trong đơn: {{ selectedLot }}</h5>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <table class="table table-bordered table-sm">
+        <thead class="table-light">
+          <tr>
+            <th>STT</th>
+            <th>Mã LOT</th>
+            <th>Tên Sản Phẩm</th>
+            <th>Chi tiết</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of selectedLotItems; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ item.lotNumber }}</td>
+            <td>{{ item.tenSanPham }}</td>
+            <td>
+              <button class="btn btn-sm btn-info" (click)="openScanLotDialog(item.lotNumber)">
+                <fa-icon [icon]="faList" style="color: #fff"></fa-icon>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="selectedLotItems.length === 0">
+            <td colspan="4" class="text-center text-muted">Không có dữ liệu cho lô này.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
+
+  <!-- Modal detail Template -->
+  <ng-template #scanLotModal let-modal>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Thông tin kiểm tra</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body thongtin-body">
+        <!-- Loading -->
+        <div class="text-center my-3" *ngIf="isLoading">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="mt-2">Đang tải dữ liệu...</p>
+        </div>
+        <div class="text-center text-danger my-3" *ngIf="lotMessage">
+          {{ lotMessage }}
+        </div>
+
+        <!-- Bảng 1: BOM vật tư -->
+        <div class="bom-table mt-4" *ngIf="listOfSanPhamTrongDialog.length > 0">
+          <h5 class="mb-3">Thông tin BOM vật tư</h5>
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered table-sm">
+              <thead class="table-primary text-center align-middle">
+                <tr>
+                  <th>STT</th>
+                  <th>Tên sản phẩm</th>
+                  <th>LOT</th>
+                  <th>Vendor</th>
+                  <th>PartNumber</th>
+                  <th>Mã sản phẩm</th>
+                  <th>Năm sản xuất</th>
+                  <th>Tổng lỗi</th>
+                  <th>Tổng thực nhận</th>
+                  <th>Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let item of listOfSanPhamTrongDialog; let i = index">
+                  <tr *ngIf="item.type === 'bom'">
+                    <td class="text-center">{{ i + 1 }}</td>
+                    <td>{{ item.tenSanPham }}</td>
+                    <td>{{ item.lotNumber }}</td>
+                    <td>{{ item.vendor }}</td>
+                    <td>{{ item.partNumber }}</td>
+                    <td>{{ item.detail }}</td>
+                    <td class="text-center">{{ item.namSanXuat }}</td>
+                    <td class="text-end">{{ item.soLuongLoi | number }}</td>
+                    <td class="text-end">{{ item.slThucNhap | number }}</td>
+                    <td>{{ item.ghiChu }}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Bảng 2: Kiểm NVL -->
+        <div class="testNVL-table" *ngIf="selectedLotDetail?.checkNVL?.length">
+          <h5>Thông tin kiểm tra vật tư</h5>
+          <table class="table table-bordered table-sm mt-3">
+            <thead>
+              <tr>
+                <th style="width: 3rem">STT</th>
+                <th>Người kiểm</th>
+                <th>Kết luận</th>
+                <th>Ghi chú</th>
+                <th>Ngày kiểm</th>
+                <th style="width: 5rem">Xem thêm</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of selectedLotDetail?.checkNVL; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ c.CheckPerson }}</td>
+                <td>{{ c.conclude }}</td>
+                <td>{{ c.note }}</td>
+                <td>{{ c.createdAt | date: 'dd/MM/yyyy' }}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary" (click)="openDetail(getLotSummaryByLotNumber(currentLotNumber))">
+                    <fa-icon [icon]="faEye"></fa-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bảng 3: Scan100 hoặc Check vật tư -->
+        <div class="checkNVL-table" *ngIf="selectedLotDetail?.scan100Pass?.length">
+          <h5>Thông tin Scan100</h5>
+          <table class="table table-hover table-bordered table-sm mt-3">
+            <thead class="table-primary text-center align-middle">
+              <tr>
+                <th>STT</th>
+                <th>Tên sản phẩm</th>
+                <th>LOT</th>
+                <th>Vendor</th>
+                <th>PartNumber</th>
+                <th>Sap</th>
+                <th>Username</th>
+                <th>Nhân viên phân tích</th>
+                <th>Ngày kiểm tra</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of selectedLotDetail?.scan100Pass; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ item.tenSanPham }}</td>
+                <td>{{ item.lotNumber }}</td>
+                <td>{{ item.vendor }}</td>
+                <td>{{ item.partNumber }}</td>
+                <td>{{ item.sap }}</td>
+                <td>{{ item.username }}</td>
+                <td>{{ item.tenNhanVienPhanTich }}</td>
+                <td>{{ item.ngayKiemTra | date: 'dd/MM/yyyy' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="modal.dismiss()">Đóng</button>
+      </div>
+    </div>
+  </ng-template>
 
   <ng-template #detailModal let-modal>
     <div class="modal-header">
-      <h5 class="modal-title">Chi tiết LOT: {{ selectedLotDetail?.lot }}</h5>
+      <h5 class="modal-title">Thông tin kiểm tra vật tư</h5>
       <button type="button" class="close" (click)="modal.dismiss()">&times;</button>
     </div>
     <div class="modal-body">
-      <!-- A. BOM lỗi -->
-      <div class="header-sm">
-        <h4 class="mt-2">BOM lỗi</h4>
-        <div class="buttons-action">
-          <button type="button" class="btn btn-success" (click)="exportBomErrors()">
-            <fa-icon [icon]="faFileExport"></fa-icon>
-          </button>
-        </div>
-      </div>
-      <table class="table table-sm table-bordered">
-        <thead>
+      <table class="table table-hover table-bordered table-sm mt-3" *ngIf="selectedLotDetail?.testNVL?.length">
+        <thead class="table-primary text-center align-middle">
           <tr>
-            <th style="width: 3rem">STT</th>
-            <th>Mã lỗi</th>
-            <th>Tên lỗi</th>
-            <th>Số lượng</th>
-            <th>Ghi chú</th>
-            <th>Ngày tạo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let e of selectedLotDetail?.bomErrors; let i = index">
-            <td class="center-cell">{{ i + 1 }}</td>
-            <td class="center-cell">{{ e.errorCode }}</td>
-            <td class="center-cell">{{ e.errorName }}</td>
-            <td class="center-cell">{{ e.quantity }}</td>
-            <td>{{ e.note }}</td>
-            <td class="center-cell">{{ e.createdAt }}</td>
-          </tr>
-          <tr *ngIf="selectedLotDetail?.bomErrors?.length === 0">
-            <td colspan="5" class="text-center text-muted">Không có BOM lỗi</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- B. Kiểm tra NVL -->
-      <div class="header-sm">
-        <h4 class="mt-3">Kiểm tra NVL</h4>
-        <div class="buttons-action">
-          <button type="button" class="btn btn-success" (click)="exportCheckNVL()">
-            <fa-icon [icon]="faFileExport"></fa-icon>
-          </button>
-        </div>
-      </div>
-      <table class="table table-sm table-bordered">
-        <thead>
-          <tr>
-            <th style="width: 3rem">STT</th>
-            <th>Người kiểm</th>
-            <th>Kết luận</th>
-            <th>Ghi chú</th>
-            <th>Ngày kiểm</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let c of selectedLotDetail?.checkNVL; let i = index">
-            <td class="center-cell">{{ i + 1 }}</td>
-            <td>{{ c.CheckPerson }}</td>
-            <td>{{ c.conclude }}</td>
-            <td>{{ c.note }}</td>
-            <td>{{ c.createdAt }}</td>
-          </tr>
-          <tr *ngIf="selectedLotDetail?.checkNVL?.length === 0">
-            <td colspan="4" class="text-center text-muted">Không có dữ liệu kiểm NVL</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- C. Test NVL -->
-      <div class="header-sm">
-        <h4 class="mt-3">Test NVL</h4>
-        <div class="buttons-action">
-          <button type="button" class="btn btn-success" (click)="exportTestNVL()">
-            <fa-icon [icon]="faFileExport"></fa-icon>
-          </button>
-        </div>
-      </div>
-      <table class="table table-sm table-bordered">
-        <thead>
-          <tr>
-            <th style="width: 3rem">STT</th>
-            <th style="width: 10rem">Tên vật tư</th>
-            <th style="width: 6rem">Mã vật tư</th>
-            <th style="width: 4rem">SL mẫu</th>
-            <th style="width: 5rem">Kết quả</th>
-            <th style="width: 6rem">Ngày kiểm</th>
-            <th style="width: 8rem">Vendor</th>
+            <th>STT</th>
+            <th>Tên sản phẩm</th>
+            <th>Part Number</th>
+            <th>Số mẫu kiểm tra</th>
+            <th>Ngày kiểm tra</th>
+            <th>Quy định kiểm tra</th>
+            <th>Số lỗi cho phép</th>
+            <th>Số lỗi thực tế</th>
+            <th>Thông số min</th>
+            <th>Thông số max</th>
+            <th>Đơn vị</th>
+            <th>Ngày về</th>
             <th>Ghi chú</th>
           </tr>
         </thead>
         <tbody>
-          <tr
-            *ngFor="
-              let t of selectedLotDetail?.testNVL?.slice((testNVLPage - 1) * testNVLPageSize, testNVLPage * testNVLPageSize);
-              let i = index
-            "
-          >
-            <td class="center-cell">{{ (testNVLPage - 1) * testNVLPageSize + i + 1 }}</td>
-            <td>{{ t.itemName }}</td>
-            <td class="center-cell">{{ t.itemCode }}</td>
-            <td class="center-cell">{{ t.sampleQuantity }}</td>
-            <td class="center-cell">{{ t.realResult }}</td>
-            <td class="center-cell">{{ t.checkDate }}</td>
-            <td class="center-cell">{{ t.vendor }}</td>
-            <td>{{ t.note }}</td>
-          </tr>
-          <tr *ngIf="selectedLotDetail?.testNVL?.length === 0">
-            <td colspan="7" class="text-center text-muted">Không có dữ liệu Test NVL</td>
+          <tr *ngFor="let item of selectedLotDetail?.testNVL; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ item.itemName }}</td>
+            <td>{{ item.partNumber }}</td>
+            <td>{{ item.sampleQuantity }}</td>
+            <td>{{ item.checkDate | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ item.regulationCheck }}</td>
+            <td>{{ item.allowResult }}</td>
+            <td>{{ item.realResult }}</td>
+            <td>{{ item.paramMin }}</td>
+            <td>{{ item.paramMax }}</td>
+            <td>{{ item.unit }}</td>
+            <td>{{ item.returnDay | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ item.note }}</td>
           </tr>
         </tbody>
       </table>
-      <nav *ngIf="totalTestNVLPages > 1">
-        <ul class="pagination justify-content-center">
-          <li class="page-item" [class.disabled]="testNVLPage === 1">
-            <a class="page-link" (click)="testNVLPage = testNVLPage - 1">Trước</a>
-          </li>
-
-          <li
-            class="page-item"
-            *ngFor="let page of [].constructor(totalTestNVLPages); let i = index"
-            [class.active]="testNVLPage === i + 1"
-          >
-            <a class="page-link" (click)="testNVLPage = i + 1">{{ i + 1 }}</a>
-          </li>
-
-          <li class="page-item" [class.disabled]="testNVLPage >= totalTestNVLPages">
-            <a class="page-link" (click)="testNVLPage = testNVLPage + 1">Sau</a>
-          </li>
-        </ul>
-      </nav>
-      <!-- D. Scan100 Pass -->
-      <div class="header-sm">
-        <h4 class="mt-3">Scan100 Pass</h4>
-        <div class="buttons-action">
-          <button type="button" class="btn btn-success" (click)="exportScan100()">
-            <fa-icon [icon]="faFileExport"></fa-icon>
-          </button>
-        </div>
-      </div>
-      <table class="table table-sm table-bordered">
-        <thead>
-          <tr>
-            <th style="width: 3rem">STT</th>
-            <th>QR</th>
-            <th>Vật tư</th>
-            <th style="width: 10rem">Máy</th>
-            <th>Người kiểm</th>
-            <th>Ngày</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            *ngFor="
-              let s of selectedLotDetail?.scan100Pass?.slice((scan100Page - 1) * scan100PageSize, scan100Page * scan100PageSize);
-              let i = index
-            "
-          >
-            <td class="center-cell">{{ (scan100Page - 1) * scan100PageSize + i + 1 }}</td>
-            <td>{{ s.qr }}</td>
-            <td class="center-cell">{{ s.material }}</td>
-            <td class="center-cell">{{ s.machine }}</td>
-            <td class="center-cell">{{ s.user_check }}</td>
-            <td class="center-cell">{{ s.date }}</td>
-          </tr>
-          <tr *ngIf="selectedLotDetail?.scan100Pass?.length === 0">
-            <td colspan="5" class="text-center text-muted">Không có dữ liệu Scan100 Pass</td>
-          </tr>
-        </tbody>
-      </table>
-      <nav *ngIf="totalScan100Pages > 1">
-        <ul class="pagination justify-content-center">
-          <li class="page-item" [class.disabled]="scan100Page === 1">
-            <a class="page-link" (click)="scan100Page = scan100Page - 1">Trước</a>
-          </li>
-
-          <li
-            class="page-item"
-            *ngFor="let page of [].constructor(totalScan100Pages); let i = index"
-            [class.active]="scan100Page === i + 1"
-          >
-            <a class="page-link" (click)="scan100Page = i + 1">{{ i + 1 }}</a>
-          </li>
-
-          <li class="page-item" [class.disabled]="scan100Page >= totalScan100Pages">
-            <a class="page-link" (click)="scan100Page = scan100Page + 1">Sau</a>
-          </li>
-        </ul>
-      </nav>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="modal.close()">Đóng</button>
     </div>
   </ng-template>
-  <!-- Modal hiển thị danh sách sản phẩm trong LOT -->
-  <ng-template #itemSummaryModal let-modal>
-    <div class="modal-header">
-      <h5 class="modal-title">Sản phẩm trong LOT: {{ selectedLot }}</h5>
-      <button type="button" class="close" (click)="modal.dismiss()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <table class="table table-sm table-bordered">
-        <thead>
-          <tr>
-            <th style="width: 3rem">STT</th>
-            <th>Tên vật tư</th>
-            <th>PartNumber</th>
-            <th>Tổng số LOT</th>
-            <th>Tổng SL trả</th>
-            <th>Tổng lỗi BOM</th>
-            <th>Tổng lỗi sửa</th>
-            <th style="width: 6rem">Xem thêm</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of itemsInLot.slice((itemsPage - 1) * itemsPageSize, itemsPage * itemsPageSize); let i = index">
-            <td class="center-cell">{{ (itemsPage - 1) * itemsPageSize + i + 1 }}</td>
-            <td class="center-cell">{{ item.itemName }}</td>
-            <td class="center-cell">{{ item.partNumber }}</td>
-            <td class="center-cell">{{ item.totalLots }}</td>
-            <td class="center-cell">{{ item.totalQty }}</td>
-            <td class="center-cell">{{ item.totalBomErr }}</td>
-            <td class="center-cell">{{ item.totalFixErr }}</td>
-            <td class="center-cell">
-              <button class="btn btn-info btn-custom" (click)="openLotList(item)">
-                <fa-icon [icon]="faEye"></fa-icon>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <nav *ngIf="totalItemsPages > 1">
-        <ul class="pagination justify-content-center">
-          <li class="page-item" [class.disabled]="itemsPage === 1">
-            <a class="page-link" (click)="itemsPage = itemsPage - 1">Trước</a>
-          </li>
-          <li class="page-item" *ngFor="let page of [].constructor(totalItemsPages); let i = index" [class.active]="itemsPage === i + 1">
-            <a class="page-link" (click)="itemsPage = i + 1">{{ i + 1 }}</a>
-          </li>
-          <li class="page-item" [class.disabled]="itemsPage >= totalItemsPages">
-            <a class="page-link" (click)="itemsPage = itemsPage + 1">Sau</a>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  </ng-template>
-  <!-- Modal hiển thị danh sách LOT theo vật tư -->
-  <ng-template #lotListModal let-modal>
-    <div class="modal-header">
-      <h5 class="modal-title">Các LOT của vật tư: {{ selectedItem?.itemName }}</h5>
-      <button type="button" class="close" (click)="modal.dismiss()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <table class="table table-sm table-bordered">
-        <thead>
-          <tr>
-            <th style="width: 3rem">STT</th>
-            <th>LOT</th>
-            <th>Tên vật tư</th>
-            <th>PartNumber</th>
-            <th>Tổng SL trả</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let lot of lotsOfItem.slice((lotsPage - 1) * lotsPageSize, lotsPage * lotsPageSize); let i = index">
-            <td class="center-cell">{{ (lotsPage - 1) * lotsPageSize + i + 1 }}</td>
-            <td class="center-cell">{{ lot.lot }}</td>
-            <td class="center-cell">{{ lot.itemName }}</td>
-            <td class="center-cell">{{ lot.partNumber }}</td>
-            <td class="center-cell">{{ lot.totalQty }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <nav *ngIf="totalLotsPages > 1">
-        <ul class="pagination justify-content-center">
-          <li class="page-item" [class.disabled]="lotsPage === 1">
-            <a class="page-link" (click)="lotsPage = lotsPage - 1">Trước</a>
-          </li>
-          <li class="page-item" *ngFor="let page of [].constructor(totalLotsPages); let i = index" [class.active]="lotsPage === i + 1">
-            <a class="page-link" (click)="lotsPage = i + 1">{{ i + 1 }}</a>
-          </li>
-          <li class="page-item" [class.disabled]="lotsPage >= totalLotsPages">
-            <a class="page-link" (click)="lotsPage = lotsPage + 1">Sau</a>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  </ng-template>
+
+  <nav class="paginate-main" *ngIf="baoCaoVatTuList.length > qmsPageSize">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" [class.disabled]="qmsPage === 1">
+        <button class="page-link" (click)="changePage(qmsPage - 1)">Trước</button>
+      </li>
+
+      <li class="page-item" *ngFor="let page of totalPagesArray()" [class.active]="page === qmsPage">
+        <button class="page-link" (click)="changePage(page)">{{ page }}</button>
+      </li>
+
+      <li class="page-item" [class.disabled]="qmsPage === totalPages()">
+        <button class="page-link" (click)="changePage(qmsPage + 1)">Sau</button>
+      </li>
+    </ul>
+  </nav>
 </div>

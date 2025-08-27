@@ -75,6 +75,33 @@ export const GET_WORK_ORDER_BY_LOT = gql`
         pqcWorkOrderId
         pqcBomWorkOrderId
       }
+      pqcBomQuantity {
+        id
+        quantity
+        totalError
+        createdAt
+        updateAt
+        pqcWorkOrderId
+        pqcBomWorkOrderId
+      }
+      pqcBomWorkOrder {
+        id
+        bomQuantity
+        itemCode
+        itemName
+        partNumber
+        quantity
+        vendor
+        version
+        workOrderId
+        workOrderQuantity
+        uitmTech
+        ualter
+        uremarks
+        uctrLevel
+        uotherNam
+        ulocation
+      }
     }
   }
 `;

@@ -6,6 +6,8 @@ import com.mycompany.myapp.service.dto.ChiTietXuatKhoDTO;
 import com.mycompany.myapp.service.dto.DateTimeSearchDTO;
 import com.mycompany.myapp.service.dto.MonthYearDTO;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -246,18 +248,17 @@ public class Controller {
     }
 
     // * ---------------------------------------------------Tổng hợp---------------------------------------
-    @GetMapping("tong-hop")
-    public List<TongHopResponse> tongHop() {
-        List<TongHopResponse> list = this.fullServices.tongHop();
-        return list;
+    @PostMapping("tong-hop")
+    public List<TongHopResponse> tongHop(@RequestBody DateTimeSearchDTO request) {
+        return fullServices.tongHop(request.getStartDate(), request.getEndDate());
     }
 
     // * search by time
-    @PostMapping("tong-hop")
-    public List<TongHopResponse> searchTongHopByTime(@RequestBody DateTimeSearchDTO request) {
-        List<TongHopResponse> list = this.fullServices.searchTongHopByTime(request);
-        return list;
-    }
+    //    @PostMapping("search-date")
+    //    public List<TongHopResponse> searchTongHopByTime(@RequestBody DateTimeSearchDTO request) {
+    //        List<TongHopResponse> list = this.fullServices.searchTongHopByTime(request);
+    //        return list;
+    //    }
 
     // * Tổng hợp tính toán
     @GetMapping("tong-hop-caculate")

@@ -23,7 +23,7 @@ import {
   ExtensionName,
 } from 'angular-slickgrid';
 import { IDonBaoHanh } from './../../don-bao-hanh/don-bao-hanh.model';
-import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { HttpResponse, HttpClient } from '@angular/common/http';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -49,6 +49,44 @@ type DonBaoHanh = {
   tienDo?: number;
   [key: string]: any;
 };
+interface LotSummary {
+  lot: string;
+  bomErrors: any[];
+  testNVL: any[];
+  scan100Pass: any[];
+  returnDay: string;
+  totalQty: number;
+}
+interface TestNVL {
+  note?: string;
+  itemName: string;
+  sampleQuantity: number;
+  regulationCheck: string;
+  allowResult: number;
+  realResult: number;
+  paramMin: number;
+  paramMax: number;
+  checkDate: string;
+  returnDay: string;
+  unit: string;
+  [key: string]: any;
+}
+interface Scan100PassItem {
+  stt: number;
+  tenSanPham: string;
+  lotNumber: string;
+  vendor: string;
+  partNumber: string;
+  sap: string;
+  username: string;
+  tenNhanVienPhanTich: string;
+  ngayKiemTra: string;
+  qr: string;
+  material?: string;
+  user_check?: string;
+  reason?: string;
+  createdAt?: string;
+}
 
 @Component({
   selector: 'jhi-phan-tich-san-pham',
@@ -76,9 +114,9 @@ export class PhanTichSanPhamComponent implements OnInit {
   danhSachBienBanSanPhamTheoKho: any[] = [];
   danhSachKho: IKho[] = [];
   //---------------------------------------------------------------set up khung hien thi loi-----------------------------------------
-  columnOne = 0;
-  columnTwo = 0;
-  columnThree = 0;
+  columnOne: any[] = [];
+  columnTwo: any[] = [];
+  columnThree: any[] = [];
   columnDefinitions?: IDonBaoHanh[];
   columnDefinitions1: Column[] = [];
   gridOptions1: GridOption = {};
@@ -157,6 +195,12 @@ export class PhanTichSanPhamComponent implements OnInit {
   popupInBBTL = false;
   idBBTN = 0;
   popupSelectButton = false;
+  selectedLotDetail?: LotSummary & {
+    checkNVL: any[];
+    testNVL: any[];
+    scan100Pass: any[];
+    bomErrors: any[];
+  };
 
   popupInBBTNtest = false;
   // biến chứa index của danh sách sản phẩm cần phân tích
@@ -175,6 +219,7 @@ export class PhanTichSanPhamComponent implements OnInit {
   //Biến lưu key tìm kiếm
   @Input() tinhTrang = '';
   @Input() tenSanPham = '';
+  scanMode: 'lot' | 'serial' | null = null;
   saveSerial = '';
   saveLOT = '';
   saveYear = '';
@@ -221,6 +266,8 @@ export class PhanTichSanPhamComponent implements OnInit {
   faEye = faEye;
   faInfoCircle = faInfoCircle;
   @ViewChild('scanLotModal') scanLotModal?: TemplateRef<any>;
+  @ViewChild('detailModal') detailModalTpl?: TemplateRef<any>;
+  @ViewChild('inputRef') inputRef!: ElementRef<HTMLInputElement>;
 
   constructor(
     protected phanTichSanPhamService: PhanTichSanPhamService,
@@ -509,7 +556,7 @@ export class PhanTichSanPhamComponent implements OnInit {
         field: 'trangThai',
         sortable: true,
         filterable: true,
-        minWidth: 200,
+        minWidth: 150,
         cssClass: 'wrap-text-cell',
         type: FieldType.string,
         filter: {
@@ -1254,7 +1301,26 @@ export class PhanTichSanPhamComponent implements OnInit {
       this.isLoading = false;
     });
   }
+  get dynamicValue(): string {
+    return this.scanMode === 'lot' ? this.saveLOT : this.saveSerial;
+  }
 
+  set dynamicValue(val: string) {
+    if (this.scanMode === 'lot') {
+      this.saveLOT = val;
+    } else {
+      this.saveSerial = val;
+    }
+    this.onScan(this.scanMode!, val);
+  }
+  setScanMode(mode: 'lot' | 'serial'): void {
+    this.scanMode = mode;
+
+    // Đợi view cập nhật xong rồi focus
+    setTimeout(() => {
+      this.inputRef?.nativeElement?.focus();
+    }, 0);
+  }
   getMaKhoFromTenKho(tenKho: string): string {
     const mapping: { [key: string]: string } = {
       Kho1: '01',
@@ -1399,11 +1465,60 @@ export class PhanTichSanPhamComponent implements OnInit {
   openScanLotDialog(): void {
     this.lotInput = this.saveLOT?.trim();
 
-    const modalRef = this.modalService.open(this.scanLotModal, { size: 'md' });
+    const modalRef = this.modalService.open(this.scanLotModal, {
+      windowClass: 'modal-full-width',
+      scrollable: true,
+    });
 
     if (this.lotInput) {
       this.handleScanLot(modalRef);
     }
+  }
+
+  openDetail(lotSummary: { lot: string }): void {
+    this.isLoading = true;
+
+    this.apollo
+      .query<any>({
+        query: GET_WORK_ORDER_BY_LOT,
+        variables: {
+          lotNumber: String(lotSummary.lot),
+        },
+      })
+      .subscribe({
+        next: res => {
+          this.isLoading = false;
+
+          const info = res?.data?.qmsToDoiTraInfoByLotNumber;
+          if (!info) {
+            return;
+          }
+
+          const scan100Pass: any[] = Array.isArray(info.pqcScan100Pass) ? info.pqcScan100Pass : [];
+          const testNVLRaw: TestNVL[] = Array.isArray(info.pqcCheckTestNVL) ? info.pqcCheckTestNVL : [];
+          const checkNVL: any[] = Array.isArray(info.pqcCheckNVL) ? info.pqcCheckNVL : [];
+          const bomErrors: any[] = Array.isArray(info.pqcBomErrorDetail) ? info.pqcBomErrorDetail : [];
+
+          this.selectedLotDetail = {
+            ...lotSummary,
+            scan100Pass,
+            testNVL: testNVLRaw,
+            checkNVL,
+            bomErrors,
+            returnDay: '',
+            totalQty: 0,
+          };
+
+          this.modalService.open(this.detailModalTpl, {
+            windowClass: 'full-screen-modal',
+            scrollable: true,
+          });
+        },
+        error: err => {
+          this.isLoading = false;
+          console.error('Lỗi khi lấy dữ liệu LOT:', err);
+        },
+      });
   }
 
   handleScanLot(modal: any): void {
@@ -1434,11 +1549,12 @@ export class PhanTichSanPhamComponent implements OnInit {
       product.lotNumber = this.saveLOT;
     }
   }
-  parseQR(qr: string): { vendor: string; sap: string } {
+  parseQR(qr: string): { vendor: string; sap: string; partNumber: string } {
     const parts = qr?.split('#') || [];
     // console.log('QR parts:', parts);
 
     return {
+      partNumber: parts[1] || '',
       sap: parts.length > 14 ? parts[14] : '',
       vendor: parts.length > 2 ? parts[2] : '',
     };
@@ -1463,64 +1579,126 @@ export class PhanTichSanPhamComponent implements OnInit {
 
           const testNVLs = data.pqcCheckTestNVL || [];
           const bomErrors = data.pqcBomErrorDetail || [];
+          const bomWorkOrders = data.pqcBomWorkOrder || [];
+          const bomQuantities = data.pqcBomQuantity || [];
           const checkNVLInfo = data.pqcCheckNVL?.[0] || {};
+          const scan100Raw = data.pqcScan100Pass || [];
 
-          this.listOfSanPhamTrongDialog = [
-            ...testNVLs.map((item: any, index: number) => {
-              const qrRaw = data.pqcScan100Pass?.[0]?.qr || '';
-              const { sap, vendor } = this.parseQR(qrRaw);
+          // Bóc tách từng dòng scan100Pass
+          const scan100Pass: Scan100PassItem[] = scan100Raw.map((item: any, index: number): Scan100PassItem => {
+            const parts = item.qr?.split('#') || [];
+            return {
+              stt: index + 1,
+              tenSanPham: item.material || '',
+              lotNumber: lot,
+              vendor: parts[2] || '',
+              partNumber: parts[1] || '',
+              sap: parts[parts.length - 1] || '',
+              username: item.user_check || '',
+              tenNhanVienPhanTich: item.reason || '',
+              ngayKiemTra: item.createdAt,
+              qr: item.qr,
+              material: item.material,
+              user_check: item.user_check,
+              reason: item.reason,
+              createdAt: item.createdAt,
+            };
+          });
 
-              return {
-                stt: index + 1,
-                tenSanPham: item.itemName,
-                lotNumber: item.lot,
-                sap: sap,
-                vendor: vendor,
-                partNumber: item.partNumber || '',
-                detail: item.itemCode,
-                namSanXuat: checkNVLInfo.createdAt?.slice(0, 4) || '',
-                slThucNhap: item.qty,
-                ngayKiemTra: item.checkDate,
-                ghiChu: item.note,
-                nhomLoi: 0,
-                tenLoi: 0,
-                soLuongLoi: 0,
-                ngayCapNhat: checkNVLInfo.createdAt,
-                trangThai: false,
-                username: checkNVLInfo.CheckPerson || '',
-                tenNhanVienPhanTich: checkNVLInfo.note || '',
-                loiKyThuat: 0,
-                loiLinhDong: 0,
-                type: 'testNVL',
-                raw: item,
-              };
-            }),
+          const qrRaw = scan100Pass?.[0]?.qr || '';
+          const { sap, vendor, partNumber } = scan100Pass?.[0] || {};
 
-            ...bomErrors.map((item: any, index: number) => ({
-              stt: index + 1 + (testNVLs.length as number),
-              tenSanPham: null,
-              lotNumber: null,
-              sap: null,
-              vendor: null,
-              partNumber: null,
-              detail: null,
-              namSanXuat: null,
-              slThucNhap: null,
-              ngayKiemTra: null,
-              ghiChu: item.note,
-              nhomLoi: item.errorCode,
-              tenLoi: item.errorName,
-              soLuongLoi: item.quantity,
-              ngayCapNhat: item.updatedAt,
+          const bomData = bomWorkOrders.map((bom: any, index: number) => {
+            const matchedQuantity = bomQuantities.find((q: any) => q.pqcBomWorkOrderId === bom.id);
+
+            return {
+              stt: index + 1,
+              tenSanPham: bom.itemName,
+              lotNumber: lot,
+              sap: sap,
+              vendor: bom.vendor,
+              partNumber: bom.partNumber,
+              detail: bom.itemCode,
+              namSanXuat: bom.createdAt?.slice(0, 4) || '',
+              slThucNhap: Number(matchedQuantity?.quantity) || 0,
+              ngayKiemTra: bom.createdAt,
+              ghiChu: bom.uremarks || '',
+              nhomLoi: '',
+              tenLoi: '',
+              soLuongLoi: Number(matchedQuantity?.totalError) || 0,
+              ngayCapNhat: bom.updatedAt,
               trangThai: false,
-              username: null,
-              tenNhanVienPhanTich: null,
-              loiKyThuat: null,
-              loiLinhDong: null,
-              type: 'bomError',
-              raw: item,
-            })),
-          ];
+              username: '',
+              tenNhanVienPhanTich: '',
+              loiKyThuat: '',
+              loiLinhDong: '',
+              type: 'bom',
+              raw: bom,
+            };
+          });
+
+          const testNVLData = testNVLs.map((item: any, index: number) => ({
+            stt: index + 1 + Number(bomData.length),
+            tenSanPham: item.itemName,
+            lotNumber: lot,
+            sap: sap,
+            vendor: vendor,
+            partNumber: item.partNumber || '',
+            detail: item.itemCode,
+            namSanXuat: checkNVLInfo.createdAt?.slice(0, 4) || '',
+            slThucNhap: Number(item.qty) || 0,
+            ngayKiemTra: item.checkDate,
+            ghiChu: item.note,
+            nhomLoi: '',
+            tenLoi: '',
+            soLuongLoi: '',
+            ngayCapNhat: checkNVLInfo.createdAt,
+            trangThai: false,
+            username: checkNVLInfo.CheckPerson || '',
+            tenNhanVienPhanTich: checkNVLInfo.note || '',
+            loiKyThuat: '',
+            loiLinhDong: '',
+            type: 'testNVL',
+            raw: item,
+          }));
+
+          const bomErrorData = bomErrors.map((item: any, index: number) => ({
+            stt: index + 1 + Number(bomData.length) + Number(testNVLData.length),
+            tenSanPham: '',
+            lotNumber: '',
+            sap: '',
+            vendor: '',
+            partNumber: '',
+            detail: '',
+            namSanXuat: '',
+            slThucNhap: '',
+            ngayKiemTra: '',
+            ghiChu: item.note,
+            nhomLoi: item.errorCode,
+            tenLoi: item.errorName,
+            soLuongLoi: Number(item.quantity) || 0,
+            ngayCapNhat: item.updatedAt,
+            trangThai: false,
+            username: '',
+            tenNhanVienPhanTich: '',
+            loiKyThuat: '',
+            loiLinhDong: '',
+            type: 'bomError',
+            raw: item,
+          }));
+
+          this.listOfSanPhamTrongDialog = [...bomData, ...testNVLData, ...bomErrorData];
+
+          this.selectedLotDetail = {
+            lot: lot,
+            bomErrors,
+            checkNVL: data.pqcCheckNVL || [],
+            scan100Pass,
+            testNVL: testNVLs,
+            returnDay: '',
+            totalQty: 0,
+          };
+
           this.isLoading = false;
         },
         error => {
@@ -1528,6 +1706,7 @@ export class PhanTichSanPhamComponent implements OnInit {
         }
       );
   }
+
   openChiTiet(data: any): void {
     if (data.type === 'testNVL') {
       const modalRef = this.modalService.open(PqcCheckDetailComponent, { size: 'lg' });
@@ -1702,8 +1881,8 @@ export class PhanTichSanPhamComponent implements OnInit {
       // console.log('list khai báo lỗi: ', this.listOfKhaiBaoLoi);
       this.http.post<any>('api/phan-tich-loi', this.listOfKhaiBaoLoi).subscribe(() => {
         this.listOfKhaiBaoLoi = [];
-        this.openPopupNoti('Cập nhật thành công');
-        this.closePopup();
+        // this.openPopupNoti('Cập nhật thành công');
+        // this.closePopup();
         // console.log('khai bao loi', this.listOfKhaiBaoLoi)
         // console.log('popup', this.openPopupNoti)
       });
@@ -1768,6 +1947,75 @@ export class PhanTichSanPhamComponent implements OnInit {
     // console.log('danh sách khai báo lỗi: ', this.listOfPhanTichSanPhamByPLCTTN);
     // console.log('index before: ', this.indexOfChiTietPhanTichSanPham);
   }
+  catchEventKhaiBaoLois(index: any): void {
+    // console.log('kiểm tra mã LOT', this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham]);
+    if (
+      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === '' &&
+        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === '') ||
+      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === undefined &&
+        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === undefined)
+    ) {
+      this.openPopupNoti('Chưa có thông tin LOT/SERIAL !!!');
+      const input = document.getElementById(this.scanType);
+      if (input) {
+        input.focus();
+      }
+    } else {
+      //reset kết quả
+      this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat = 0;
+      this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong = 0;
+      //cập nhật số lượng lỗi linh động, lỗi kĩ thuật
+      for (let i = 0; i < this.catchChangeOfListKhaiBaoLoi.length; i++) {
+        if (this.catchChangeOfListKhaiBaoLoi[i].loi.chiChu === 'Lỗi kỹ thuật') {
+          this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat += this.catchChangeOfListKhaiBaoLoi[i].soLuong;
+        }
+        if (this.catchChangeOfListKhaiBaoLoi[i].loi.chiChu === 'Lỗi linh động') {
+          this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong += this.catchChangeOfListKhaiBaoLoi[i].soLuong;
+        }
+      }
+      this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].soLuong =
+        Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat) +
+        Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong);
+    }
+  }
+  // cập nhật số lượng lỗi trong button
+  catchEventKhaiBaoLoi(index: any): void {
+    // console.log('kiểm tra mã LOT', this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham]);
+    if (
+      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === '' &&
+        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === '') ||
+      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === undefined &&
+        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === undefined)
+    ) {
+      this.openPopupNoti('Chưa có thông tin LOT/SERIAL !!!');
+      const input = document.getElementById(this.scanType);
+      if (input) {
+        input.focus();
+      }
+    } else {
+      this.catchChangeOfListKhaiBaoLoi[index].soLuong++;
+      // console.log(index);
+      //cập nhật số lượng lỗi linh động, lỗi kĩ thuật
+      if (this.catchChangeOfListKhaiBaoLoi[index].loi.chiChu === 'Lỗi kỹ thuật') {
+        // console.log({
+        //   tenLoi: this.indexOfChiTietPhanTichSanPham,
+        //   nLoi: this.catchChangeOfListKhaiBaoLoi[index].tenNhomLoi,
+        //   sl: this.catchChangeOfListKhaiBaoLoi[index].soLuong,
+        // });
+        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat++;
+        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].soLuong =
+          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat) +
+          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong);
+      }
+      if (this.catchChangeOfListKhaiBaoLoi[index].loi.chiChu === 'Lỗi linh động') {
+        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong++;
+        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].soLuong =
+          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat) +
+          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong);
+      }
+      this.updatePhanTichSanPham();
+    }
+  }
 
   // hàm xử lý check all
   checkAll(): void {
@@ -1802,42 +2050,42 @@ export class PhanTichSanPhamComponent implements OnInit {
     product.loiLinhDong = totalLinhDong;
     product.soLuong = totalKyThuat + totalLinhDong;
   }
-  catchEventKhaiBaoLoi(index: number): void {
-    // console.log('Clicked', index);
-    // 1. Lấy product đang thao tác từ listOfPhanTichSanPhamByPLCTTN
-    const prodIdx = this.indexOfChiTietPhanTichSanPham;
-    const product = this.listOfPhanTichSanPhamByPLCTTN[prodIdx];
-    if (typeof product.detail !== 'object') {
-      product.detail = {};
-    }
+  // catchEventKhaiBaoLoi(index: number): void {
+  //   // console.log('Clicked', index);
+  //   // 1. Lấy product đang thao tác từ listOfPhanTichSanPhamByPLCTTN
+  //   const prodIdx = this.indexOfChiTietPhanTichSanPham;
+  //   const product = this.listOfPhanTichSanPhamByPLCTTN[prodIdx];
+  //   if (typeof product.detail !== 'object') {
+  //     product.detail = {};
+  //   }
 
-    if (!product?.lotNumber) {
-      // this.openPopupNoti('Chưa có thông tin LOT !!!');
-      document.getElementById(this.scanType)?.focus();
-      return;
-    }
+  //   if (!product?.lotNumber) {
+  //     // this.openPopupNoti('Chưa có thông tin LOT !!!');
+  //     document.getElementById(this.scanType)?.focus();
+  //     return;
+  //   }
 
-    // 2. Tăng số lượng lỗi trong mảng lỗi popup
-    const errItem = this.catchChangeOfListKhaiBaoLoi[index];
-    const current = Number(errItem.soLuong) || 0;
-    errItem.soLuong = Math.max(current + 1, 0);
+  //   // 2. Tăng số lượng lỗi trong mảng lỗi popup
+  //   const errItem = this.catchChangeOfListKhaiBaoLoi[index];
+  //   const current = Number(errItem.soLuong) || 0;
+  //   errItem.soLuong = Math.max(current + 1, 0);
 
-    // 3. Tính lại 3 cột lỗi trên product
-    this.recalculateErrorSummary(product);
+  //   // 3. Tính lại 3 cột lỗi trên product
+  //   this.recalculateErrorSummary(product);
 
-    // 4. Cập nhật tiến độ cá nhân
-    const detail = this.listOfChiTietSanPhamPhanTich[this.indexOfPhanTichSanPham];
-    detail.slDaPhanTich = (Number(detail.slDaPhanTich) || 0) + 1;
-    detail.slConLai = (Number(detail.slTiepNhan) || 0) - detail.slDaPhanTich;
-    detail.tienDo = detail.slTiepNhan ? (detail.slDaPhanTich / detail.slTiepNhan) * 100 : 100;
+  //   // 4. Cập nhật tiến độ cá nhân
+  //   const detail = this.listOfChiTietSanPhamPhanTich[this.indexOfPhanTichSanPham];
+  //   detail.slDaPhanTich = (Number(detail.slDaPhanTich) || 0) + 1;
+  //   detail.slConLai = (Number(detail.slTiepNhan) || 0) - detail.slDaPhanTich;
+  //   detail.tienDo = detail.slTiepNhan ? (detail.slDaPhanTich / detail.slTiepNhan) * 100 : 100;
 
-    // 5. Cập nhật tiến độ chung đơn bảo hành
-    this.donBaoHanh.slDaPhanTich = (Number(this.donBaoHanh.slDaPhanTich) || 0) + 1;
-    this.donBaoHanh.tienDo = this.donBaoHanh.slCanPhanTich ? (this.donBaoHanh.slDaPhanTich / this.donBaoHanh.slCanPhanTich) * 100 : 100;
-    console.log(errItem);
-    // 6. Ép Angular update view nếu cần (OnPush)
-    this.cdr.detectChanges();
-  }
+  //   // 5. Cập nhật tiến độ chung đơn bảo hành
+  //   this.donBaoHanh.slDaPhanTich = (Number(this.donBaoHanh.slDaPhanTich) || 0) + 1;
+  //   this.donBaoHanh.tienDo = this.donBaoHanh.slCanPhanTich ? (this.donBaoHanh.slDaPhanTich / this.donBaoHanh.slCanPhanTich) * 100 : 100;
+  //   console.log(errItem);
+  //   // 6. Ép Angular update view nếu cần (OnPush)
+  //   this.cdr.detectChanges();
+  // }
 
   // 2. Phương thức chung để tính lại 3 cột trên bảng Chi tiết sản phẩm
 
@@ -1967,7 +2215,7 @@ export class PhanTichSanPhamComponent implements OnInit {
     }
     setTimeout(() => {
       this.http.post<any>('api/phan-tich-loi', this.listOfKhaiBaoLoi).subscribe(() => {
-        this.openPopupNoti('Cập nhật thành công');
+        // this.openPopupNoti('Cập nhật thành công');
         //reset dữ liệu
         this.listOfKhaiBaoLoi = [];
         this.fixKhaiBaoLoi = false;
@@ -1991,7 +2239,7 @@ export class PhanTichSanPhamComponent implements OnInit {
   closePopupNoti(): void {
     this.isPopupVisible = false;
     // console.log('dong popup', this.isPopupVisible)
-    document.getElementById('popupNoti')!.style.display = 'none';
+    // document.getElementById('popupNoti')!.style.display = 'none';
   }
   angularGridReady(angularGrid: any): void {
     console.log('Grid đã sẵn sàng:', angularGrid);

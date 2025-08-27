@@ -7,7 +7,10 @@ import com.mycompany.myapp.service.dto.DateTimeSearchDTO;
 import com.mycompany.myapp.service.dto.DonBaoHanhSummaryDto;
 import com.mycompany.myapp.service.dto.MonthYearDTO;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -487,21 +490,24 @@ public class FullServices {
 
     // * ---------------------------------------- Tổng hợp ----------------------------------
     // * tổng hợp danh sách theo tháng hiện tại
-    public List<TongHopResponse> tongHop() {
-        LocalDate date = LocalDate.now();
-        LocalDate firstDay = LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth(), 1);
-        //                LocalDate date = LocalDate.of(2024,02,24 );
-        //                LocalDate firstDay = LocalDate.of(2024,02,01 );
-        List<TongHopResponse> list = this.phanTichLoiRepository.tongHop(firstDay.toString() + "T00:00:00", date.toString() + "T23:59:59");
-        return list;
+    public List<TongHopResponse> tongHop(String startDate, String endDate) {
+        LocalDate today = LocalDate.now();
+        LocalDate firstDayOfMonth = today.withDayOfMonth(1);
+
+        // Chuyển sang LocalDateTime để bao phủ toàn bộ ngày
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String startDateStr = startDate + " 00:00:00";
+        String endDateStr = endDate + " 23:59:59";
+
+        return phanTichLoiRepository.tongHop(startDateStr, endDateStr);
     }
 
     // * tìm kiếm theo khoảng thời gian
-    public List<TongHopResponse> searchTongHopByTime(DateTimeSearchDTO request) {
-        List<TongHopResponse> list =
-            this.phanTichLoiRepository.tongHop(request.getStartDate() + "T00:00:00", request.getEndDate() + "T23:59:59");
-        return list;
-    }
+    //    public List<TongHopResponse> searchTongHopByTime(DateTimeSearchDTO request) {
+    //        List<TongHopResponse> list =
+    //            this.phanTichLoiRepository.tongHop(request.getStartDate() + "T00:00:00", request.getEndDate() + "T23:59:59");
+    //        return list;
+    //    }
 
     // * Tổng hợp tính toán
     public List<TongHopResponse> tongHopCaculate() {

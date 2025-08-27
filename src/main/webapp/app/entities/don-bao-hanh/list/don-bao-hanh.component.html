@@ -217,7 +217,11 @@
             data-cy="khachHang"
             [(ngModel)]="thongTinDonBaoHanh.tenKhachHang"
             [ngModelOptions]="{ standalone: true }"
+            list="field_khachHang"
           />
+          <datalist id="field_khachHang">
+            <option *ngFor="let item of khachHangs" value="{{ item.tenKhachHang }}"></option>
+          </datalist>
         </div>
         <div class="row mb-3">
           <label for="field_tongTiepNhan" class="form-label-header">Tổng tiếp nhận</label>
@@ -269,6 +273,7 @@
     </div>
   </div>
 </div>
+
 <!------------------------------------------------------- Popup phân loại sản phẩm ------------------------------------------------------->
 <div class="table-responsive popup-background" role="dialog" *ngIf="popupPhanLoai === true">
   <div class="popup-container">

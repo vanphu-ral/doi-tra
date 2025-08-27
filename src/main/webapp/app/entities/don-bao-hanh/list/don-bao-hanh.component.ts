@@ -27,7 +27,7 @@ import {
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { HttpResponse, HttpClient } from '@angular/common/http';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
+import { DatePipe } from '@angular/common';
 import { IDonBaoHanh } from '../don-bao-hanh.model';
 import { DonBaoHanhService } from '../service/don-bao-hanh.service';
 import { RowDetailViewComponent } from './rowdetail-view.component';
@@ -370,7 +370,6 @@ export class DonBaoHanhComponent implements OnInit {
         filterable: true,
         formatter: (_row, _cell, value) => `<div class="wrap-text-cell">${value as string}</div>`,
         minWidth: 140,
-        width: 140,
         // maxWidth: 200,
         type: FieldType.string,
         filter: {
@@ -390,8 +389,7 @@ export class DonBaoHanhComponent implements OnInit {
         //   const safeValue = String(value ?? '');
         //   return `<div style="white-space: normal; word-break: break-word; line-height: 1.4;">${safeValue}</div>`;
         // },
-        minWidth: 310,
-        width: 320,
+        minWidth: 300,
         // maxWidth: 400,
         type: FieldType.string,
         filter: {
@@ -410,7 +408,7 @@ export class DonBaoHanhComponent implements OnInit {
         defaultSortAsc: false,
         filterable: true,
         minWidth: 140,
-        width: 140,
+        // width: 140,
         // maxWidth: 160,
         type: FieldType.object,
         formatter: Formatters.dateTimeIso,
@@ -1116,7 +1114,6 @@ export class DonBaoHanhComponent implements OnInit {
     // Tìm đơn bảo hành theo ID
     const don = this.donBaoHanhs.find(d => d.id === id);
     if (!don) {
-      // console.warn('❌ Không tìm thấy đơn bảo hành với ID:', id);
       return;
     }
 
@@ -1137,10 +1134,6 @@ export class DonBaoHanhComponent implements OnInit {
 
     // Gán dữ liệu chi tiết sản phẩm tiếp nhận
     this.resultChiTietSanPhamTiepNhans = JSON.parse(result as string);
-
-    // Debug log
-    // console.log('📦 Đơn bảo hành:', this.thongTinDonBaoHanh);
-    // console.log('👤 Khách hàng tìm được:', khachHangTimDuoc);
   }
 
   openGridMenu(event?: MouseEvent): void {
@@ -1197,6 +1190,12 @@ export class DonBaoHanhComponent implements OnInit {
         tenKhachHang: this.thongTinDonBaoHanh.tenKhachHang,
       };
     }
+    const rawDate = this.thongTinDonBaoHanh.ngaykhkb;
+    if (typeof rawDate === 'string') {
+      const isoLike = rawDate.replace(' ', 'T').slice(0, -2);
+      const date = new Date(isoLike);
+      this.thongTinDonBaoHanh.ngaykhkb = date.toISOString();
+    }
 
     this.http.put<any>(this.updateDonBaoHanhUrl, this.thongTinDonBaoHanh).subscribe({
       next: updated => {
@@ -1211,7 +1210,8 @@ export class DonBaoHanhComponent implements OnInit {
         window.location.reload();
       },
       error: err => {
-        alert(err.message);
+        alert('Update failed!');
+        console.log(err.message);
       },
     });
   }
@@ -1251,8 +1251,6 @@ export class DonBaoHanhComponent implements OnInit {
     } else {
       this.donBaoHanh.maTiepNhan = this.taoMaTiepNhan();
       this.http.post<any>(this.postDonBaoHanhNewUrl, this.donBaoHanh).subscribe(res => {
-        console.log('✅ Đơn bảo hành đã tạo:', res);
-
         this.chiTietDonBaoHanh = this.themMoiDonBaoHanh.map((item: { slKhachGiao: any; slTiepNhan: any; sanPham: any }) => ({
           soLuongKhachHang: item.slKhachGiao,
           idKho: '0',
@@ -1269,8 +1267,6 @@ export class DonBaoHanhComponent implements OnInit {
         }));
 
         this.http.post<any>(this.postChiTietDonBaoHanhUrl, this.chiTietDonBaoHanh).subscribe(res1 => {
-          console.log('✅ Chi tiết đơn bảo hành:', res1);
-
           this.themMoiPhanLoaiChiTietTiepNhan = [];
 
           res1.forEach((chiTiet: IChiTietSanPhamTiepNhan, i: number) => {
@@ -1294,12 +1290,9 @@ export class DonBaoHanhComponent implements OnInit {
             });
           });
 
-          console.log('✅ Phân loại chi tiết:', this.themMoiPhanLoaiChiTietTiepNhan);
-
           this.http.post<any>(this.postPhanLoaiChiTietTiepNhanUrl, this.themMoiPhanLoaiChiTietTiepNhan).subscribe(res2 => {
-            console.log('✅ Phân loại đã lưu:', res2);
             this.openPopupNoti('Thêm mới thành công');
-            // window.location.reload(); ❌ Tạm tắt để kiểm tra
+            window.location.reload();
           });
         });
       });

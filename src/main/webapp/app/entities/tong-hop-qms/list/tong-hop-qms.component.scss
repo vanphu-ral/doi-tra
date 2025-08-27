@@ -1,5 +1,6 @@
 .container-fluid {
-  margin: auto;
+  margin: 0 !important;
+  padding: 0;
 
   h2 {
     color: #333;
@@ -8,6 +9,7 @@
   .form-inline {
     display: flex;
     gap: 1rem;
+
     input.form-control {
       width: 300px;
     }
@@ -15,14 +17,17 @@
 
   table {
     font-size: 0.9rem;
+
     th,
     td {
       vertical-align: middle;
     }
+
     th {
       text-align: center;
       background-color: #f7f7f7;
     }
+
     td {
       &.text-muted {
         font-style: italic;
@@ -37,9 +42,13 @@
     }
   }
 }
+::ng-deep .list-lot-modal .modal-dialog {
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
 ::ng-deep .container-fluid {
   overflow-x: hidden;
 }
+
 ::ng-deep .modal.full-screen-modal .modal-dialog {
   max-width: 100vw;
   height: 100vh;
@@ -57,6 +66,7 @@
   overflow-y: auto;
   padding: 1rem;
 }
+
 ::ng-deep .modal.full-screen-modal .modal-header,
 ::ng-deep .modal.full-screen-modal .modal-footer {
   position: sticky;
@@ -71,37 +81,78 @@
 ::ng-deep .modal.full-screen-modal .modal-footer {
   bottom: 0;
 }
+
 .options-column {
   display: flex;
   gap: 1rem;
   align-items: center;
   text-align: center;
 }
+
 .btn-custom {
   width: 70px;
   height: 25px;
 }
+.sticky-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 96%;
+  max-height: 70vh;
+  overflow: auto;
+  display: block;
+}
+
+.sticky-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: #f8f9fa;
+}
+
+.sticky-table th {
+  background-color: #f8f9fa;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
 .header-sm {
-  display: flex;
+  // display: flex;
   justify-content: space-between;
 }
+
 .btn-custom.btn-info {
   color: #fff;
 }
+
 .center-cell {
   text-align: center;
   align-content: center;
 }
+
 .main-content {
-  padding-right: 3rem;
+  height: 100vh;
+  // overflow: auto;
 }
+
 ::ng-deep .modal.custom-modal .modal-dialog {
   max-width: 1000px;
   width: 1000px;
   height: 700px;
   overflow: auto;
 }
+
 .buttons-action {
   float: right;
   padding: 1rem;
+}
+
+.formDate {
+  .search-inp {
+    margin: 0;
+  }
+}
+::ng-deep .card {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 }

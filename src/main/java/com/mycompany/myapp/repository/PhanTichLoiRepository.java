@@ -3,6 +3,7 @@ package com.mycompany.myapp.repository;
 import com.mycompany.myapp.domain.PhanTichLoi;
 import com.mycompany.myapp.domain.TongHopNewResponse;
 import com.mycompany.myapp.domain.TongHopResponse;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
@@ -118,8 +119,8 @@ public interface PhanTichLoiRepository extends JpaRepository<PhanTichLoi, Long> 
         "    left join baohanh2.tinh_thanh on tinh_thanh.id = khach_hang.tinh_thanh_id " +
         "            where ptLoi.so_luong > 0 and " +
         "            dbh.trang_thai = N'Hoàn thành phân tích' and " +
-        "            dbh.ngay_tiep_nhan > ?1  \n" +
-        "            and dbh.ngay_tiep_nhan < ?2  ;",
+        "            dbh.ngay_tiep_nhan >= STR_TO_DATE(?1, '%Y-%m-%d') \n" +
+        "            AND dbh.ngay_tiep_nhan <= STR_TO_DATE(?2, '%Y-%m-%d') ;",
         nativeQuery = true
     )
     List<TongHopResponse> tongHop(String startDate, String endDate);

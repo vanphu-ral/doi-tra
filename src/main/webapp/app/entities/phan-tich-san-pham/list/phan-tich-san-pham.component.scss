@@ -104,6 +104,7 @@
     word-break: break-word !important;
   }
 }
+
 .scrollable-middle {
   width: 100%;
   box-sizing: border-box;
@@ -132,9 +133,10 @@
   padding: 0.75rem 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
+
 .fixed-bottom {
   position: sticky;
-  bottom: 1.5rem;
+  bottom: 3.5rem;
   z-index: 1000;
   background: #f9f9f9;
   padding: 0.75rem 1rem;
@@ -142,15 +144,32 @@
   max-height: 200px;
   overflow-y: auto;
 }
+
 .popup-overlay {
-  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.popup-overlay.active {
-  display: block;
+
+.popup {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 300px;
+  text-align: center;
 }
+
 .input-errors {
   width: 50px;
 }
+
 .modal-content {
   height: 100vh;
   width: 100vw;
@@ -158,43 +177,51 @@
   background: #fff;
   box-sizing: border-box;
 }
+
 .popup-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .header-content {
   table th,
   td {
-    font-size: 10px;
+    font-size: 14px;
   }
 }
+
 .container-serial {
   margin-top: 0 !important;
   justify-content: flex-start;
   gap: 1rem;
+
   .custom-input {
     height: 30px;
     line-height: 8px;
+
     input {
       height: 100%;
     }
   }
 }
+
 .dialog-title {
-  font-size: 15px;
+  font-size: 22px;
   font-weight: 500;
   margin: 0;
 }
 
 .section-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   margin-bottom: 0.5rem;
 }
+
 ::ng-deep .card {
   overflow: hidden !important;
 }
+
 /* Nội dung scroll */
 .scrollable-middle {
   flex: 1;
@@ -223,16 +250,22 @@
 
 .form-control {
   height: 30px;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 /* Nút bấm */
-.btn-scan,
-.btn-name-error,
-.btn-table .btn {
-  font-size: 12px;
-  padding: 4px 8px;
-  min-width: 80px;
+// .btn-scan,
+// .btn-name-error,
+// .btn-table .btn {
+//   font-size: 12px;
+//   padding: 4px 8px;
+//   min-width: 80px;
+// }
+::ng-deep .modal-full-width .modal-dialog {
+  max-width: 100vw;
+  margin: 0 auto;
+  overflow-y: auto;
+  height: 100vh;
 }
 
 .btn-table .btn {
@@ -250,12 +283,14 @@
   gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
+
 .fixed-header-table {
   table th,
   td {
-    font-size: 10px;
+    font-size: 12px;
   }
 }
+
 .error-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -274,18 +309,18 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn-name-error {
-  width: 100%;
-  font-size: 13px;
-  padding: 6px 10px;
-  font-weight: 600;
-  white-space: nowrap;
-  text-align: center;
-  background-color: #006699;
-  color: white;
-  border: none;
-  border-radius: 4px;
-}
+// .btn-name-error {
+//   width: 100%;
+//   font-size: 13px;
+//   padding: 6px 10px;
+//   font-weight: 600;
+//   white-space: nowrap;
+//   text-align: center;
+//   background-color: #006699;
+//   color: white;
+//   border: none;
+//   border-radius: 4px;
+// }
 
 .error-note {
   font-size: 12px;
@@ -298,6 +333,32 @@
   font-size: 12px;
   height: 28px;
 }
+::ng-deep .full-screen-modal .modal-dialog {
+  max-width: 100vw;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+::ng-deep .full-screen-modal .modal-content {
+  height: 100vh;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+::ng-deep .full-screen-modal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+::ng-deep .full-screen-modal .modal-header,
+.full-screen-modal .modal-footer {
+  flex-shrink: 0;
+}
+
 @media print {
   header {
     display: flex;

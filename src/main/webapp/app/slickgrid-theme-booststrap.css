@@ -3564,7 +3564,7 @@ body .slickgrid-container .slick-header-columns .slick-header-column.ui-state-de
 }
 
 .modal-content {
-  height: 80vh;
+  height: 100vh;
 }
 
 .editable-field {
@@ -3766,8 +3766,7 @@ body .slickgrid-container .slick-header-columns .slick-header-column.ui-state-de
 
 .btn-scan {
   box-shadow: 8px 8px 5px #aaaaaa;
-  margin: 5px;
-  margin: 1em 1rem;
+  margin-bottom: 5px;
 }
 
 .inp-name-error {

@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -39,6 +39,61 @@ interface LotDetail {
   vendor?: string;
   checkDate?: string;
   conclude?: string;
+}
+interface TestNVL {
+  note?: string;
+  itemName: string;
+  sampleQuantity: number;
+  regulationCheck: string;
+  allowResult: number;
+  realResult: number;
+  paramMin: number;
+  paramMax: number;
+  checkDate: string;
+  returnDay: string;
+  unit: string;
+  [key: string]: any;
+}
+interface Scan100PassItem {
+  stt: number;
+  tenSanPham: string;
+  lotNumber: string;
+  vendor: string;
+  partNumber: string;
+  sap: string;
+  username: string;
+  tenNhanVienPhanTich: string;
+  ngayKiemTra: string;
+  qr: string;
+  material?: string;
+  user_check?: string;
+  reason?: string;
+  createdAt?: string;
+}
+export interface TongHopResponse {
+  maTiepNhan: string;
+  ngayTiepNhan: string;
+  nhanVienGiaoHang: string;
+  nhomKhachHang: string;
+  tenKhachHang: string;
+  soLuongKhachGiao: number;
+  tongSoLuong: number;
+  lotNumber: string;
+  serial: string;
+  tenSanPham: string;
+}
+
+interface SummaryRow {
+  stt: number;
+  maLot: string;
+  maTiepNhan: string;
+  ngayTiepNhan: string;
+  nhanVienGiao: string;
+  nhomKhachHang: string;
+  tenKhachHang: string;
+  soLuongKhachGiao: number;
+  soLuongThucNhan: number;
+  tongSoLoSanXuat: number;
 }
 @Component({
   selector: 'jhi-tong-hop-qms',
@@ -201,6 +256,23 @@ export class TongHopQMSComponent implements OnInit {
   endDates = '';
   selectedLot?: string;
   itemsInLot: ItemSummary[] = [];
+  filterMaterial = '';
+  filterDate = '';
+  filterLot = '';
+  searchTerms = {
+    lotNumber: '',
+    maTiepNhan: '',
+    ngayTiepNhan: '',
+    nhanVienGiaoHang: '',
+    nhomKhachHang: '',
+    tenKhachHang: '',
+  };
+  filteredData: any[] = [];
+  saveLOT = '';
+  //phân trang chính
+  qmsPage = 1;
+  qmsPageSize = 20;
+  pagedData: any[] = [];
   // Test NVL
   testNVLPage = 1;
   testNVLPageSize = 20;
@@ -217,20 +289,29 @@ export class TongHopQMSComponent implements OnInit {
   lotsPage = 1;
   lotsPageSize = 20;
   Math = Math;
-
+  listOfSanPhamTrongDialog: any[] = [];
+  baoCaoVatTuList: SummaryRow[] = [];
+  detailLotList: TongHopResponse[] = [];
+  rawData: TongHopResponse[] = [];
+  lotMessage!: string;
   selectedItem?: ItemSummary;
   lotsOfItem: LotDetail[] = [];
   dataCTL: ITongHop[] = [];
+  selectedLotItems: TongHopResponse[] = [];
+  selectedMaTiepNhan!: string;
+  currentLotNumber = '';
   selectedLotDetail: (LotSummary & { checkNVL: any[] }) | null = null;
   @ViewChild('detailModal', { static: true }) detailModalTpl: TemplateRef<any> | undefined;
   @ViewChild('itemSummaryModal', { static: true }) itemSummaryModal!: TemplateRef<any>;
+  @ViewChild('scanLotModal', { static: true }) scanLotModal!: TemplateRef<any>;
   @ViewChild('lotListModal', { static: true }) lotListModal!: TemplateRef<any>;
   constructor(
     protected chiTietSanPhamTiepNhanService: TongHopQMSService,
     protected modalService: NgbModal,
     protected applicationConfigService: ApplicationConfigService,
     protected http: HttpClient,
-    protected apollo: Apollo
+    protected apollo: Apollo,
+    protected cdr: ChangeDetectorRef
   ) {
     this.excelExportService = new ExcelExportService();
   }
@@ -261,16 +342,25 @@ export class TongHopQMSComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
   ngOnInit(): void {
+    const today = new Date().toISOString().substring(0, 10);
+    this.startDates = today.replace(/(\d{4}-\d{2})-\d{2}/, '$1-01');
+    this.endDates = today;
     const savedLots = sessionStorage.getItem('lotList');
     const savedSummaries = sessionStorage.getItem('lotSummaries');
 
     this.lotList = savedLots ? JSON.parse(savedLots) : [];
     this.lotSummaries = savedSummaries ? JSON.parse(savedSummaries) : [];
 
-    // Nếu có LOT nhưng chưa có summary thì gọi API
     if (this.lotList.length && !this.lotSummaries.length) {
       this.fetchAllLots();
     }
+
+    this.cdr.detectChanges();
+  }
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.changeDate();
+    });
   }
 
   dataShow(): void {
@@ -433,6 +523,29 @@ export class TongHopQMSComponent implements OnInit {
   get totalLotsPages(): number {
     return this.lotsOfItem?.length ? Math.ceil(this.lotsOfItem.length / this.lotsPageSize) : 0;
   }
+  get totalQmsPages(): number {
+    return Math.ceil(this.lotSummaries.length / this.qmsPageSize);
+  }
+
+  get filteredScan100Pass(): any[] {
+    const materialFilter = this.filterMaterial?.toLowerCase() || '';
+    const dateFilter = this.filterDate?.toLowerCase() || '';
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return (
+      this.selectedLotDetail?.scan100Pass?.filter((s: any) => {
+        const materialMatch = s.material?.toLowerCase().includes(materialFilter);
+        const dateStr = s.date?.toLowerCase() || '';
+        const dateMatch = dateStr.includes(dateFilter);
+
+        return materialMatch && dateMatch;
+      }) ?? []
+    );
+  }
+  get filteredLotSummaries(): LotSummary[] {
+    const lotFilter = this.filterLot?.toLowerCase() || '';
+    return this.lotSummaries.filter(lot => lot.lot?.toLowerCase().includes(lotFilter));
+  }
 
   parseQR(qr: string): { partNumber: string; vendor: string } {
     const parts = qr?.split('#');
@@ -441,12 +554,35 @@ export class TongHopQMSComponent implements OnInit {
       vendor: parts?.[2] || '',
     };
   }
+  filterData(): void {
+    const filtered = this.baoCaoVatTuList.filter(
+      item =>
+        (!this.searchTerms.lotNumber || item.maLot?.toLowerCase().includes(this.searchTerms.lotNumber.toLowerCase())) &&
+        (!this.searchTerms.maTiepNhan || item.maTiepNhan?.toLowerCase().includes(this.searchTerms.maTiepNhan.toLowerCase())) &&
+        (!this.searchTerms.ngayTiepNhan || this.formatDate(new Date(item.ngayTiepNhan)).includes(this.searchTerms.ngayTiepNhan)) &&
+        (!this.searchTerms.nhanVienGiaoHang ||
+          item.nhanVienGiao?.toLowerCase().includes(this.searchTerms.nhanVienGiaoHang.toLowerCase())) &&
+        (!this.searchTerms.nhomKhachHang || item.nhomKhachHang?.toLowerCase().includes(this.searchTerms.nhomKhachHang.toLowerCase())) &&
+        (!this.searchTerms.tenKhachHang || item.tenKhachHang?.toLowerCase().includes(this.searchTerms.tenKhachHang.toLowerCase()))
+    );
 
+    this.filteredData = filtered;
+    this.qmsPage = 1; // reset về trang đầu
+    this.updatePagedData();
+  }
+
+  formatDate(date: Date): string {
+    const d = new Date(date);
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+  }
   openDetail(lotSummary: LotSummary) {
+    const lotNumber = lotSummary.lot;
+    console.log(lotNumber);
+
     this.apollo
       .query<any>({
         query: GET_WORK_ORDER_BY_LOT,
-        variables: { lotNumber: lotSummary.lot },
+        variables: { lotNumber },
       })
       .subscribe(res => {
         if (!res || !res.data) {
@@ -457,7 +593,6 @@ export class TongHopQMSComponent implements OnInit {
         const scan100Pass: any[] = Array.isArray(info.pqcScan100Pass) ? info.pqcScan100Pass : [];
         const testNVL: any[] = Array.isArray(info.pqcCheckTestNVL) ? info.pqcCheckTestNVL : [];
 
-        // Gán vendor từ QR vào từng bản ghi testNVL
         const enrichedTestNVL = testNVL.map((test: any): typeof test & { vendor: string } => {
           const note = test.note || '';
           const parts = note.split('#');
@@ -479,7 +614,6 @@ export class TongHopQMSComponent implements OnInit {
         });
       });
   }
-
   openItemSummary(lot: string): void {
     this.apollo
       .query<{ qmsToDoiTraInfoByLotNumber: any }>({
@@ -610,39 +744,306 @@ export class TongHopQMSComponent implements OnInit {
   }
 
   changeDate(): void {
-    let dateTimeSearchKey: { startDate: string; endDate: string } = { startDate: '', endDate: '' };
-    document.getElementById('dateForm')?.addEventListener('submit', function (event) {
-      event.preventDefault();
+    const dateTimeSearchKey = {
+      startDate: this.startDates,
+      endDate: this.endDates,
+    };
 
-      const startDateInp = document.getElementById('startDate') as HTMLInputElement;
-      const endDateInp = document.getElementById('endDate') as HTMLInputElement;
+    this.http.post<TongHopResponse[]>(this.tongHopUrl, dateTimeSearchKey).subscribe(res => {
+      this.rawData = res;
 
-      const startDate = startDateInp.value;
-      const endDate = endDateInp.value;
-      dateTimeSearchKey = { startDate: startDateInp.value, endDate: endDateInp.value };
+      const receiptMap = new Map<string, TongHopResponse[]>();
+      res.forEach(item => {
+        const receipt = item.maTiepNhan;
+        if (!receiptMap.has(receipt)) {
+          receiptMap.set(receipt, [item]);
+        } else {
+          receiptMap.get(receipt)!.push(item);
+        }
+      });
+
+      this.baoCaoVatTuList = [];
+
+      receiptMap.forEach((items, receipt) => {
+        const distinctLots = Array.from(new Set(items.map(i => i.lotNumber)));
+
+        distinctLots.forEach((lot, index) => {
+          const lotItems = items.filter(i => i.lotNumber === lot);
+
+          this.baoCaoVatTuList.push({
+            stt: this.baoCaoVatTuList.length + 1,
+            maLot: lot,
+            maTiepNhan: receipt,
+            ngayTiepNhan: lotItems[0].ngayTiepNhan,
+            nhanVienGiao: lotItems[0].nhanVienGiaoHang,
+            nhomKhachHang: lotItems[0].nhomKhachHang || 'Chưa có',
+            tenKhachHang: lotItems[0].tenKhachHang,
+            soLuongKhachGiao: lotItems.reduce((sum, i) => sum + (i.soLuongKhachGiao || 0), 0),
+            soLuongThucNhan: lotItems.reduce((sum, i) => sum + (i.tongSoLuong || 0), 0),
+            tongSoLoSanXuat: distinctLots.length,
+          });
+        });
+      });
+
+      this.updatePagedData();
     });
-    setTimeout(() => {
-      // console.log('startDate:', dateTimeSearchKey);
-      this.dateTimeSearchKey = dateTimeSearchKey;
-      this.http.post<any>(this.tongHopUrl, dateTimeSearchKey).subscribe(res => {
-        // console.log('check ressult search:', res);
-        this.chiTietSanPhamTiepNhanCTLGoc = res;
-        for (let i = 0; i < this.chiTietSanPhamTiepNhanCTLGoc.length; ++i) {
-          this.chiTietSanPhamTiepNhanCTLGoc[i].id = i + 1;
-        }
-        this.dataCTL = res.sort((a: any, b: any) => b.donBaoHanhId - a.donBaoHanhId);
-        this.chiTietSanPhamTiepNhanCTL = this.chiTietSanPhamTiepNhanCTLGoc;
-      });
+  }
+  updatePagedData(): void {
+    const source = this.filteredData.length > 0 ? this.filteredData : this.baoCaoVatTuList;
+    const start = (this.qmsPage - 1) * this.qmsPageSize;
+    const end = start + this.qmsPageSize;
+    this.pagedData = source.slice(start, end);
+  }
 
-      this.http.post<any>(this.tongHopCaculateUrl, dateTimeSearchKey).subscribe(resCaculate => {
-        this.chiTietSanPhamTiepNhanGoc = resCaculate;
-        for (let i = 0; i < this.chiTietSanPhamTiepNhanGoc.length; ++i) {
-          this.chiTietSanPhamTiepNhanGoc[i].id = i + 1;
+  changePage(page: number): void {
+    if (page < 1 || page > this.totalPages()) {
+      return;
+    }
+    this.qmsPage = page;
+    this.updatePagedData();
+  }
+
+  totalPages(): number {
+    const dataSource = this.filteredData.length > 0 ? this.filteredData : this.baoCaoVatTuList;
+    return Math.ceil(dataSource.length / this.qmsPageSize);
+  }
+
+  totalPagesArray(): number[] {
+    const total = this.totalPages();
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  openLotDialog(maTiepNhan: string, modalRef: TemplateRef<any>): void {
+    this.selectedMaTiepNhan = maTiepNhan;
+    this.selectedLot = maTiepNhan;
+
+    const itemsOfReceipt = this.rawData.filter(item => item.maTiepNhan === maTiepNhan);
+
+    const lotMap = new Map<string, TongHopResponse>();
+    itemsOfReceipt.forEach(item => {
+      if (!lotMap.has(item.lotNumber)) {
+        lotMap.set(item.lotNumber, item);
+      }
+    });
+
+    this.selectedLotItems = Array.from(lotMap.values());
+
+    this.modalService.open(modalRef, { size: 'lg', scrollable: true, windowClass: 'list-lot-modal' });
+  }
+  openScanLotDialog(lotNumber: string): void {
+    const trimmedLot = lotNumber?.trim();
+    this.currentLotNumber = trimmedLot;
+
+    const modalRef = this.modalService.open(this.scanLotModal, {
+      windowClass: 'full-screen-modal',
+      scrollable: true,
+    });
+
+    if (trimmedLot) {
+      this.handleScanLot(modalRef, trimmedLot);
+    }
+  }
+  getLotSummaryByLotNumber(lotNumber: string): LotSummary {
+    const item = this.selectedLotItems.find(i => i.lotNumber === lotNumber);
+    if (!item) {
+      console.warn('Không tìm thấy LOT tương ứng:', lotNumber);
+      return {
+        lot: lotNumber,
+        bomErrors: [],
+        testNVL: [],
+        scan100Pass: [],
+        returnDay: '',
+        totalQty: 0,
+      };
+    }
+
+    return {
+      lot: item.lotNumber,
+      bomErrors: [],
+      testNVL: [],
+      scan100Pass: [],
+      returnDay: '',
+      totalQty: 0,
+    };
+  }
+
+  handleScanLot(modal: any, lotNumber: string): void {
+    const trimmedLot = lotNumber?.trim();
+    this.isLoading = true;
+    this.lotMessage = '';
+
+    if (!trimmedLot || trimmedLot === '240000000000K') {
+      this.lotMessage = 'Mã LOT không hợp lệ';
+      this.selectedLotDetail = null;
+      this.listOfSanPhamTrongDialog = [];
+      this.isLoading = false;
+      return;
+    }
+
+    this.onScanLotChange(trimmedLot);
+  }
+
+  onScanLotChange(lot: string): void {
+    const trimmedLot = lot?.trim();
+    this.lotMessage = '';
+
+    this.apollo
+      .watchQuery({
+        query: GET_WORK_ORDER_BY_LOT,
+        variables: { lotNumber: trimmedLot },
+      })
+      .valueChanges.subscribe(
+        (result: any) => {
+          const data = result?.data?.qmsToDoiTraInfoByLotNumber;
+
+          if (
+            !data ||
+            (!data.pqcScan100Pass?.length &&
+              !data.pqcCheckNVL?.length &&
+              !data.pqcCheckTestNVL?.length &&
+              !data.pqcBomErrorDetail?.length &&
+              !data.pqcBomWorkOrder?.length)
+          ) {
+            this.lotMessage = 'Không có dữ liệu';
+            this.selectedLotDetail = null;
+            this.listOfSanPhamTrongDialog = [];
+            this.isLoading = false;
+            return;
+          }
+
+          const testNVLs = data.pqcCheckTestNVL || [];
+          const bomErrors = data.pqcBomErrorDetail || [];
+          const bomWorkOrders = data.pqcBomWorkOrder || [];
+          const bomQuantities = data.pqcBomQuantity || [];
+          const checkNVLInfo = data.pqcCheckNVL?.[0] || {};
+          const scan100Raw = data.pqcScan100Pass || [];
+
+          const scan100Pass: Scan100PassItem[] = scan100Raw.map((item: any, index: number): Scan100PassItem => {
+            const parts = item.qr?.split('#') || [];
+            return {
+              stt: index + 1,
+              tenSanPham: item.material || '',
+              lotNumber: trimmedLot,
+              vendor: parts[2] || '',
+              partNumber: parts[1] || '',
+              sap: parts[parts.length - 1] || '',
+              username: item.user_check || '',
+              tenNhanVienPhanTich: item.reason || '',
+              ngayKiemTra: item.createdAt,
+              qr: item.qr,
+              material: item.material,
+              user_check: item.user_check,
+              reason: item.reason,
+              createdAt: item.createdAt,
+            };
+          });
+
+          const firstScan = scan100Pass[0];
+          const sap = firstScan?.sap || '';
+          const vendor = firstScan?.vendor || '';
+          const partNumber = firstScan?.partNumber || '';
+
+          const bomData = bomWorkOrders.map((bom: any, index: number) => {
+            const matchedQuantity = bomQuantities.find((q: any) => q.pqcBomWorkOrderId === bom.id);
+            const quantity = matchedQuantity?.quantity ?? 0;
+            const totalError = matchedQuantity?.totalError ?? 0;
+
+            return {
+              stt: index + 1,
+              tenSanPham: bom.itemName || '',
+              lotNumber: trimmedLot,
+              sap,
+              vendor: bom.vendor || '',
+              partNumber: bom.partNumber || '',
+              detail: bom.itemCode || '',
+              namSanXuat: bom.createdAt ? bom.createdAt.slice(0, 4) : '',
+              slThucNhap: isNaN(Number(quantity)) ? 0 : Number(quantity),
+              ngayKiemTra: bom.createdAt || '',
+              ghiChu: bom.uremarks || '',
+              nhomLoi: '',
+              tenLoi: '',
+              soLuongLoi: isNaN(Number(totalError)) ? 0 : Number(totalError),
+              ngayCapNhat: bom.updatedAt || '',
+              trangThai: false,
+              username: '',
+              tenNhanVienPhanTich: '',
+              loiKyThuat: '',
+              loiLinhDong: '',
+              type: 'bom',
+              raw: bom,
+            };
+          });
+
+          const testNVLData = testNVLs.map((item: any, index: number) => ({
+            stt: index + 1 + Number(bomData.length),
+            tenSanPham: item.itemName || '',
+            lotNumber: trimmedLot,
+            sap,
+            vendor,
+            partNumber: item.partNumber || '',
+            detail: item.itemCode || '',
+            namSanXuat: checkNVLInfo.createdAt ? checkNVLInfo.createdAt.slice(0, 4) : '',
+            slThucNhap: isNaN(Number(item.qty)) ? 0 : Number(item.qty),
+            ngayKiemTra: item.checkDate || '',
+            ghiChu: item.note || '',
+            nhomLoi: '',
+            tenLoi: '',
+            soLuongLoi: '',
+            ngayCapNhat: checkNVLInfo.updatedAt || '',
+            trangThai: false,
+            username: checkNVLInfo.CheckPerson || '',
+            tenNhanVienPhanTich: checkNVLInfo.note || '',
+            loiKyThuat: '',
+            loiLinhDong: '',
+            type: 'testNVL',
+            raw: item,
+          }));
+
+          const bomErrorData = bomErrors.map((item: any, index: number) => ({
+            stt: index + 1 + Number(bomData.length) + Number(testNVLData.length),
+            tenSanPham: '',
+            lotNumber: '',
+            sap: '',
+            vendor: '',
+            partNumber: '',
+            detail: '',
+            namSanXuat: '',
+            slThucNhap: '',
+            ngayKiemTra: '',
+            ghiChu: item.note || '',
+            nhomLoi: item.errorCode || '',
+            tenLoi: item.errorName || '',
+            soLuongLoi: isNaN(Number(item.quantity)) ? 0 : Number(item.quantity),
+            ngayCapNhat: item.updatedAt || '',
+            trangThai: false,
+            username: '',
+            tenNhanVienPhanTich: '',
+            loiKyThuat: '',
+            loiLinhDong: '',
+            type: 'bomError',
+            raw: item,
+          }));
+
+          this.listOfSanPhamTrongDialog = [...bomData, ...testNVLData, ...bomErrorData];
+          this.selectedLotDetail = {
+            lot: trimmedLot,
+            bomErrors,
+            checkNVL: data.pqcCheckNVL || [],
+            scan100Pass,
+            testNVL: testNVLs,
+            returnDay: '',
+            totalQty: 0,
+          };
+
+          this.isLoading = false;
+        },
+        error => {
+          this.lotMessage = 'Lỗi khi tải dữ liệu';
+          this.selectedLotDetail = null;
+          this.listOfSanPhamTrongDialog = [];
+          this.isLoading = false;
+          console.error('Lỗi khi gọi API:', error);
         }
-        this.data = resCaculate.sort((a: any, b: any) => b.donBaoHanhId - a.donBaoHanhId);
-        this.chiTietSanPhamTiepNhan = this.chiTietSanPhamTiepNhanGoc;
-      });
-    }, 100);
+      );
   }
 
   exportToExcel(): void {

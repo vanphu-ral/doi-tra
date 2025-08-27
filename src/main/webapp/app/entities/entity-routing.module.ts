@@ -42,7 +42,7 @@ import { RouterModule } from '@angular/router';
       },
       {
         path: 'tong-hop-qms',
-        data: { pageTitle: 'Tổng hợp QMS' },
+        data: { pageTitle: 'Thông tin sản xuất sản phẩm' },
         loadChildren: () => import('./tong-hop-qms/tong-hop-qms.module').then(m => m.TongHopQMSModule),
       },
       {

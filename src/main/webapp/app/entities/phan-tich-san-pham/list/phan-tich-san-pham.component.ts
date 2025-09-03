@@ -140,6 +140,7 @@ export class PhanTichSanPhamComponent implements OnInit {
   predicate!: string;
   ascending!: boolean;
   lotValue = '';
+  serialValue = '';
   listBomErrorDetails: any[] = [];
   listDrawTestNvls: any[] = [];
   listOfSanPhamTrongDialog: any[] = [];
@@ -173,6 +174,8 @@ export class PhanTichSanPhamComponent implements OnInit {
   lotInput = '';
   scanLot = true;
   scanSerial = true;
+  currentPageScan100 = 1;
+  pageSizeScan100 = 20;
   // lưu thông tin account
   account: Account | null = null;
   // biến bật tắt popup
@@ -198,10 +201,10 @@ export class PhanTichSanPhamComponent implements OnInit {
   selectedLotDetail?: LotSummary & {
     checkNVL: any[];
     testNVL: any[];
-    scan100Pass: any[];
+    scan100Pass: Scan100PassItem[];
     bomErrors: any[];
   };
-
+  selectedFontSize = '14px';
   popupInBBTNtest = false;
   // biến chứa index của danh sách sản phẩm cần phân tích
   indexOfPhanTichSanPham = 0;
@@ -225,6 +228,7 @@ export class PhanTichSanPhamComponent implements OnInit {
   saveYear = '';
   saveTheLoai = '';
   saveSanPham = '';
+  lotStatus: 'empty' | 'invalid' | 'valid' = 'empty';
   //Biến lưu thông tin 1 phần tử của phân loại chi tiết sản phẩm
   itemOfPhanLoaiChiTietSanPham: any;
   // biến dùng để check all
@@ -254,6 +258,45 @@ export class PhanTichSanPhamComponent implements OnInit {
   //   { min: 61, max: 80, color: 'orange' },
   //   { min: 81, max: 100, color: 'red' }
   // ]
+  readonly danhSachLoiCanDung: string[] = [
+    'Cầu chì',
+    'Lỗi nguồn',
+    'Hỏng Led',
+    'Vasitor',
+    'Chập mạch',
+    'Nút vỡ nhựa, cover',
+    'Cầu Diode Hy',
+    'Bong mạch',
+    'Móp, nứt vỡ đui',
+    'Cầu Diode Silijino',
+    'Công tắc',
+    'Gãy cổ + Cơ khớp, tai cài',
+    'Tụ hoá L.H',
+    'Long keo',
+    'Nước vào',
+    'Tụ hoá Aishi',
+    'Đôminô, rác cắm',
+    'Điện áp cao',
+    'Tụ fiml CCTC',
+    'Dây nối Led',
+    'Cháy nổ nguồn',
+    'Tụ fiml hulysol',
+    'Mất lò xo,tai cài',
+    'Cũ, ẩm mốc, ố rỉ',
+    'Transistor',
+    'Dây DC',
+    'Om nhiệt',
+    'Điện trở',
+    'Dây AC',
+    'Vỡ ống, kính',
+    'Chặn(Biến áp)',
+    'Bong, nứt mối hàn',
+    'Lỗi khác',
+    'Cuộn lọc',
+    'Pin, tiếp xúc lò xo',
+    'Sáng bt',
+    'Hỏng IC VCC',
+  ];
 
   indexOfdanhSachLienBienBanTiepNhan = 0;
   phanTichSanPhams: any;
@@ -267,7 +310,8 @@ export class PhanTichSanPhamComponent implements OnInit {
   faInfoCircle = faInfoCircle;
   @ViewChild('scanLotModal') scanLotModal?: TemplateRef<any>;
   @ViewChild('detailModal') detailModalTpl?: TemplateRef<any>;
-  @ViewChild('inputRef') inputRef!: ElementRef<HTMLInputElement>;
+  @ViewChild('lotInput') lotInputRef!: ElementRef;
+  @ViewChild('serialInput') serialInputRef!: ElementRef;
 
   constructor(
     protected phanTichSanPhamService: PhanTichSanPhamService,
@@ -670,15 +714,19 @@ export class PhanTichSanPhamComponent implements OnInit {
   getStyle(status: string): any {
     switch (status) {
       case 'Chờ phân tích':
-        return { backgroundColor: '#f0ad4e', color: '#fff', fontSize: '10px' };
+        return { backgroundColor: '#f0ad4e', color: '#fff', fontSize: '14' };
       case 'Đang phân tích':
-        return { backgroundColor: '#4da3bdff', color: '#fff', fontSize: '10px' };
+        return { backgroundColor: '#4da3bdff', color: '#fff', fontSize: '14' };
       case 'Hoàn thành phân tích':
-        return { backgroundColor: '#49a849ff', color: '#fff', fontSize: '10px' };
+        return { backgroundColor: '#49a849ff', color: '#fff', fontSize: '14' };
       default:
-        return { backgroundColor: '#777', color: '#fff', fontSize: '10px' };
+        return { backgroundColor: '#777', color: '#fff', fontSize: '14' };
     }
   }
+  isTenLoiHienThi(tenLoi: string): boolean {
+    return this.danhSachLoiCanDung.some(loi => loi.trim().toLowerCase() === tenLoi.trim().toLowerCase());
+  }
+
   //lấy danh sách biên bản
   getDanhSachBienBan(): void {
     this.http.get<any>('api/ma-bien-bans').subscribe(res => {
@@ -732,17 +780,17 @@ export class PhanTichSanPhamComponent implements OnInit {
       return;
     }
 
+    this.donBaoHanh.id = id;
+
     this.http.get<any>(`${this.chiTietSanPhamTiepNhanUrl}/${id}`).subscribe(res => {
       this.chiTietSanPhamTiepNhans = res;
 
       this.http.get<any>(this.danhSachTinhTrangUrl).subscribe(resTT => {
         this.danhSachTinhTrang = resTT;
 
-        const donBaoHanhId = String(this.donBaoHanh?.id ?? '');
-        this.http.get<any[]>(`${this.phanLoaiChiTietTiepNhanUrl}/by-don-bao-hanh/${donBaoHanhId}`).subscribe(res1 => {
-          this.phanLoaiChiTietTiepNhans = res1;
+        this.http.get<any[]>(`${this.phanLoaiChiTietTiepNhanUrl}/by-don-bao-hanh/${id}`).subscribe(resPL => {
+          this.phanLoaiChiTietTiepNhans = resPL;
 
-          let count = 0;
           const ctMap = new Map<number, any>();
           this.chiTietSanPhamTiepNhans.forEach(ct => {
             if (ct?.id !== undefined) {
@@ -750,11 +798,11 @@ export class PhanTichSanPhamComponent implements OnInit {
             }
           });
 
+          let count = 0;
           this.listOfChiTietSanPhamPhanTich = this.phanLoaiChiTietTiepNhans
             .filter(pl => {
-              // eslint-disable-next-line @typescript-eslint/no-shadow
-              const id = pl.chiTietSanPhamTiepNhan?.id;
-              return pl.danhSachTinhTrang?.id !== 3 && typeof id === 'number' && ctMap.has(id);
+              const ctId = pl.chiTietSanPhamTiepNhan?.id;
+              return pl.danhSachTinhTrang?.id !== 3 && typeof ctId === 'number' && ctMap.has(ctId);
             })
             .map(pl => {
               const ctId = pl.chiTietSanPhamTiepNhan?.id;
@@ -767,7 +815,6 @@ export class PhanTichSanPhamComponent implements OnInit {
                 return null;
               }
 
-              // Lấy kho từ danhSachSanPhams
               let tenKho = 'Không xác định';
               if (ct.sanPham?.id && this.danhSachSanPhams) {
                 const sp = this.danhSachSanPhams.find((s: any) => s.id === ct.sanPham.id);
@@ -776,7 +823,7 @@ export class PhanTichSanPhamComponent implements OnInit {
                 }
               }
 
-              const item = {
+              return {
                 stt: count++,
                 donVi: ct.sanPham?.donVi ?? '',
                 phanLoaiChiTietTiepNhan: pl,
@@ -790,33 +837,26 @@ export class PhanTichSanPhamComponent implements OnInit {
                 slConLai: 0,
                 tienDo: 0,
                 check: false,
-                tenKho: tenKho, // thêm trường này để gom nhóm
+                tenKho,
+                loiKyThuat: 0,
+                loiLinhDong: 0,
               };
-              return item;
             })
             .filter(item => item !== null);
 
-          // Gom nhóm theo kho
           const khoMap = new Map<string, any[]>();
           this.listOfChiTietSanPhamPhanTich.forEach(item => {
             this.donBaoHanh.slCanPhanTich += item.slTiepNhan;
-
             const tenKho = item.tenKho ?? 'Không xác định';
-
             if (!khoMap.has(tenKho)) {
               khoMap.set(tenKho, []);
             }
-
             khoMap.get(tenKho)?.push(item);
-            // console.log('KhoMap:', khoMap);
-            // console.log('resultOfSanPhamTheoKho trước lọc:', this.resultOfSanPhamTheoKho);
           });
 
           this.resultOfSanPhamTheoKho = Array.from(khoMap.entries()).map(([key, value]) => ({ key, value }));
           this.resultOfSanPhamTheoKhoTL = [...this.resultOfSanPhamTheoKho];
-          // console.log('resultOfSanPhamTheoKho sau lọc:', this.resultOfSanPhamTheoKho);
 
-          // Loại bỏ các entry có key rỗng hoặc "Không xác định"
           this.resultOfSanPhamTheoKho = this.resultOfSanPhamTheoKho.filter(
             item => item.key && item.key.trim() !== '' && item.key !== 'Không xác định'
           );
@@ -824,13 +864,12 @@ export class PhanTichSanPhamComponent implements OnInit {
             item => item.key && item.key.trim() !== '' && item.key !== 'Không xác định'
           );
 
-          this.resultOfSanPhamTheoKho = this.resultOfSanPhamTheoKho.filter(item => item.key !== '');
-          this.resultOfSanPhamTheoKhoTL = this.resultOfSanPhamTheoKhoTL.filter(item => item.key !== '');
           this.listOfChiTietSanPhamPhanTich = this.listOfChiTietSanPhamPhanTich.filter(item => item.slTiepNhan !== 0);
           this.listOfChiTietSanPhamPhanTichGoc = [...this.listOfChiTietSanPhamPhanTich];
 
           this.updateDanhSachBienBanTheoKho();
 
+          // 👉 Gọi hàm tính tiến độ sau khi đã có danh sách
           this.listOfChiTietSanPhamPhanTich.forEach((item, i) => {
             this.updateTienDoSanPhamPhanTich(item.id, i);
           });
@@ -838,6 +877,7 @@ export class PhanTichSanPhamComponent implements OnInit {
       });
     });
   }
+
   updateDanhSachBienBanTheoKho(): void {
     //Lọc sản phẩm có sl Tiếp nhận rỗng và check = false
     for (let i = 0; i < this.resultOfSanPhamTheoKho.length; i++) {
@@ -1013,10 +1053,13 @@ export class PhanTichSanPhamComponent implements OnInit {
       phanLoai: this.http.get<any>(this.phanLoaiChiTietTiepNhanUrl),
     }).subscribe(({ chiTiet, tinhTrang, phanLoai }) => {
       console.log('📥 Dữ liệu popup BBTN:', { chiTiet, tinhTrang, phanLoai });
+
+      // Gán dữ liệu từ API
       this.chiTietSanPhamTiepNhans = chiTiet;
       this.danhSachTinhTrang = tinhTrang;
       this.phanLoaiChiTietTiepNhans = phanLoai;
 
+      // Tạo map phân loại theo chi tiết sản phẩm
       const phanLoaiMap = new Map<number, IPhanLoaiChiTietTiepNhan[]>();
       for (const pl of this.phanLoaiChiTietTiepNhans) {
         const id = pl.chiTietSanPhamTiepNhan?.id;
@@ -1028,20 +1071,28 @@ export class PhanTichSanPhamComponent implements OnInit {
         }
       }
 
-      const list = this.chiTietSanPhamTiepNhans.map(ct => {
+      // Loại bỏ bản ghi trùng id
+      const uniqueChiTietSanPham = this.chiTietSanPhamTiepNhans.filter(
+        (item, index, self) => typeof item.id === 'number' && index === self.findIndex(i => i.id === item.id)
+      );
+
+      // Xử lý dữ liệu hiển thị
+      const list = uniqueChiTietSanPham.map(ct => {
         const id = ct.id;
         const phanLoais = typeof id === 'number' ? phanLoaiMap.get(id) ?? [] : [];
 
         let slDoiMoi = 0,
           slSuaChua = 0,
           slKhongBaoHanh = 0;
+
         for (const pl of phanLoais) {
           const sl = pl.soLuong ?? 0;
-          if (pl.danhSachTinhTrang?.id === 1) {
+          const tinhTrangId = pl.danhSachTinhTrang?.id;
+          if (tinhTrangId === 1) {
             slDoiMoi += sl;
-          } else if (pl.danhSachTinhTrang?.id === 2) {
+          } else if (tinhTrangId === 2) {
             slSuaChua += sl;
-          } else if (pl.danhSachTinhTrang?.id === 3) {
+          } else if (tinhTrangId === 3) {
             slKhongBaoHanh += sl;
           }
         }
@@ -1063,6 +1114,7 @@ export class PhanTichSanPhamComponent implements OnInit {
         };
       });
 
+      // Lưu cache và cập nhật giao diện
       sessionStorage.setItem(cacheKey, JSON.stringify(list));
       this.resultChiTietSanPhamTiepNhans = list;
       this.sortResultChiTietSanPham();
@@ -1070,6 +1122,7 @@ export class PhanTichSanPhamComponent implements OnInit {
       this.updateMaBienBan();
     });
   }
+
   sortResultChiTietSanPham(): void {
     this.resultChiTietSanPhamTiepNhans.sort((a, b) => {
       if (a.slSuaChua > 0 && b.slSuaChua === 0) {
@@ -1316,9 +1369,12 @@ export class PhanTichSanPhamComponent implements OnInit {
   setScanMode(mode: 'lot' | 'serial'): void {
     this.scanMode = mode;
 
-    // Đợi view cập nhật xong rồi focus
     setTimeout(() => {
-      this.inputRef?.nativeElement?.focus();
+      if (mode === 'lot') {
+        this.lotInputRef?.nativeElement?.focus();
+      } else {
+        this.serialInputRef?.nativeElement?.focus();
+      }
     }, 0);
   }
   getMaKhoFromTenKho(tenKho: string): string {
@@ -1533,22 +1589,30 @@ export class PhanTichSanPhamComponent implements OnInit {
   }
   //focus con trỏ chuột vào ô input Lot
   onScan(type: 'lot' | 'serial', value: string): void {
+    if (value.length >= 2) {
+      this.saveYear = `20${value.substr(0, 2)}`;
+    } else {
+      this.saveYear = '';
+    }
+
     const product = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham];
-    // Lấy năm: 2 ký tự đầu của mã → 20xx
-    this.saveYear = `20${value.substr(0, 2)}`;
+    if (!product) {
+      console.warn('Không tìm thấy sản phẩm để gán dữ liệu');
+      return;
+    }
+
     product.namSanXuat = this.saveYear;
 
     if (type === 'lot') {
-      this.saveLOT = value;
       product.lotNumber = value;
     } else {
-      this.saveSerial = value;
-      // Ví dụ bạn chỉ lấy 13 ký tự đầu để gán lại cho LOT nếu cần
-      this.saveLOT = value.substr(0, 13);
+      const lotFromSerial = value.substr(0, 13);
+      this.saveLOT = lotFromSerial;
       product.detail = value;
-      product.lotNumber = this.saveLOT;
+      product.lotNumber = lotFromSerial;
     }
   }
+
   parseQR(qr: string): { vendor: string; sap: string; partNumber: string } {
     const parts = qr?.split('#') || [];
     // console.log('QR parts:', parts);
@@ -1559,12 +1623,34 @@ export class PhanTichSanPhamComponent implements OnInit {
       vendor: parts.length > 2 ? parts[2] : '',
     };
   }
+  get paginatedScan100(): Scan100PassItem[] {
+    const start = (this.currentPageScan100 - 1) * this.pageSizeScan100;
+    const scan100 = this.selectedLotDetail?.scan100Pass as Scan100PassItem[] | undefined;
+    return scan100?.slice(start, start + this.pageSizeScan100) ?? [];
+  }
+
+  get totalPages(): number {
+    const totalItems = this.selectedLotDetail?.scan100Pass?.length ?? 0;
+    return Math.ceil(totalItems / this.pageSizeScan100);
+  }
 
   onScanLotChange(lot: string): void {
+    this.isLoading = true;
+    this.lotStatus = 'empty';
     if (!lot || lot.trim().length === 0) {
+      this.isLoading = false;
+      this.lotStatus = 'empty';
       return;
     }
 
+    if (lot === '2400000000000' || lot === '240000000000K') {
+      this.isLoading = false;
+      this.lotStatus = 'invalid';
+      return;
+    }
+    if (!lot || lot.trim().length === 0) {
+      return;
+    }
     this.apollo
       .watchQuery({
         query: GET_WORK_ORDER_BY_LOT,
@@ -1573,7 +1659,9 @@ export class PhanTichSanPhamComponent implements OnInit {
       .valueChanges.subscribe(
         (result: any) => {
           const data = result?.data?.qmsToDoiTraInfoByLotNumber;
-          if (!data) {
+          if (!data || (!data.pqcBomWorkOrder?.length && !data.pqcCheckTestNVL?.length && !data.pqcBomErrorDetail?.length)) {
+            this.isLoading = false;
+            this.lotStatus = 'invalid';
             return;
           }
 
@@ -1619,7 +1707,8 @@ export class PhanTichSanPhamComponent implements OnInit {
               vendor: bom.vendor,
               partNumber: bom.partNumber,
               detail: bom.itemCode,
-              namSanXuat: bom.createdAt?.slice(0, 4) || '',
+              // namSanXuat: bom.createdAt?.slice(0, 4) || '',
+              namSanXuat: this.saveYear,
               slThucNhap: Number(matchedQuantity?.quantity) || 0,
               ngayKiemTra: bom.createdAt,
               ghiChu: bom.uremarks || '',
@@ -1700,9 +1789,11 @@ export class PhanTichSanPhamComponent implements OnInit {
           };
 
           this.isLoading = false;
+          this.lotStatus = 'valid';
         },
         error => {
           this.isLoading = false;
+          this.lotStatus = 'invalid';
         }
       );
   }
@@ -2091,70 +2182,54 @@ export class PhanTichSanPhamComponent implements OnInit {
 
   //Hàm cập nhật tiến độ sản phẩm phân tích
   updateTienDoSanPhamPhanTich(id: number, index: number): void {
-    this.donBaoHanh.slDaPhanTich = 0;
     this.indexOfChiTietPhanTichSanPham = 0;
-    this.listOfPhanTichSanPhamByPLCTTN = [];
     this.indexOfPhanTichSanPham = index;
-    //reset tổng lỗi kĩ thuật và lỗi linh động
+    this.listOfPhanTichSanPhamByPLCTTN = [];
+
     this.listOfChiTietSanPhamPhanTich[index].loiKyThuat = 0;
     this.listOfChiTietSanPhamPhanTich[index].loiLinhDong = 0;
-    //trường hợp số lượng tiếp nhận = 0
+
     if (this.listOfChiTietSanPhamPhanTich[index].slTiepNhan === 0) {
-      // điều chỉnh tiến độ lên 100%
       this.listOfChiTietSanPhamPhanTich[index].tienDo = 100;
       this.listOfChiTietSanPhamPhanTich[index].check = true;
-      this.getColor(this.listOfChiTietSanPhamPhanTich[index].tienDo, this.indexOfPhanTichSanPham);
-      // cập nhật tiến độ chung của đơn bảo hành
-      this.donBaoHanh.slDaPhanTich!++;
+      this.getColor(100, index);
+      return;
+    }
+
+    this.http.get<any>(`api/phan-tich-san-pham/${id}`).subscribe(res => {
+      this.listOfPhanTichSanPhamByPLCTTN = res;
+
+      const slDaPhanTich = res.filter((pt: any) => pt.trangThai === 'true').length;
+      const slTiepNhan = this.listOfChiTietSanPhamPhanTich[index].slTiepNhan;
+      const slConLai = Math.max(slTiepNhan - slDaPhanTich, 0);
+      const tienDo = slTiepNhan > 0 ? (slDaPhanTich / slTiepNhan) * 100 : 0;
+
+      this.listOfChiTietSanPhamPhanTich[index].slDaPhanTich = slDaPhanTich;
+      this.listOfChiTietSanPhamPhanTich[index].slConLai = slConLai;
+      this.listOfChiTietSanPhamPhanTich[index].tienDo = tienDo;
+
+      if (tienDo === 100) {
+        this.listOfChiTietSanPhamPhanTich[index].check = true;
+        this.getColor(tienDo, index);
+      }
+
+      // Tính lỗi kỹ thuật và linh động
+      res.forEach((pt: any) => {
+        pt.phanTichLois?.forEach((loi: any) => {
+          if (loi.ghiChu === 'Lỗi kỹ thuật') {
+            this.listOfChiTietSanPhamPhanTich[index].loiKyThuat += Number(loi.soLuong) || 0;
+          }
+          if (loi.ghiChu === 'Lỗi linh động') {
+            this.listOfChiTietSanPhamPhanTich[index].loiLinhDong += Number(loi.soLuong) || 0;
+          }
+        });
+      });
+
+      // 👉 Cập nhật tiến độ tổng thể sau khi đã xử lý từng item
+      this.donBaoHanh.slDaPhanTich = this.listOfChiTietSanPhamPhanTich.filter(item => item.tienDo === 100).length;
       this.donBaoHanh.tienDo = (this.donBaoHanh.slDaPhanTich / this.donBaoHanh.slCanPhanTich) * 100;
       this.getColor(this.donBaoHanh.tienDo, 'donBaoHanh');
-    } else {
-      // lấy danh sách chi tiết sản phẩm phân tích
-      this.http.get<any>(`api/phan-tich-san-pham/${id}`).subscribe(res => {
-        this.listOfPhanTichSanPhamByPLCTTN = res;
-        // console.log('Độ dài danh sách: ', this.listOfPhanTichSanPhamByPLCTTN);
-        // console.log({ PLCTTNID: id, PLCTTNINDEX: index });
-        //cập nhật tổng lỗi kĩ thuật và lỗi linh động
-        for (let i = 0; i < this.listOfPhanTichSanPhamByPLCTTN.length; i++) {
-          // console.log({ checkIndexOfSanPhamPhanTich: this.listOfPhanTichSanPhamByPLCTTN[i] });
-          if (this.listOfPhanTichSanPhamByPLCTTN[i].trangThai === 'true') {
-            // cập nhật tiến độ của phân tích sản phẩm
-            // console.log('Cập nhật tiến độ khi khai báo lỗi', this.listOfChiTietSanPhamPhanTich);
-            this.listOfChiTietSanPhamPhanTich[index].slDaPhanTich += 1;
-            this.listOfChiTietSanPhamPhanTich[index].slConLai =
-              this.listOfChiTietSanPhamPhanTich[index].slTiepNhan - this.listOfChiTietSanPhamPhanTich[index].slDaPhanTich;
-            this.listOfChiTietSanPhamPhanTich[index].tienDo =
-              (this.listOfChiTietSanPhamPhanTich[index].slDaPhanTich / this.listOfChiTietSanPhamPhanTich[index].slTiepNhan) * 100;
-            if (this.listOfChiTietSanPhamPhanTich[index].tienDo === 100) {
-              this.getColor(this.listOfChiTietSanPhamPhanTich[index].tienDo, index);
-              // cập nhật check sản phẩm phân tích
-              this.listOfChiTietSanPhamPhanTich[index].check = true;
-            }
-            // cập nhật tiến độ chung của đơn bảo hành
-            this.donBaoHanh.slDaPhanTich!++;
-            this.donBaoHanh.tienDo = (this.donBaoHanh.slDaPhanTich / this.donBaoHanh.slCanPhanTich) * 100;
-            this.getColor(this.donBaoHanh.tienDo, 'donBaoHanh');
-
-            //cập nhật tổng lỗi linh động, lỗi kĩ thuật
-            // for (let j = 0; j < this.listOfPhanTichSanPhamByPLCTTN[i].phanTichLois.length; j++) {
-            //   // console.log({ checkIndex: this.listOfPhanTichSanPhamByPLCTTN[i].phanTichLois });
-            //   if (this.listOfPhanTichSanPhamByPLCTTN[i].phanTichLois[j].ghiChu === 'Lỗi kỹ thuật') {
-            //     // console.log('test');
-            //     this.listOfChiTietSanPhamPhanTich[index].loiKyThuat =
-            //       Number(this.listOfChiTietSanPhamPhanTich[index].loiKyThuat) +
-            //       Number(this.listOfPhanTichSanPhamByPLCTTN[i].phanTichLois[j].soLuong);
-            //   }
-            //   if (this.listOfPhanTichSanPhamByPLCTTN[i].phanTichLois[j].ghiChu === 'Lỗi linh động') {
-            //     this.listOfChiTietSanPhamPhanTich[index].loiLinhDong =
-            //       Number(this.listOfChiTietSanPhamPhanTich[index].loiLinhDong) +
-            //       Number(this.listOfPhanTichSanPhamByPLCTTN[i].phanTichLois[j].soLuong);
-            //   }
-            // }
-          }
-        }
-        // cập nhật số lượng sản phẩm đã phân tích, số lượng còn lại, tiến độ phân tích(chưa làm)
-      });
-    }
+    });
   }
 
   chinhSuaKhaiBaoLoi(index: any): void {
@@ -2296,5 +2371,21 @@ export class PhanTichSanPhamComponent implements OnInit {
 
   closePopupInBBTnTest(): void {
     this.popupInBBTNtest = false;
+  }
+  get selectedFontSizeClass(): string {
+    // chuyển '14px' → 'font-size-14'
+    const px = parseInt(this.selectedFontSize, 10);
+    return `font-size-${px}`;
+  }
+
+  // Inject inline style với !important
+  get printStyle(): Record<string, any> {
+    const s = this.selectedFontSize;
+    return {
+      '#BBTN, #BBTN *': {
+        'font-size': `${s} !important`,
+        'font-family': 'Arial, sans-serif !important',
+      },
+    };
   }
 }

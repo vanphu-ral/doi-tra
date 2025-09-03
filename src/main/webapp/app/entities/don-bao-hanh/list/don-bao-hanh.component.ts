@@ -217,7 +217,8 @@ export class DonBaoHanhComponent implements OnInit {
   loading = false;
   isAdmin = false;
   faPrint = faPrint;
-
+  indexToDelete = -1;
+  private shouldReloadAfterPopup = false;
   constructor(
     protected rowDetailViewComponent: RowDetailViewComponent,
     protected donBaoHanhService: DonBaoHanhService,
@@ -484,8 +485,8 @@ export class DonBaoHanhComponent implements OnInit {
         sortable: true,
         filterable: true,
         formatter: Formatters.progressBar,
-        minWidth: 120,
-        maxWidth: 120,
+        minWidth: 100,
+        maxWidth: 100,
         // alwaysRenderColumn: true,
         onCellChange: (e: SlickEventData, args: OnEventArgs) => console.log('tesssst: ', args),
         type: FieldType.string,
@@ -658,19 +659,10 @@ export class DonBaoHanhComponent implements OnInit {
           minWidth: 55,
           maxWidth: 55,
           onCellClick: (e: Event, args: OnEventArgs) => {
-            if (confirm('Bạn có chắc chắn muốn xóa?')) {
-              const id: number = args.dataContext.id;
-
-              this.http.delete(`${this.deleteDonBaoHanhUrl}/${id}`).subscribe({
-                next: () => {
-                  this.angularGrid?.gridService.deleteItemById(id);
-                  alert('Xóa thành công!');
-                },
-                error: () => {
-                  alert('Xóa thất bại. Vui lòng thử lại.');
-                },
-              });
-            }
+            const id: number = args.dataContext.id;
+            this.deleteId = id;
+            this.isModalOpenConfirm = true;
+            document.getElementById('modal-confirm')!.style.display = 'block';
           },
         });
       }
@@ -760,6 +752,7 @@ export class DonBaoHanhComponent implements OnInit {
       }, 1000);
     });
   }
+
   // lấy id lớn nhất trong ds chi tiết sản phẩm tiếp nhận
   getMaxId(): void {
     this.http.get<ChiTietSanPhamTiepNhan>(this.getMaxIdChiTietSanPhamTiepNhanUrl).subscribe(res => {
@@ -944,19 +937,24 @@ export class DonBaoHanhComponent implements OnInit {
         });
 
         // 3) Đẩy vào mảng kết quả
-        this.resultChiTietSanPhamTiepNhans.push({
-          id: ct.id!,
-          tenSanPham: ct.sanPham?.name ?? '',
-          donVi: ct.sanPham?.donVi ?? '',
-          slKhachGiao: ct.soLuongKhachHang ?? 0,
-          slTiepNhan: slTiepNhan,
-          slDoiMoi: slDoiMoi,
-          slSuaChua: slSuaChua,
-          slKhongBaoHanh: slKhongBH,
-          slTiepNhanTong: slTiepNhan,
-          chiTietSanPhamTiepNhan: ct,
-          tinhTrangBaoHanh: ct.tinhTrangBaoHanh === 'true',
-        });
+        const exists = this.resultChiTietSanPhamTiepNhans.some(item => item.id === ct.id);
+        if (!exists) {
+          if (ct.phanLoaiChiTietTiepNhans && ct.phanLoaiChiTietTiepNhans.length > 0) {
+            this.resultChiTietSanPhamTiepNhans.push({
+              id: ct.id!,
+              tenSanPham: ct.sanPham?.name ?? '',
+              donVi: ct.sanPham?.donVi ?? '',
+              slKhachGiao: ct.soLuongKhachHang ?? 0,
+              slTiepNhan: slTiepNhan,
+              slDoiMoi: slDoiMoi,
+              slSuaChua: slSuaChua,
+              slKhongBaoHanh: slKhongBH,
+              slTiepNhanTong: slTiepNhan,
+              chiTietSanPhamTiepNhan: ct,
+              tinhTrangBaoHanh: ct.tinhTrangBaoHanh === 'true',
+            });
+          }
+        }
       });
 
       this.isLoading = false;
@@ -1291,7 +1289,7 @@ export class DonBaoHanhComponent implements OnInit {
           });
 
           this.http.post<any>(this.postPhanLoaiChiTietTiepNhanUrl, this.themMoiPhanLoaiChiTietTiepNhan).subscribe(res2 => {
-            this.openPopupNoti('Thêm mới thành công');
+            this.openPopupNoti('Thêm mới thành công', true);
             window.location.reload();
           });
         });
@@ -1561,6 +1559,7 @@ export class DonBaoHanhComponent implements OnInit {
     };
     this.resultChiTietSanPhamTiepNhans.push(newRow);
     this.danhSachGocPopupPhanLoai.push(newRow);
+    this.themMoiDonBaoHanh.push(newRow);
     // this.resultChiTietSanPhamTiepNhans = [...this.resultChiTietSanPhamTiepNhans, newRow];
     // this.danhSachGocPopupPhanLoai = [...this.danhSachGocPopupPhanLoai, newRow];
     // console.log('them dong', this.resultChiTietSanPhamTiepNhans);
@@ -1921,66 +1920,90 @@ export class DonBaoHanhComponent implements OnInit {
     this.ExcelData = [];
     this.donBaoHanh.slTiepNhan = 0;
     this.donBaoHanh.nhanVienGiaoHang = '';
+
     const file = event.target.files[0];
     const fileReader = new FileReader();
     fileReader.readAsBinaryString(file);
-    fileReader.onload = e => {
+
+    fileReader.onload = () => {
       const workBook = XLSX.read(fileReader.result, { type: 'binary' });
-      const sheetNames = workBook.SheetNames;
-      this.ExcelData = XLSX.utils.sheet_to_json(workBook.Sheets[sheetNames[0]], {
-        header: ['maSanPham', 'tenSanPham', 'slKhachGiao', 'slNhan', 'slDoiMoi', 'slSuaChua', 'slKhongBaoHanh'],
-        defval: '',
+      const sheet = workBook.Sheets[workBook.SheetNames[0]];
+
+      // Bước 1: Đọc dòng tiêu đề thật
+      const sheetRaw = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      const excelHeaders = sheetRaw[0] as string[];
+
+      const headerMapping: { [key: string]: string } = {
+        'Mã Sản phẩm': 'maSanPham',
+        'Tên sản phẩm': 'tenSanPham',
+        'SL KH giao': 'slKhachGiao',
+        'SL nhận': 'slNhan',
+        'Đổi mới': 'slDoiMoi',
+        'Sửa chữa': 'slSuaChua',
+        'Không BH': 'slKhongBaoHanh',
+      };
+
+      const requiredExcelHeaders = Object.keys(headerMapping);
+      const normalizedHeaders = excelHeaders.map(h => h.trim().toLowerCase());
+      const missingHeaders = requiredExcelHeaders.filter(h => !normalizedHeaders.includes(h.trim().toLowerCase()));
+
+      if (missingHeaders.length > 0) {
+        this.openPopupNoti(`File Excel thiếu các cột: ${missingHeaders.join(', ')}. Vui lòng kiểm tra lại.`);
+        return;
+      }
+
+      // Bước 2: Đọc dữ liệu và ánh xạ tên cột
+      const rawData = XLSX.utils.sheet_to_json(sheet, { defval: '', range: 1 });
+      const mappedData: Record<string, string | number>[] = rawData.map((row: any) => {
+        const mappedRow: Record<string, string | number> = {};
+
+        Object.entries(headerMapping).forEach(([excelKey, internalKey]) => {
+          const matchedKey = Object.keys(row).find(k => k.trim().toLowerCase() === excelKey.trim().toLowerCase());
+          mappedRow[internalKey] = matchedKey ? row[matchedKey] ?? '' : '';
+        });
+
+        return mappedRow;
       });
-    };
-    // lọc thông tin hiển thị lên giao diện
-    setTimeout(() => {
-      this.ExcelData = this.ExcelData.filter((data: any) => data.slKhachGiao !== '' && data.tenSanPham !== 'Tên sản phẩm');
-      for (let i = 0; i < this.ExcelData.length; i++) {
-        this.ExcelData[i].sanPham = null;
-        for (let j = 0; j < this.danhSachSanPham.length; j++) {
-          // console.log(j);
-          if (this.ExcelData[i].tenSanPham === this.danhSachSanPham[j].name) {
-            this.ExcelData[i].sanPham = this.danhSachSanPham[j];
+
+      if (mappedData.length === 0) {
+        this.openPopupNoti('File Excel không có dữ liệu. Vui lòng kiểm tra lại.');
+        return;
+      }
+
+      // Bước 3: Lọc và xử lý dữ liệu
+      this.ExcelData = mappedData.filter((data: any) => data.slKhachGiao !== '' && data.tenSanPham !== 'Tên sản phẩm');
+
+      for (const item of this.ExcelData) {
+        item.sanPham = null;
+        for (const sp of this.danhSachSanPham) {
+          if (item.tenSanPham === sp.name) {
+            item.sanPham = sp;
             break;
           }
         }
-        if (this.ExcelData[i].slSuaChua === '') {
-          this.ExcelData[i].slSuaChua = 0;
-          if (this.ExcelData[i].slKhongBaoHanh === '') {
-            this.ExcelData[i].slKhongBaoHanh = 0;
-          }
-        } else {
-          if (this.ExcelData[i].slKhongBaoHanh === '') {
-            this.ExcelData[i].slKhongBaoHanh = 0;
-          }
-        }
-        // lưu kết quả sau khi lọc vào biến mới
-        this.themMoiDonBaoHanh.push(this.ExcelData[i]);
-        // tính toán tổng số lượng tiếp nhận
-        this.donBaoHanh.slTiepNhan =
-          Number(this.donBaoHanh.slTiepNhan) +
-          Number(this.ExcelData[i].slDoiMoi) +
-          Number(this.ExcelData[i].slSuaChua) +
-          Number(this.ExcelData[i].slKhongBaoHanh);
+
+        item.slSuaChua = item.slSuaChua === '' ? 0 : Number(item.slSuaChua);
+        item.slKhongBaoHanh = item.slKhongBaoHanh === '' ? 0 : Number(item.slKhongBaoHanh);
+        item.slDoiMoi = item.slDoiMoi === '' ? 0 : Number(item.slDoiMoi);
+
+        this.themMoiDonBaoHanh.push(item);
+        this.donBaoHanh.slTiepNhan += Number(item.slDoiMoi) + Number(item.slSuaChua) + Number(item.slKhongBaoHanh);
       }
-      //lưu kết quả vào
-      // console.log(this.ExcelData);
-      // console.log('kq', this.themMoiDonBaoHanh);
-      // console.log(`kq tiep nhan:`, event);
-    }, 1000);
+    };
   }
 
-  openPopupNoti(message: string): void {
+  openPopupNoti(message: string, reloadAfter?: boolean): void {
     this.popupMessage = message;
     this.isPopupVisible = true;
-    // console.log('popup thong bao', this.popupMessage);
+    this.shouldReloadAfterPopup = reloadAfter ?? false;
     document.getElementById('popupNoti')!.style.display = 'block';
   }
-
   closePopupNoti(): void {
     this.isPopupVisible = false;
-    // console.log('dong popup', this.isPopupVisible)
     document.getElementById('popupNoti')!.style.display = 'none';
+    if (this.shouldReloadAfterPopup) {
+      window.location.reload();
+    }
   }
 
   deleteRowPopupPhanLoai(id: any): void {
@@ -1990,55 +2013,67 @@ export class DonBaoHanhComponent implements OnInit {
   }
 
   confirmDelete(): void {
-    this.isChanged = true;
-    this.donBaoHanh.slTiepNhan = 0;
-    this.resultChiTietSanPhamTiepNhans = this.resultChiTietSanPhamTiepNhans.filter((d: any) => d.id !== this.deleteId);
-    this.danhSachGocPopupPhanLoai = this.danhSachGocPopupPhanLoai.filter((d: any) => d.id !== this.deleteId);
-    this.http.delete(`${this.deleteDetailDonBaoHanhUrl}/${this.deleteId as number}`).subscribe(() => {
-      // console.log('xóa thành công');
-    });
-
-    for (let i = 0; i < this.resultChiTietSanPhamTiepNhans.length; i++) {
-      this.donBaoHanh.slTiepNhan =
-        Number(this.donBaoHanh.slTiepNhan) +
-        Number(this.resultChiTietSanPhamTiepNhans[i].slDoiMoi) +
-        Number(this.resultChiTietSanPhamTiepNhans[i].slSuaChua) +
-        Number(this.resultChiTietSanPhamTiepNhans[i].slKhongBaoHanh);
+    if (!this.deleteId) {
+      return;
     }
 
-    this.isModalOpenConfirm = false;
-    document.getElementById('modal-confirm')!.style.display = 'none';
+    this.http.delete(`${this.deleteDonBaoHanhUrl}/${this.deleteId as number}`).subscribe({
+      next: () => {
+        try {
+          // Cập nhật lại danh sách hiển thị
+          this.resultChiTietSanPhamTiepNhans = this.resultChiTietSanPhamTiepNhans.filter((d: any) => d.id !== this.deleteId);
+          this.danhSachGocPopupPhanLoai = this.danhSachGocPopupPhanLoai.filter((d: any) => d.id !== this.deleteId);
+
+          // Tính lại số lượng tiếp nhận
+          if (this.donBaoHanh) {
+            this.donBaoHanh.slTiepNhan = 0;
+            for (const item of this.resultChiTietSanPhamTiepNhans) {
+              this.donBaoHanh.slTiepNhan += Number(item.slDoiMoi) + Number(item.slSuaChua) + Number(item.slKhongBaoHanh);
+            }
+          }
+
+          // Đóng modal xác nhận
+          this.closeModalConfirm();
+
+          // Hiển thị thông báo và reload
+          this.openPopupNoti('Xóa thành công đơn bảo hành', true);
+        } catch (e) {
+          console.error('Lỗi xử lý sau khi xóa:', e);
+          this.openPopupNoti('Xóa thất bại. Vui lòng thử lại.', true);
+        }
+      },
+    });
   }
 
   closeModalConfirm(): void {
     this.isModalOpenConfirm = false;
     document.getElementById('modal-confirm')!.style.display = 'none';
+    this.deleteId = null;
   }
 
-  deleteRow(tenSanPham: any): void {
-    this.deleteTenSanPham = tenSanPham;
+  deleteRow(index: number): void {
+    this.indexToDelete = index;
     this.isModalOpenConfirmAdd = true;
-    document.getElementById('modal-confirm-add')!.style.display = 'block';
+    // document.getElementById('modal-confirm-add')!.style.display = 'block';
     // console.log('open modal confirm add', this.isModalOpenConfirmAdd);
   }
 
   confirmDeleteRowAdd(): void {
     this.isChanged = true;
     this.donBaoHanh.slTiepNhan = 0;
-    this.themMoiDonBaoHanh = this.themMoiDonBaoHanh.filter((d: any) => d.tenSanPham !== this.tenSanPham);
-    for (let i = 0; i < this.themMoiDonBaoHanh.length; i++) {
-      this.donBaoHanh.slTiepNhan =
-        Number(this.donBaoHanh.slTiepNhan) +
-        Number(this.themMoiDonBaoHanh[i].slDoiMoi) +
-        Number(this.themMoiDonBaoHanh[i].slSuaChua) +
-        Number(this.themMoiDonBaoHanh[i].slKhongBaoHanh);
+
+    this.themMoiDonBaoHanh.splice(this.indexToDelete, 1);
+
+    for (const item of this.themMoiDonBaoHanh) {
+      this.donBaoHanh.slTiepNhan += Number(item.slDoiMoi) + Number(item.slSuaChua) + Number(item.slKhongBaoHanh);
     }
-    document.getElementById('modal-confirm-add')!.style.display = 'none';
+
+    this.isModalOpenConfirmAdd = false;
   }
 
   closeModalConfirmAdd(): void {
     this.isModalOpenConfirmAdd = false;
-    document.getElementById('modal-confirm-add')!.style.display = 'none';
+    // document.getElementById('modal-confirm-add')!.style.display = 'none';
   }
 
   xacNhanPhanLoai(): void {
@@ -2084,8 +2119,7 @@ export class DonBaoHanhComponent implements OnInit {
     } else {
       this.http.put<any>(`${this.updateDonBaoHanhUrl}`, this.donBaoHanh).subscribe(() => {
         setTimeout(() => {
-          this.openPopupNoti('Hoàn thành phân loại');
-          window.location.reload();
+          this.openPopupNoti('Hoàn thành phân loại', true);
         }, 1000);
       });
     }
@@ -2144,7 +2178,7 @@ export class DonBaoHanhComponent implements OnInit {
             }, 500);
           });
         }, 500);
-        this.openPopupNoti('Hoàn thành phân loại');
+        this.openPopupNoti('Hoàn thành phân loại', true);
       });
     });
   }

@@ -59,6 +59,9 @@ public class FullServices {
     private final ChiTietXuatKhoRepository chiTietXuatKhoRepository;
 
     @Autowired
+    private final DanhSachBienBanRepository danhSachBienBanRepository;
+
+    @Autowired
     private KhachHangRepository khachHangRepository;
 
     public FullServices(
@@ -72,7 +75,8 @@ public class FullServices {
         PhanTichLoiRepository phanTichLoiRepository,
         DanhSachXuatKhoRepository danhSachXuatKhoRepository,
         ChiTietXuatKhoRepository chiTietXuatKhoRepository,
-        KhachHangRepository khachHangRepository
+        KhachHangRepository khachHangRepository,
+        DanhSachBienBanRepository danhSachBienBanRepository
     ) {
         this.donBaoHanhRepository = donBaoHanhRepository;
         this.phanTichSanPhamRepository = phanTichSanPhamRepository;
@@ -85,6 +89,7 @@ public class FullServices {
         this.danhSachXuatKhoRepository = danhSachXuatKhoRepository;
         this.chiTietXuatKhoRepository = chiTietXuatKhoRepository;
         this.khachHangRepository = khachHangRepository;
+        this.danhSachBienBanRepository = danhSachBienBanRepository;
     }
 
     // * ============================ Template Tiếp nhận =================================
@@ -657,5 +662,49 @@ public class FullServices {
         list = this.chiTietXuatKhoRepository.getDataInfo(request.getMonth(), request.getYear());
 
         return list;
+    }
+
+    // ? xoa don bao hanh
+    @Transactional
+    public void deleteError(Long idDBH) {
+        //        System.out.println(">>> Bắt đầu xóa dữ liệu cho đơn bảo hành ID: " + idDBH);
+        try {
+            List<Long> idCTTN = chiTietSanPhamTiepNhanRepository.findIdByDonBaoHanhId(idDBH);
+            List<Long> idPLCTTN = phanLoaiChiTietTiepNhanRepository.findIdByDonBaoHanhId(idDBH);
+            List<Long> idPTSP = phanTichSanPhamRepository.findIdByDonBaoHanhId(idDBH);
+
+            //            System.out.println(">>> ID chi tiết tiếp nhận: " + idCTTN);
+            //            System.out.println(">>> ID phân loại chi tiết tiếp nhận: " + idPLCTTN);
+            //            System.out.println(">>> ID phân tích sản phẩm: " + idPTSP);
+
+            for (Long id : idPTSP) {
+                phanTichLoiRepository.deleteByPhanTichSanPhamId(id);
+                //                System.out.println("Đã xóa phân tích lỗi với ID: " + id);
+            }
+
+            for (Long id : idPLCTTN) {
+                phanTichSanPhamRepository.deleteByPhanLoaiChiTietTiepNhanId(id);
+                //                System.out.println("Đã xóa phân tích sản phẩm với ID: " + id);
+            }
+
+            for (Long id : idCTTN) {
+                phanLoaiChiTietTiepNhanRepository.deleteByChiTietSanPhamTiepNhanId(id);
+                //                System.out.println("Đã xóa phân loại chi tiết tiếp nhận với ID: " + id);
+            }
+
+            chiTietSanPhamTiepNhanRepository.deleteByDonBaoHanhId(idDBH);
+            //            System.out.println("Đã xóa chi tiết sản phẩm tiếp nhận theo đơn bảo hành ID: " + idDBH);
+
+            danhSachBienBanRepository.deleteByDonBaoHanhId(idDBH);
+            //            System.out.println("Đã xóa danh sách biên bản theo đơn bảo hành ID: " + idDBH);
+
+            donBaoHanhRepository.deleteById(idDBH);
+            //            System.out.println(">>> Hoàn tất xóa đơn bảo hành ID: " + idDBH);
+
+        } catch (Exception e) {
+            //            System.out.println("!!! Lỗi khi xóa dữ liệu đơn bảo hành ID: " + idDBH);
+            e.printStackTrace();
+            throw e;
+        }
     }
 }

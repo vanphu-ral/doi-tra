@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 public interface PhanTichLoiRepository extends JpaRepository<PhanTichLoi, Long> {
     List<PhanTichLoi> findAllByPhanTichSanPhamId(Long id);
     PhanTichLoi findByPhanTichSanPhamId(Long id);
+    void deleteByPhanTichSanPhamId(Long id);
 
     @Query(value = "delete from `phan_tich_loi` where phan_tich_san_pham_id = ?1 ;", nativeQuery = true)
     public void deleteItem(Long id);

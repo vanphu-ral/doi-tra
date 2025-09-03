@@ -3645,7 +3645,7 @@ body .slickgrid-container .slick-header-columns .slick-header-column.ui-state-de
   position: absolute;
   top: 0;
   left: 0;
-  width: 105vw;
+  width: 104vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
   z-index: 10;
@@ -3906,7 +3906,7 @@ body .slickgrid-container .slick-header-columns .slick-header-column.ui-state-de
 
 .group-header-tiepnhan {
   display: flex;
-  width: 16vw;
+  width: 20vw;
   justify-content: space-between;
 }
 

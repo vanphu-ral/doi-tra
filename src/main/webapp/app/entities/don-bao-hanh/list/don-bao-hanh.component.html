@@ -189,7 +189,7 @@
                   <input class="input-table form-control" type="text" [(ngModel)]="data.slNhan" [ngModelOptions]="{ standalone: true }" />
                 </td>
                 <td>
-                  <button class="btn btn-danger" (click)="deleteRow(data.tenSanPham)">Xoá</button>
+                  <button class="btn btn-danger" (click)="deleteRow(i)">Xoá</button>
                 </td>
               </tr>
             </tbody>
@@ -608,7 +608,7 @@
   </div>
 </div>
 
-<div class="modal-confirm" [ngClass]="{ active: isModalOpenConfirm }">
+<div id="modal-confirm" class="modal-confirm" [ngClass]="{ active: isModalOpenConfirm }">
   <div class="modal-content-confirm">
     <span class="close-modal-confirm" (click)="closeModalConfirm()">&times;</span>
     <h3>Bạn chắc chắn muốn xóa thông số này?</h3>
@@ -654,7 +654,7 @@
         <button
           type="button"
           class="btn btn-primary"
-          printTitle="BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI"
+          printTitle="BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH"
           (click)="xacNhanInBienBan()"
           printSectionId="BBTN"
           style="position: relative; z-index: 5"
@@ -679,7 +679,7 @@
             </div>
           </header>
           <div align="center" style="text-align: center; margin-top: 1rem">
-            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
+            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH</h3>
             <p style="text-align: center">Liên 1: Lưu tổ phục vụ đổi sản phẩm</p>
           </div>
           <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
@@ -743,31 +743,33 @@
                   <th style="width: 10rem; border: 0.5px solid black">Lý do sửa chữa</th>
                 </tr>
               </thead>
-              <tbody class="body-table" *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index">
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ i + 1 }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.tenSanPham }}</td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.donVi }}</td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slKhachGiao }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slTiepNhan }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slDoiMoi }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slSuaChua }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slKhongBaoHanh }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black"></td>
-                <td
-                  style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; border-right: 0.5px solid black"
-                ></td>
+              <tbody class="body-table">
+                <tr *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index">
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ i + 1 }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.tenSanPham }}</td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.donVi }}</td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slKhachGiao }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slTiepNhan }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slDoiMoi }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slSuaChua }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slKhongBaoHanh }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black"></td>
+                  <td
+                    style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; border-right: 0.5px solid black"
+                  ></td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -816,7 +818,7 @@
             </div>
           </header>
           <div align="center" style="text-align: center; margin-top: 1rem">
-            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
+            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH</h3>
             <p style="text-align: center">Liên 2: Khách hàng</p>
           </div>
           <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
@@ -880,31 +882,33 @@
                   <th style="width: 10rem; border: 0.5px solid black">Lý do sửa chữa</th>
                 </tr>
               </thead>
-              <tbody class="body-table" *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index">
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ i + 1 }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.tenSanPham }}</td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.donVi }}</td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slKhachGiao }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slTiepNhan }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slDoiMoi }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slSuaChua }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slKhongBaoHanh }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black"></td>
-                <td
-                  style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; border-right: 0.5px solid black"
-                ></td>
+              <tbody class="body-table">
+                <tr *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index">
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ i + 1 }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.tenSanPham }}</td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.donVi }}</td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slKhachGiao }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slTiepNhan }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slDoiMoi }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slSuaChua }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slKhongBaoHanh }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black"></td>
+                  <td
+                    style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; border-right: 0.5px solid black"
+                  ></td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -925,6 +929,14 @@
                 <a [href]="selectedValue" style="display: block; margin-top: 6rem; text-decoration: none; color: black">{{
                   selectedValue
                 }}</a>
+                <select style="float: right; margin-right: 12em" (change)="onSelectChanged($event)">
+                  <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
+                  <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
+                  <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
+                  <option value="Nguyễn Văn Tiến">Nguyễn Văn Tiến</option>
+                  <option value="Lê Huy Sang">Lê Huy Sang</option>
+                  <option value="Phan Đăng Tỵ">Phan Đăng Tỵ</option>
+                </select>
               </div>
             </div>
           </footer>
@@ -945,7 +957,7 @@
             </div>
           </header>
           <div align="center" style="text-align: center; margin-top: 1rem">
-            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
+            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH</h3>
             <p style="text-align: center">Liên 3: P. KHTT</p>
           </div>
           <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
@@ -1009,31 +1021,33 @@
                   <th style="width: 10rem; border: 0.5px solid black">Lý do sửa chữa</th>
                 </tr>
               </thead>
-              <tbody class="body-table" *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index">
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ i + 1 }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.tenSanPham }}</td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.donVi }}</td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slKhachGiao }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slTiepNhan }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slDoiMoi }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slSuaChua }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slKhongBaoHanh }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black"></td>
-                <td
-                  style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; border-right: 0.5px solid black"
-                ></td>
+              <tbody class="body-table">
+                <tr *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index">
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ i + 1 }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.tenSanPham }}</td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.donVi }}</td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slKhachGiao }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slTiepNhan }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slDoiMoi }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slSuaChua }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
+                    {{ data.slKhongBaoHanh }}
+                  </td>
+                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black"></td>
+                  <td
+                    style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; border-right: 0.5px solid black"
+                  ></td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -1054,6 +1068,14 @@
                 <a [href]="selectedValue" style="display: block; margin-top: 6rem; text-decoration: none; color: black">{{
                   selectedValue
                 }}</a>
+                <select style="float: right; margin-right: 12em" (change)="onSelectChanged($event)">
+                  <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
+                  <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
+                  <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
+                  <option value="Nguyễn Văn Tiến">Nguyễn Văn Tiến</option>
+                  <option value="Lê Huy Sang">Lê Huy Sang</option>
+                  <option value="Phan Đăng Tỵ">Phan Đăng Tỵ</option>
+                </select>
               </div>
             </div>
           </footer>
@@ -1075,7 +1097,7 @@
             </div>
           </header>
           <div align="center">
-            <h3 style="margin-top: -20px">BIÊN BẢN GIAO NHẬN SẢN PHẨM ĐỔI</h3>
+            <h3 style="margin-top: -20px">BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH</h3>
             <p style="text-align: center">Liên 4: Phòng BH1</p>
           </div>
           <div align="right" style="margin-right: 80px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>

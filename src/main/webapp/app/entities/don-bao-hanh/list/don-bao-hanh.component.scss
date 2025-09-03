@@ -49,6 +49,21 @@
 ::ng-deep .slickgrid-container .slick-cell.number-cell {
   justify-content: center !important;
 }
+::ng-deep .slickgrid-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+::ng-deep .angular-slickgrid {
+  min-width: max-content;
+}
+.modal-confirm {
+  display: none;
+}
+
+.modal-confirm.active {
+  display: block;
+}
 @media print {
   header {
     display: flex;

@@ -119,7 +119,7 @@
   background: #fff;
   box-sizing: border-box;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 14px;
   z-index: 999;
   padding: 1rem 3rem;
 }
@@ -197,8 +197,8 @@
   gap: 1rem;
 
   .custom-input {
-    height: 30px;
-    line-height: 8px;
+    height: 40px;
+    line-height: 18px;
 
     input {
       height: 100%;
@@ -206,8 +206,12 @@
   }
 }
 
+.table-phan-tich-loi {
+  margin-bottom: 5px !important;
+}
+
 .dialog-title {
-  font-size: 22px;
+  font-size: 25px;
   font-weight: 500;
   margin: 0;
 }
@@ -234,7 +238,8 @@
 /* Bảng & form */
 .table {
   width: 100%;
-  font-size: 12px;
+  font-size: 14px;
+  margin-bottom: 3rem;
 }
 
 .table th,
@@ -279,7 +284,6 @@
 }
 
 .loi-ky-thuat .d-flex {
-  align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
@@ -287,7 +291,7 @@
 .fixed-header-table {
   table th,
   td {
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 
@@ -333,6 +337,7 @@
   font-size: 12px;
   height: 28px;
 }
+
 ::ng-deep .full-screen-modal .modal-dialog {
   max-width: 100vw;
   width: 100vw;
@@ -359,7 +364,51 @@
   flex-shrink: 0;
 }
 
+.font-size-12 {
+  font-size: 12px;
+}
+
+.font-size-14 {
+  font-size: 14px;
+}
+
+.font-size-16 {
+  font-size: 16px;
+}
+
+.font-size-18 {
+  font-size: 18px;
+}
+
+.font-size-20 {
+  font-size: 20px;
+}
+
 @media print {
+  .font-size-12 {
+    font-size: 12px !important;
+  }
+
+  .font-size-14 {
+    font-size: 14px !important;
+  }
+
+  .font-size-16 {
+    font-size: 16px !important;
+  }
+
+  .font-size-18 {
+    font-size: 18px !important;
+  }
+
+  .font-size-20 {
+    font-size: 20px !important;
+  }
+
+  #BBTN {
+    font-family: 'Arial', sans-serif !important;
+  }
+
   header {
     display: flex;
     justify-content: space-between;

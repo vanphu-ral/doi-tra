@@ -79,7 +79,7 @@ public class Controller {
     //☺ delete khai bao loi
     @DeleteMapping("/don-bao-hanh/delete/{id}")
     public void deleteDonBaoHanhItem(@PathVariable Long id) {
-        this.fullServices.deleteDonBaoHanhItem(id);
+        this.fullServices.deleteError(id);
     }
 
     //☺ cập nhật đơn bảo hành

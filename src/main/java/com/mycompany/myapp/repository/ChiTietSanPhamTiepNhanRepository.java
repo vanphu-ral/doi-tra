@@ -32,6 +32,9 @@ public interface ChiTietSanPhamTiepNhanRepository extends JpaRepository<ChiTietS
     )
     List<ChiTietSanPhamTiepNhan> findAllByDonBaoHanhId(@Param("id") Long id);
 
+    @Query("SELECT ct.id FROM ChiTietSanPhamTiepNhan ct WHERE ct.donBaoHanh.id = :donBaoHanhId")
+    List<Long> findIdByDonBaoHanhId(@Param("donBaoHanhId") Long donBaoHanhId);
+
     @Query(value = "select " + "ct.id from `chi_tiet_san_pham_tiep_nhan` as ct where don_bao_hanh_id =?1 ;", nativeQuery = true)
     List<Long> getListOfId(Long id);
 

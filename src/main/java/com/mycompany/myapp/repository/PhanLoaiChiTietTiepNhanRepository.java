@@ -68,4 +68,9 @@ public interface PhanLoaiChiTietTiepNhanRepository extends JpaRepository<PhanLoa
         nativeQuery = true
     )
     List<Object[]> sumSlPhanTichByDonBaoHanhIdsNative(@Param("donIds") List<Long> donIds);
+
+    @Query(
+        "SELECT pl.id FROM PhanLoaiChiTietTiepNhan pl " + "JOIN pl.chiTietSanPhamTiepNhan ct " + "WHERE ct.donBaoHanh.id = :donBaoHanhId"
+    )
+    List<Long> findIdByDonBaoHanhId(@Param("donBaoHanhId") Long donBaoHanhId);
 }

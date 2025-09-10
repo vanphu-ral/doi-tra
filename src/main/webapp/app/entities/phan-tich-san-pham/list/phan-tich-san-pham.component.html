@@ -17,11 +17,11 @@
   </angular-slickgrid>
 </div>
 
-<div class="alert" id="no-result" *ngIf="donBaoHanhs?.length === 0">
+<!-- <div class="alert" id="no-result" *ngIf="donBaoHanhs?.length === 0">
   <div class="loader">
     <div class="justify-content-center jimu-primary-loading"></div>
   </div>
-</div>
+</div> -->
 <!---------------------------------------------------------- popup chi tiết sản phẩm phân tích --------------------------------------------------->
 <div class="table-responsive popup-background full-overlay" role="dialog" *ngIf="popupPTMTN === true">
   <div class="popup-container full-container">
@@ -791,17 +791,18 @@
         </div>
 
         <div class="group-btn-options" *ngIf="groupOptionsKN === true">
-          <table class="table table-striped">
-            <tbody>
-              <td class="inventory-name">
-                <tr *ngFor="let data of resultOfSanPhamTheoKho; let i = index" style="border: none">
-                  <button *ngIf="data.key" class="btn btn-primary btn-options-in btn-options-in-pt" (click)="openPopupInBBKN(i, data.key)">
-                    {{ data.key }}: {{ data.value.length }} SP
-                  </button>
-                </tr>
-              </td>
-            </tbody>
-          </table>
+          <div class="btn-kho-wrapper" style="display: flex; gap: 5px">
+            <ng-container *ngFor="let data of resultOfSanPhamTheoKho; let i = index">
+              <button
+                *ngIf="data.key"
+                class="btn"
+                style="background: #3399cc; border-radius: 5px; color: #fff"
+                (click)="openPopupInBBKN(i, data.key)"
+              >
+                {{ data.key }}: {{ getUniqueCount(data.value) }} SP
+              </button>
+            </ng-container>
+          </div>
         </div>
       </div>
       <div>
@@ -812,6 +813,20 @@
           </button>
         </div>
         <div class="group-btn-options" *ngIf="groupOptionsTL === true">
+          <div class="btn-kho-wrapper" style="display: flex; gap: 5px">
+            <ng-container *ngFor="let data of resultOfSanPhamTheoKhoTL; let i = index">
+              <button
+                *ngIf="data.key"
+                class="btn"
+                style="background: #3399cc; border-radius: 5px; color: #fff"
+                (click)="openPopupInBBTL(i, data.key)"
+              >
+                {{ data.key }}: {{ getUniqueCount(data.value) }} SP
+              </button>
+            </ng-container>
+          </div>
+        </div>
+        <!-- <div class="group-btn-options" *ngIf="groupOptionsTL === true">
           <table class="table table-striped">
             <tbody>
               <td class="inventory-name">
@@ -823,7 +838,7 @@
               </td>
             </tbody>
           </table>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
@@ -1186,343 +1201,32 @@
     </div>
     <p style="page-break-after: always"></p>
   </div> -->
-
-  <!-- In biên bản kiểm nghiệm -->
-  <div class="table-responsive popup-background-bienban" role="dialog" *ngIf="popupInBBKN === true">
-    <div class="popup-container popup-in">
-      <div class="popup-header-in">
-        <span class="close-btn" style="float: right" (click)="closePopupBBKN()">&times;</span>
-        <div class="hiddenToolbar">
-          <button
-            type="button"
-            class="btn btn-primary"
-            printTitle="BIÊN BẢN KIỂM NGHIỆM SẢN PHẨM BẢO HÀNH"
-            (click)="xacNhanInBienBan()"
-            printSectionId="BBkhoA"
-            style="position: relative; z-index: 5"
-            ngxPrint
-          >
-            <fa-icon [icon]="faPrint" style="padding-right: 5px"></fa-icon> In
-          </button>
-        </div>
-
-        <div id="BBkhoA">
-          <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
-            <div class="row">
-              <div class="col-6" align="left" style="height: 0px">
-                <img
-                  src="../../../../content/images/logoRD.png"
-                  alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
-                  width="150"
-                  style="margin-top: -30px; margin-left: 30px"
-                />
-              </div>
-            </div>
-          </header>
-          <div align="center" style="text-align: center; margin-top: 1rem">
-            <h5 style="margin: 0">BIÊN BẢN KIỂM NGHIỆM SẢN PHẨM BẢO HÀNH</h5>
-            <p>{{ tenKho }}</p>
-          </div>
-          <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
-          <br />
-          <br />
-          <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
-          <br />
-          <div style="display: flex; justify-content: space-between">
-            <div>
-              <p class="xuatxu">Xuất xứ: Lô hàng của ông (bà) {{ donBaoHanh.khachHang.tenKhachHang }}</p>
-              <p class="description">
-                Căn cứ biên bản giao nhận sản phẩm số {{ bienBanTiepNhan.maBienBan }} ngày {{ dateTN }}
-                tháng
-                {{ monthTN }} năm 20{{ yearTN }}
-              </p>
-            </div>
-            <div>
-              <div align="right" style="margin-right: 50px">
-                <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
-              </div>
-              <br />
-              <div align="right" style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
-                {{ donBaoHanh.maTiepNhan }}
-              </div>
-            </div>
-          </div>
-          <!-- <div align="right" style="margin-right: 62px">
-          Kho: <input type="text" id="khoA" size="10" style="color: black" value="1" disabled />
-        </div> -->
-          <table id="tableA" class="table-TN" style="width: 100%; border-spacing: 0px">
-            <thead>
-              <tr>
-                <th
-                  rowspan="2"
-                  style="
-                    text-align: center;
-                    font-weight: 700;
-                    width: 1rem;
-                    border-left: 0.5px solid black;
-                    border-top: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                  "
-                >
-                  STT
-                </th>
-                <th
-                  rowspan="2"
-                  style="
-                    text-align: center;
-                    font-weight: 700;
-                    width: 30rem;
-                    border-left: 0.5px solid black;
-                    border-top: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                  "
-                >
-                  Tên sản phẩm
-                </th>
-                <th
-                  rowspan="2"
-                  style="
-                    text-align: center;
-                    font-weight: 700;
-                    width: 3rem;
-                    border-left: 0.5px solid black;
-                    border-top: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                  "
-                >
-                  Đ.vị tính
-                </th>
-                <th
-                  rowspan="2"
-                  style="
-                    text-align: center;
-                    font-weight: 700;
-                    width: 4rem;
-                    border-left: 0.5px solid black;
-                    border-top: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                  "
-                >
-                  SL SP được bảo hành
-                </th>
-                <th
-                  colspan="2"
-                  style="
-                    text-align: center;
-                    font-weight: 700;
-                    border-left: 0.5px solid black;
-                    border-top: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                  "
-                >
-                  Mô tả lỗi
-                </th>
-                <th
-                  colspan="2"
-                  style="
-                    text-align: center;
-                    font-weight: 700;
-                    border-left: 0.5px solid black;
-                    border-top: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                    border-right: 0.5px solid black;
-                  "
-                >
-                  Kết luận, xử lý
-                </th>
-              </tr>
-              <tr>
-                <th
-                  style="
-                    text-align: center;
-                    font-weight: 700;
-                    width: 5rem;
-                    border-left: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                  "
-                >
-                  Lỗi linh động
-                </th>
-                <th
-                  style="
-                    text-align: center;
-                    font-weight: 700;
-                    width: 5rem;
-                    border-left: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                  "
-                >
-                  Lỗi kỹ thuật
-                </th>
-                <th
-                  style="
-                    text-align: center;
-                    font-weight: 700;
-                    width: 7rem;
-                    border-left: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                  "
-                >
-                  SL SP phải thanh lý(*)
-                </th>
-                <th
-                  style="
-                    text-align: center;
-                    font-weight: 700;
-                    width: 7rem;
-                    border-left: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                    border-right: 0.5px solid black;
-                  "
-                >
-                  SL SP sửa chữa thay thế
-                </th>
-              </tr>
-            </thead>
-            <tbody id="body-tableA">
-              <tr *ngFor="let item of danhSachBienBanSanPhamTheoKho; let i = index">
-                <td
-                  style="
-                    font-weight: 650;
-                    height: 36px;
-                    border-left: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                    text-align: center;
-                  "
-                >
-                  {{ i + 1 }}
-                </td>
-                <td style="font-weight: 650; height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">
-                  {{ item.tenSanPham }}
-                </td>
-                <td
-                  style="
-                    font-weight: 650;
-                    height: 36px;
-                    border-left: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                    text-align: center;
-                  "
-                >
-                  {{ item.sanPham!.donVi }}
-                </td>
-                <td
-                  style="
-                    font-weight: 650;
-                    height: 36px;
-                    border-left: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                    text-align: center;
-                  "
-                >
-                  {{ item.slTiepNhan }}
-                </td>
-                <td
-                  style="
-                    font-weight: 650;
-                    height: 36px;
-                    border-left: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                    text-align: center;
-                  "
-                >
-                  {{ item.loiLinhDong }}
-                </td>
-                <td
-                  style="
-                    font-weight: 650;
-                    height: 36px;
-                    border-left: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                    text-align: center;
-                  "
-                >
-                  {{ item.loiKyThuat }}
-                </td>
-                <td
-                  style="
-                    font-weight: 650;
-                    height: 36px;
-                    border-left: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                    text-align: center;
-                  "
-                >
-                  {{ item.slTiepNhan }}
-                </td>
-                <td
-                  style="
-                    font-weight: 650;
-                    height: 36px;
-                    border-left: 0.5px solid black;
-                    border-bottom: 0.5px solid black;
-                    border-right: 0.5px solid black;
-                    text-align: center;
-                  "
-                >
-                  0
-                </td>
-                <!-- <td>{{}}</td> -->
-                <!-- <td>{{}}</td> -->
-                <!-- <td>{{}}</td> -->
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="notes">
-            <p style="padding-left: 3rem"><i>(*) Số lượng thanh lý là căn cứ để đổi trả sản phẩm mới cho khách hàng</i></p>
-            <p style="padding-left: 3rem"><i>(**) Các vật tư, linh kiện đề nghị để sửa chữa, thay thế:</i></p>
-            <hr />
-            <hr />
-          </div>
-          <footer>
-            <div class="row" style="margin-left: -4rem; display: flex; justify-content: space-around">
-              <div class="col" style="text-align: center"><strong>P.TỔNG GIÁM ĐỐC/UQ</strong></div>
-              <div class="col" style="text-align: center; margin-right: -2rem">
-                <strong>TRƯỞNG BỘ PHẬN</strong>
-                <a style="display: block; margin-top: 6rem; text-decoration: none; color: black; font-size: 18px">Trần Hoàng Tùng</a>
-              </div>
-              <div class="col" style="text-align: center">
-                <strong>TỔ BẢO HÀNH SẢN PHẨM</strong> <br />
-                <!-- <select class="nhanvien" style="text-align:center; margin-top: 5rem;"></select> -->
-                <a [href]="selectedValue" style="font-size: 18px; display: block; margin-top: 6rem; text-decoration: none; color: black">{{
-                  selectedValue
-                }}</a>
-              </div>
-            </div>
-          </footer>
-        </div>
-        <select style="float: right; margin-right: 7em" (change)="onSelectChanged($event)">
-          <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
-          <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
-          <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
-          <option value="Nguyễn Văn Tiến">Nguyễn Văn Tiến</option>
-          <option value="Lê Huy Sang">Lê Huy Sang</option>
-          <option value="Phan Đăng Tỵ">Phan Đăng Tỵ</option>
-        </select>
-      </div>
+  <div class="spinner-overlay" *ngIf="isLoadingBB">
+    <div class="loader">
+      <div class="justify-content-center jimu-primary-loading"></div>
     </div>
   </div>
 
-  <!-- In biên bản thanh lý -->
-  <div class="table-responsive popup-background-bienban" role="dialog" *ngIf="popupInBBTL === true">
-    <div class="popup-container popup-in">
-      <div class="popup-header-in">
-        <span class="close-btn" style="float: right" (click)="closePopupBBTL()">&times;</span>
-        <div class="hiddenToolbar">
-          <button
-            type="button"
-            class="btn btn-primary"
-            printTitle="BIÊN BẢN THANH LÝ SẢN PHẨM MẤT PHẨM CHẤT"
-            (click)="xacNhanInBienBan()"
-            printSectionId="BBTL"
-            style="position: relative; z-index: 5"
-            ngxPrint
-          >
-            <fa-icon [icon]="faPrint" style="padding-right: 5px"></fa-icon>In
-          </button>
-        </div>
-        <div id="BBTL">
+  <!-- In biên bản kiểm nghiệm -->
+  <div *ngIf="!isLoadingBB">
+    <div class="table-responsive popup-background-bienban" role="dialog" *ngIf="popupInBBKN === true">
+      <div class="popup-container popup-in">
+        <div class="popup-header-in">
+          <span class="close-btn" style="float: right" (click)="closePopupBBKN()">&times;</span>
+          <div class="hiddenToolbar">
+            <button
+              type="button"
+              class="btn btn-primary"
+              printTitle="BIÊN BẢN KIỂM NGHIỆM SẢN PHẨM BẢO HÀNH"
+              (click)="xacNhanInBienBan()"
+              printSectionId="BBkhoA"
+              style="position: relative; z-index: 5"
+              ngxPrint
+            >
+              <fa-icon [icon]="faPrint" style="padding-right: 5px"></fa-icon> In
+            </button>
+          </div>
+
           <div id="BBkhoA">
             <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
               <div class="row">
@@ -1531,13 +1235,13 @@
                     src="../../../../content/images/logoRD.png"
                     alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
                     width="150"
-                    style="margin-top: 0"
+                    style="margin-top: -30px; margin-left: 30px"
                   />
                 </div>
               </div>
             </header>
             <div align="center" style="text-align: center; margin-top: 1rem">
-              <h5 style="margin: 0">BIÊN BẢN THANH LÝ SẢN PHẨM MẤT PHẨM CHẤT</h5>
+              <h5 style="margin: 0">BIÊN BẢN KIỂM NGHIỆM SẢN PHẨM BẢO HÀNH</h5>
               <p>{{ tenKho }}</p>
             </div>
             <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
@@ -1547,28 +1251,12 @@
             <br />
             <div style="display: flex; justify-content: space-between">
               <div>
-                <div style="padding-left: 2rem">
-                  <p class="ngayTN">
-                    Ngày {{ dateTN }} tháng {{ monthTN }} năm 20{{ yearTN }} tại Công ty cổ phần Bóng đèn Phích nước Rạng Đông
-                  </p>
-                  Thành phần:
-                </div>
-
-                <div style="padding-left: 4rem">
-                  1/ Đại diện Tổ bảo hành sản phẩm <br />
-                  2/ Đại diện phòng Bảo vệ <br />
-                  3/ Đại diện phòng TKKTTC
-                </div>
-                <div style="text-indent: 2rem">
-                  <p class="description">
-                    Căn cứ Biên bản kiểm nghiệm sản phẩm kém chất lượng số {{ bienBanKiemNghiem.maBienBan }} đối với lô hàng đổi của khách
-                    hàng tại BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH số {{ bienBanTiepNhan.maBienBan }} ngày {{ dateTN }}
-                    tháng
-                    {{ monthTN }} năm 20{{ yearTN }}
-                  </p>
-
-                  <p>Chúng tôi thống nhất thanh lý số sản phẩm mất phẩm chất như sau :</p>
-                </div>
+                <p class="xuatxu">Xuất xứ: Lô hàng của ông (bà) {{ donBaoHanh.khachHang.tenKhachHang }}</p>
+                <p class="description">
+                  Căn cứ biên bản giao nhận sản phẩm số {{ bienBanTiepNhan.maBienBan }} ngày {{ dateTN }}
+                  tháng
+                  {{ monthTN }} năm 20{{ yearTN }}
+                </p>
               </div>
               <div>
                 <div align="right" style="margin-right: 50px">
@@ -1580,11 +1268,14 @@
                 </div>
               </div>
             </div>
-
+            <!-- <div align="right" style="margin-right: 62px">
+             Kho: <input type="text" id="khoA" size="10" style="color: black" value="1" disabled />
+           </div> -->
             <table id="tableA" class="table-TN" style="width: 100%; border-spacing: 0px">
               <thead>
                 <tr>
                   <th
+                    rowspan="2"
                     style="
                       text-align: center;
                       font-weight: 700;
@@ -1597,6 +1288,7 @@
                     STT
                   </th>
                   <th
+                    rowspan="2"
                     style="
                       text-align: center;
                       font-weight: 700;
@@ -1609,10 +1301,11 @@
                     Tên sản phẩm
                   </th>
                   <th
+                    rowspan="2"
                     style="
                       text-align: center;
                       font-weight: 700;
-                      width: 1rem;
+                      width: 3rem;
                       border-left: 0.5px solid black;
                       border-top: 0.5px solid black;
                       border-bottom: 0.5px solid black;
@@ -1621,33 +1314,93 @@
                     Đ.vị tính
                   </th>
                   <th
+                    rowspan="2"
                     style="
                       text-align: center;
                       font-weight: 700;
-                      width: 5rem;
+                      width: 4rem;
                       border-left: 0.5px solid black;
                       border-top: 0.5px solid black;
                       border-bottom: 0.5px solid black;
                     "
                   >
-                    Số lượng SP thanh lý
+                    SL SP được bảo hành
                   </th>
                   <th
+                    colspan="2"
                     style="
                       text-align: center;
                       font-weight: 700;
-                      width: 18rem;
+                      border-left: 0.5px solid black;
+                      border-top: 0.5px solid black;
+                      border-bottom: 0.5px solid black;
+                    "
+                  >
+                    Mô tả lỗi
+                  </th>
+                  <th
+                    colspan="2"
+                    style="
+                      text-align: center;
+                      font-weight: 700;
                       border-left: 0.5px solid black;
                       border-top: 0.5px solid black;
                       border-bottom: 0.5px solid black;
                       border-right: 0.5px solid black;
                     "
                   >
-                    Hình thức thanh lý
+                    Kết luận, xử lý
+                  </th>
+                </tr>
+                <tr>
+                  <th
+                    style="
+                      text-align: center;
+                      font-weight: 700;
+                      width: 5rem;
+                      border-left: 0.5px solid black;
+                      border-bottom: 0.5px solid black;
+                    "
+                  >
+                    Lỗi linh động
+                  </th>
+                  <th
+                    style="
+                      text-align: center;
+                      font-weight: 700;
+                      width: 5rem;
+                      border-left: 0.5px solid black;
+                      border-bottom: 0.5px solid black;
+                    "
+                  >
+                    Lỗi kỹ thuật
+                  </th>
+                  <th
+                    style="
+                      text-align: center;
+                      font-weight: 700;
+                      width: 7rem;
+                      border-left: 0.5px solid black;
+                      border-bottom: 0.5px solid black;
+                    "
+                  >
+                    SL SP phải thanh lý(*)
+                  </th>
+                  <th
+                    style="
+                      text-align: center;
+                      font-weight: 700;
+                      width: 7rem;
+                      border-left: 0.5px solid black;
+                      border-bottom: 0.5px solid black;
+                      border-right: 0.5px solid black;
+                    "
+                  >
+                    SL SP sửa chữa thay thế
                   </th>
                 </tr>
               </thead>
-              <tbody id="body-table">
+              <tbody id="body-tableA">
                 <tr *ngFor="let item of danhSachBienBanSanPhamTheoKho; let i = index">
                   <td
                     style="
@@ -1691,44 +1444,319 @@
                       height: 36px;
                       border-left: 0.5px solid black;
                       border-bottom: 0.5px solid black;
-                      border-right: 0.5px solid black;
+                      text-align: center;
                     "
                   >
-                    Sản phẩm tháo dỡ thanh lý giao cho công ty
+                    {{ item.loiLinhDong }}
                   </td>
+                  <td
+                    style="
+                      font-weight: 650;
+                      height: 36px;
+                      border-left: 0.5px solid black;
+                      border-bottom: 0.5px solid black;
+                      text-align: center;
+                    "
+                  >
+                    {{ item.loiKyThuat }}
+                  </td>
+                  <td
+                    style="
+                      font-weight: 650;
+                      height: 36px;
+                      border-left: 0.5px solid black;
+                      border-bottom: 0.5px solid black;
+                      text-align: center;
+                    "
+                  >
+                    {{ item.slTiepNhan }}
+                  </td>
+                  <td
+                    style="
+                      font-weight: 650;
+                      height: 36px;
+                      border-left: 0.5px solid black;
+                      border-bottom: 0.5px solid black;
+                      border-right: 0.5px solid black;
+                      text-align: center;
+                    "
+                  >
+                    0
+                  </td>
+                  <!-- <td>{{}}</td> -->
+                  <!-- <td>{{}}</td> -->
+                  <!-- <td>{{}}</td> -->
                 </tr>
               </tbody>
             </table>
 
+            <div class="notes">
+              <p style="padding-left: 3rem"><i>(*) Số lượng thanh lý là căn cứ để đổi trả sản phẩm mới cho khách hàng</i></p>
+              <p style="padding-left: 3rem"><i>(**) Các vật tư, linh kiện đề nghị để sửa chữa, thay thế:</i></p>
+              <hr />
+              <hr />
+            </div>
             <footer>
-              <div class="row" style="margin-left: -4rem; margin-top: 1rem; display: flex; justify-content: space-around">
+              <div class="row" style="margin-left: -4rem; margin-bottom: 4rem; display: flex; justify-content: space-around">
                 <div class="col" style="text-align: center"><strong>P.TỔNG GIÁM ĐỐC/UQ</strong></div>
-                <div class="col" style="text-align: center"><strong>PHÒNG TKKTTC</strong></div>
-                <div class="col" style="text-align: center"><strong>BẢO VỆ</strong></div>
+                <div class="col" style="text-align: center; margin-right: -2rem">
+                  <strong>TRƯỞNG BỘ PHẬN</strong>
+                  <a style="display: block; margin-top: 6rem; text-decoration: none; color: black; font-size: 18px">Trần Hoàng Tùng</a>
+                </div>
                 <div class="col" style="text-align: center">
                   <strong>TỔ BẢO HÀNH SẢN PHẨM</strong> <br />
-                  <!-- <select class="nhanvien" style="text-align:center; margin-top: 5rem;"></select>
-                 -->
-                  <a [href]="selectedValue" style="display: block; margin-top: 6rem; text-decoration: none; color: black">{{
-                    selectedValue
-                  }}</a>
+                  <!-- <select class="nhanvien" style="text-align:center; margin-top: 5rem;"></select> -->
+                  <a
+                    [href]="selectedValue"
+                    style="font-size: 18px; display: block; margin-top: 6rem; text-decoration: none; color: black"
+                    >{{ selectedValue }}</a
+                  >
+                  <select style="float: right; margin-right: 7em" (change)="onSelectChanged($event)">
+                    <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
+                    <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
+                    <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
+                    <option value="Nguyễn Văn Tiến">Nguyễn Văn Tiến</option>
+                    <option value="Lê Huy Sang">Lê Huy Sang</option>
+                    <option value="Phan Đăng Tỵ">Phan Đăng Tỵ</option>
+                  </select>
                 </div>
               </div>
             </footer>
           </div>
         </div>
-        <select style="float: right; margin-right: 7em" (change)="onSelectChanged($event)">
-          <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
-          <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
-          <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
-          <option value="Nguyễn Văn Tiến">Nguyễn Văn Tiến</option>
-          <option value="Lê Huy Sang">Lê Huy Sang</option>
-          <option value="Phan Đăng Tỵ">Phan Đăng Tỵ</option>
-        </select>
       </div>
     </div>
   </div>
 
+  <!-- In biên bản thanh lý -->
+  <div *ngIf="!isLoadingBB">
+    <div class="table-responsive popup-background-bienban" role="dialog" *ngIf="popupInBBTL === true">
+      <div class="popup-container popup-in">
+        <div class="popup-header-in">
+          <span class="close-btn" style="float: right" (click)="closePopupBBTL()">&times;</span>
+          <div class="hiddenToolbar">
+            <button
+              type="button"
+              class="btn btn-primary"
+              printTitle="BIÊN BẢN THANH LÝ SẢN PHẨM MẤT PHẨM CHẤT"
+              (click)="xacNhanInBienBan()"
+              printSectionId="BBTL"
+              style="position: relative; z-index: 5"
+              ngxPrint
+            >
+              <fa-icon [icon]="faPrint" style="padding-right: 5px"></fa-icon>In
+            </button>
+          </div>
+          <div id="BBTL">
+            <div id="BBkhoA">
+              <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
+                <div class="row">
+                  <div class="col-6" align="left" style="height: 0px">
+                    <img
+                      src="../../../../content/images/logoRD.png"
+                      alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
+                      width="150"
+                      style="margin-top: 0"
+                    />
+                  </div>
+                </div>
+              </header>
+              <div align="center" style="text-align: center; margin-top: 1rem">
+                <h5 style="margin: 0">BIÊN BẢN THANH LÝ SẢN PHẨM MẤT PHẨM CHẤT</h5>
+                <p>{{ tenKho }}</p>
+              </div>
+              <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
+              <br />
+              <br />
+              <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
+              <br />
+              <div style="display: flex; justify-content: space-between">
+                <div>
+                  <div style="padding-left: 2rem">
+                    <p class="ngayTN">
+                      Ngày {{ dateTN }} tháng {{ monthTN }} năm 20{{ yearTN }} tại Công ty cổ phần Bóng đèn Phích nước Rạng Đông
+                    </p>
+                    Thành phần:
+                  </div>
+
+                  <div style="padding-left: 4rem">
+                    1/ Đại diện Tổ bảo hành sản phẩm <br />
+                    2/ Đại diện phòng Bảo vệ <br />
+                    3/ Đại diện phòng TKKTTC
+                  </div>
+                  <div style="text-indent: 2rem">
+                    <p class="description">
+                      Căn cứ Biên bản kiểm nghiệm sản phẩm kém chất lượng số {{ bienBanKiemNghiem.maBienBan }} đối với lô hàng đổi của khách
+                      hàng tại BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH số {{ bienBanTiepNhan.maBienBan }} ngày {{ dateTN }}
+                      tháng
+                      {{ monthTN }} năm 20{{ yearTN }}
+                    </p>
+
+                    <p>Chúng tôi thống nhất thanh lý số sản phẩm mất phẩm chất như sau :</p>
+                  </div>
+                </div>
+                <div>
+                  <div align="right" style="margin-right: 50px">
+                    <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
+                  </div>
+                  <br />
+                  <div align="right" style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+                    {{ donBaoHanh.maTiepNhan }}
+                  </div>
+                </div>
+              </div>
+
+              <table id="tableA" class="table-TN" style="width: 100%; border-spacing: 0px">
+                <thead>
+                  <tr>
+                    <th
+                      style="
+                        text-align: center;
+                        font-weight: 700;
+                        width: 1rem;
+                        border-left: 0.5px solid black;
+                        border-top: 0.5px solid black;
+                        border-bottom: 0.5px solid black;
+                      "
+                    >
+                      STT
+                    </th>
+                    <th
+                      style="
+                        text-align: center;
+                        font-weight: 700;
+                        width: 30rem;
+                        border-left: 0.5px solid black;
+                        border-top: 0.5px solid black;
+                        border-bottom: 0.5px solid black;
+                      "
+                    >
+                      Tên sản phẩm
+                    </th>
+                    <th
+                      style="
+                        text-align: center;
+                        font-weight: 700;
+                        width: 1rem;
+                        border-left: 0.5px solid black;
+                        border-top: 0.5px solid black;
+                        border-bottom: 0.5px solid black;
+                      "
+                    >
+                      Đ.vị tính
+                    </th>
+                    <th
+                      style="
+                        text-align: center;
+                        font-weight: 700;
+                        width: 5rem;
+                        border-left: 0.5px solid black;
+                        border-top: 0.5px solid black;
+                        border-bottom: 0.5px solid black;
+                      "
+                    >
+                      Số lượng SP thanh lý
+                    </th>
+                    <th
+                      style="
+                        text-align: center;
+                        font-weight: 700;
+                        width: 18rem;
+                        border-left: 0.5px solid black;
+                        border-top: 0.5px solid black;
+                        border-bottom: 0.5px solid black;
+                        border-right: 0.5px solid black;
+                      "
+                    >
+                      Hình thức thanh lý
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="body-table">
+                  <tr *ngFor="let item of danhSachBienBanSanPhamTheoKho; let i = index">
+                    <td
+                      style="
+                        font-weight: 650;
+                        height: 36px;
+                        border-left: 0.5px solid black;
+                        border-bottom: 0.5px solid black;
+                        text-align: center;
+                      "
+                    >
+                      {{ i + 1 }}
+                    </td>
+                    <td style="font-weight: 650; height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">
+                      {{ item.tenSanPham }}
+                    </td>
+                    <td
+                      style="
+                        font-weight: 650;
+                        height: 36px;
+                        border-left: 0.5px solid black;
+                        border-bottom: 0.5px solid black;
+                        text-align: center;
+                      "
+                    >
+                      {{ item.sanPham!.donVi }}
+                    </td>
+                    <td
+                      style="
+                        font-weight: 650;
+                        height: 36px;
+                        border-left: 0.5px solid black;
+                        border-bottom: 0.5px solid black;
+                        text-align: center;
+                      "
+                    >
+                      {{ item.slTiepNhan }}
+                    </td>
+                    <td
+                      style="
+                        font-weight: 650;
+                        height: 36px;
+                        border-left: 0.5px solid black;
+                        border-bottom: 0.5px solid black;
+                        border-right: 0.5px solid black;
+                      "
+                    >
+                      Sản phẩm tháo dỡ thanh lý giao cho công ty
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <footer>
+                <div
+                  class="row"
+                  style="margin-left: -2rem; margin-bottom: 4rem; margin-top: 1rem; display: flex; justify-content: space-around"
+                >
+                  <div class="col" style="text-align: center"><strong>P.TỔNG GIÁM ĐỐC/UQ</strong></div>
+                  <div class="col" style="text-align: center"><strong>PHÒNG TKKTTC</strong></div>
+                  <div class="col" style="text-align: center"><strong>BẢO VỆ</strong></div>
+                  <div class="col" style="text-align: center">
+                    <strong>TỔ BẢO HÀNH SẢN PHẨM</strong> <br />
+                    <!-- <select class="nhanvien" style="text-align:center; margin-top: 5rem;"></select>
+                    -->
+                    <a [href]="selectedValue" style="display: block; margin-top: 6rem; text-decoration: none; color: black">{{
+                      selectedValue
+                    }}</a>
+                    <select style="float: right; margin-right: 3em" (change)="onSelectChanged($event)">
+                      <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
+                      <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
+                      <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
+                      <option value="Nguyễn Văn Tiến">Nguyễn Văn Tiến</option>
+                      <option value="Lê Huy Sang">Lê Huy Sang</option>
+                      <option value="Phan Đăng Tỵ">Phan Đăng Tỵ</option>
+                    </select>
+                  </div>
+                </div>
+              </footer>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- biên bản tiếp nhận test -->
   <div class="table-responive popup-background-bienban" role="dialog" *ngIf="popupInBBTN === true">
     <div class="popup-container popup-in">

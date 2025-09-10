@@ -9,6 +9,7 @@ import { AngularGridInstance, Column, ExternalResource, FieldType, Filters, Form
 import { ExcelExportService } from '@slickgrid-universal/excel-export';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import * as XLSX from 'xlsx';
+import { forkJoin, Observable } from 'rxjs';
 
 @Component({
   selector: 'jhi-chi-tiet-san-pham-tiep-nhan',
@@ -163,7 +164,8 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
   startDates = '';
   endDates = '';
   dataCTL: ITongHop[] = [];
-
+  isLoadingTH = false;
+  private isGridReady = false;
   constructor(
     protected chiTietSanPhamTiepNhanService: ChiTietSanPhamTiepNhanService,
     protected modalService: NgbModal,
@@ -171,6 +173,14 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
     protected http: HttpClient
   ) {
     this.excelExportService = new ExcelExportService();
+  }
+  updateGridData(): void {
+    this.angularGrid?.dataView.beginUpdate();
+    this.angularGrid?.dataView.setItems(this.chiTietSanPhamTiepNhan, 'id');
+    this.angularGrid?.dataView.setPagingOptions({ pageSize: 50, pageNum: 0 });
+    this.angularGrid?.dataView.endUpdate();
+    this.angularGrid?.slickGrid.invalidate();
+    this.angularGrid?.slickGrid.render();
   }
 
   loadAll(): void {
@@ -180,6 +190,10 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
       next: (res: HttpResponse<IChiTietSanPhamTiepNhan[]>) => {
         this.isLoading = false;
         this.chiTietSanPhamTiepNhans = res.body ?? [];
+        // Nếu grid đã sẵn sàng, gán dữ liệu
+        if (this.isGridReady) {
+          this.updateGridData();
+        }
       },
       error: () => {
         this.isLoading = false;
@@ -418,7 +432,7 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
         excludeFromGridMenu: true,
         excludeFromHeaderMenu: true,
         // maxWidth: 100,
-        minWidth: 150,
+        minWidth: 100,
         sortable: true,
         filterable: true,
         type: FieldType.string,
@@ -437,8 +451,8 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
         excludeFromColumnPicker: true,
         excludeFromGridMenu: true,
         excludeFromHeaderMenu: true,
-        // maxWidth: 30,
-        minWidth: 20,
+        // maxWidth: 40,
+        minWidth: 35,
       },
       {
         id: 'slTiepNhan',
@@ -450,8 +464,8 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
         excludeFromColumnPicker: true,
         excludeFromGridMenu: true,
         excludeFromHeaderMenu: true,
-        // maxWidth: 30,
-        minWidth: 30,
+        // maxWidth: 40,
+        minWidth: 35,
         // sortable: true,
         // filterable: true,
         // type: FieldType.string,
@@ -482,7 +496,7 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
         excludeFromColumnPicker: true,
         excludeFromGridMenu: true,
         excludeFromHeaderMenu: true,
-        // maxWidth: 35,
+        // maxWidth: 40,
         minWidth: 35,
       },
       {
@@ -496,6 +510,33 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
         excludeFromHeaderMenu: true,
         // maxWidth: 70,
         minWidth: 70,
+      },
+      {
+        id: 'ngayBienBanTiepNhan',
+        field: 'ngayBienBanTiepNhan',
+        name: 'Ngày In tiếp nhận',
+        toolTip: 'Ngày In tiếp nhận',
+        formatter: Formatters.dateIso,
+        maxWidth: 150,
+        sortable: true,
+      },
+      {
+        id: 'ngayBienBanKiemNghiem',
+        field: 'ngayBienBanKiemNghiem',
+        name: 'Ngày In kiểm nghiệm',
+        toolTip: 'Ngày In kiểm nghiệm',
+        formatter: Formatters.dateIso,
+        maxWidth: 150,
+        sortable: true,
+      },
+      {
+        id: 'ngayBienBanThanhLy',
+        field: 'ngayBienBanThanhLy',
+        name: 'Ngày In thanh lý',
+        toolTip: 'Ngày In thanh lý',
+        formatter: Formatters.dateIso,
+        maxWidth: 150,
+        sortable: true,
       },
     ];
 
@@ -751,7 +792,7 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
       asyncEditorLoadDelay: 1000,
       pagination: {
         pageSizes: [30, 50, this.chiTietSanPhamTiepNhan.length],
-        pageSize: 30,
+        pageSize: this.chiTietSanPhamTiepNhan.length,
       },
       presets: {
         columns: [
@@ -771,6 +812,9 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
           { columnId: 'slTiepNhan' },
           { columnId: 'tenNhomLoi' },
           { columnId: 'tongSoLuong' },
+          { columnId: 'ngayBienBanTiepNhan' },
+          { columnId: 'ngayBienBanKiemNghiem' },
+          { columnId: 'ngayBienBanThanhLy' },
           { columnId: 'trangThai' },
         ],
       },
@@ -801,7 +845,7 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
       enablePagination: true,
       pagination: {
         pageSizes: [30, 50, this.chiTietSanPhamTiepNhanCTL.length],
-        pageSize: 30,
+        pageSize: this.chiTietSanPhamTiepNhanCTL.length,
       },
 
       editable: true,
@@ -850,20 +894,36 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
       for (let i = 0; i < this.chiTietSanPhamTiepNhanCTLGoc.length; ++i) {
         this.chiTietSanPhamTiepNhanCTLGoc[i].id = i + 1;
       }
-      this.dataCTL = res.sort((a: any, b: any) => b.donBaoHanhId - a.donBaoHanhId);
-      this.chiTietSanPhamTiepNhanCTL = this.chiTietSanPhamTiepNhanCTLGoc;
-      // console.log('tong Hop', this.dataCTL);
+      this.dataCTL = [...this.chiTietSanPhamTiepNhanCTLGoc];
+      this.chiTietSanPhamTiepNhanCTL = [...this.chiTietSanPhamTiepNhanCTLGoc];
     });
+
     this.http.get<any>(this.tongHopCaculateUrl).subscribe(resTongHop => {
       this.chiTietSanPhamTiepNhanGoc = resTongHop.sort((a: any, b: any) => b.donBaoHanhId - a.donBaoHanhId);
       for (let i = 0; i < this.chiTietSanPhamTiepNhanGoc.length; ++i) {
         this.chiTietSanPhamTiepNhanGoc[i].id = i + 1;
       }
-      this.data = resTongHop.sort((a: any, b: any) => b.donBaoHanhId - a.donBaoHanhId);
-      this.chiTietSanPhamTiepNhan = this.chiTietSanPhamTiepNhanGoc;
-      // console.log('caculate', resTongHop);
-      // console.log('data total', this.chiTietSanPhamTiepNhan);
+
+      const ids = Array.from(new Set(this.chiTietSanPhamTiepNhanGoc.map((item: { donBaoHanhId: number }) => item.donBaoHanhId)));
+
+      const query = ids.join(',');
+
+      this.http.get<any>(`/api/danh-sach-bien-ban?ids=${query}`).subscribe(bienBanMap => {
+        this.chiTietSanPhamTiepNhanGoc.forEach(item => {
+          const bienBanList = bienBanMap[item.donBaoHanhId] || [];
+          item.ngayBienBanTiepNhan = bienBanList.find((b: any) => b.loaiBienBan === 'Tiếp nhận')?.createdAt ?? null;
+          item.ngayBienBanKiemNghiem = bienBanList.find((b: any) => b.loaiBienBan === 'Kiểm nghiệm')?.createdAt ?? null;
+          item.ngayBienBanThanhLy = bienBanList.find((b: any) => b.loaiBienBan === 'Thanh lý')?.createdAt ?? null;
+        });
+
+        this.data = [...this.chiTietSanPhamTiepNhanGoc];
+        this.chiTietSanPhamTiepNhan = [...this.chiTietSanPhamTiepNhanGoc];
+      });
     });
+  }
+
+  getNgayBienBanByDonBaoHanhId(donBaoHanhId: number): Observable<any> {
+    return this.http.get<any[]>(`/api/danh-sach-bien-ban/${donBaoHanhId}`);
   }
 
   trackId(_index: number, item: IChiTietSanPhamTiepNhan): number {
@@ -1131,11 +1191,13 @@ export class ChiTietSanPhamTiepNhanComponent implements OnInit {
     );
   }
   angularGridReady(angularGrid: any): void {
-    this.angularGrid = angularGrid;
-
-    // the Angular Grid Instance exposes both Slick Grid & DataView objects
+    this.angularGrid = (event as CustomEvent).detail;
+    this.isGridReady = true;
     this.gridObj = angularGrid.slickGrid;
     this.dataViewObj = angularGrid.dataView;
+    if (this.chiTietSanPhamTiepNhan.length > 0) {
+      this.updateGridData();
+    }
   }
   getDonBaoHanhInfo(): void {
     this.http.post<any>(this.tongHopDBHUrl, this.dateTimeSearchKey).subscribe((res: any) => {

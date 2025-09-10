@@ -3,7 +3,7 @@ import { IChiTietSanPhamTiepNhan } from 'app/entities/chi-tiet-san-pham-tiep-nha
 import { IDanhSachTinhTrang } from 'app/entities/danh-sach-tinh-trang/danh-sach-tinh-trang.model';
 
 export interface IPhanLoaiChiTietTiepNhan {
-  id?: number;
+  id?: number | null;
   soLuong?: number | null;
   phanTichSanPhams?: IPhanTichSanPham[] | null;
   chiTietSanPhamTiepNhan?: IChiTietSanPhamTiepNhan | null;
@@ -12,7 +12,7 @@ export interface IPhanLoaiChiTietTiepNhan {
 
 export class PhanLoaiChiTietTiepNhan implements IPhanLoaiChiTietTiepNhan {
   constructor(
-    public id?: number,
+    public id?: number | null,
     public soLuong?: number | null,
     public phanTichSanPhams?: IPhanTichSanPham[] | null,
     public chiTietSanPhamTiepNhan?: IChiTietSanPhamTiepNhan | null,
@@ -20,6 +20,6 @@ export class PhanLoaiChiTietTiepNhan implements IPhanLoaiChiTietTiepNhan {
   ) {}
 }
 
-export function getPhanLoaiChiTietTiepNhanIdentifier(phanLoaiChiTietTiepNhan: IPhanLoaiChiTietTiepNhan): number | undefined {
-  return phanLoaiChiTietTiepNhan.id;
+export function getPhanLoaiChiTietTiepNhanIdentifier(phanLoaiChiTietTiepNhan: IPhanLoaiChiTietTiepNhan): number | null {
+  return phanLoaiChiTietTiepNhan.id ?? null;
 }

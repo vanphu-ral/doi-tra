@@ -37,6 +37,13 @@
     </div>
   </div>
 
+  <!-- <div class="grid-wrapper">
+    <div class="spinner-overlay" *ngIf="isLoading">
+      <div class="loader">
+        <div class="justify-content-center jimu-primary-loading"></div>
+      </div>
+    </div>
+    <div *ngIf="!isLoadingTH"> -->
   <angular-slickgrid
     gridId="tong-hop"
     [columnDefinitions]="columnDefinitions"
@@ -45,6 +52,8 @@
     (onBeforeSearchChange)="onSearchChange($event)"
     (onAngularGridCreated)="angularGridReady($event)"
   ></angular-slickgrid>
+  <!-- </div> -->
+  <!-- </div> -->
 </div>
 
 <div class="table-responsive popup-background" role="dialog" *ngIf="popupViewCTL === true">

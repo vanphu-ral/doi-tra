@@ -8,7 +8,9 @@ import com.mycompany.myapp.service.dto.MonthYearDTO;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -125,6 +127,11 @@ public class Controller {
         this.fullServices.updatePhanLoaiChiTietDonHangTiepNhan(requestList);
     }
 
+    @PutMapping("don-bao-hanh/phan-loai/delete-item-phan-loai/{id}")
+    public void updatePhanLoaiChiTietDonHangTiepNhan(@PathVariable Long id) {
+        this.fullServices.deleteItemPhanLoai(id);
+    }
+
     //☺ update chi tiết sản phẩm tiếp nhận
     @PutMapping("don-bao-hanh/phan-loai/update-chi-tiet-san-pham-tiep-nhan")
     public List<ChiTietSanPhamTiepNhan> updateChiTietSanPhamTiepNhan(@RequestBody List<ChiTietSanPhamTiepNhan> requestList) {
@@ -140,9 +147,12 @@ public class Controller {
 
     //☺ lấy danh sách mã biên bản
     @GetMapping("ma-bien-bans")
-    public List<MaBienBan> getAllMaBienBan() {
-        List<MaBienBan> maBienBanList = this.fullServices.getAllMaBienBan();
-        return maBienBanList;
+    public List<MaBienBan> getAllMaBienBan(
+        @RequestParam(required = false) String loai,
+        @RequestParam(required = false) Long idDonBaoHanh,
+        @RequestParam(required = false) String maKho
+    ) {
+        return this.fullServices.getAllMaBienBan(loai, idDonBaoHanh, maKho);
     }
 
     //☺ cập nhật thông tin in biên bản
@@ -216,10 +226,21 @@ public class Controller {
         return maBienBan;
     }
 
+    //*Lấy danh sách biên bản in theo đơn bảo hành
     @GetMapping("danh-sach-bien-ban/{id}")
     public List<MaBienBan> getBienBanByDonBaoHanhId(@PathVariable Long id) {
         List<MaBienBan> maBienBan = this.fullServices.getBienBanByDonBaoHanhId(id);
         return maBienBan;
+    }
+
+    @GetMapping("danh-sach-bien-ban")
+    public Map<Long, List<MaBienBan>> getBienBanByDonBaoHanhIds(@RequestParam List<Long> ids) {
+        Map<Long, List<MaBienBan>> result = new HashMap<>();
+        for (Long id : ids) {
+            List<MaBienBan> bienBanList = fullServices.getBienBanByDonBaoHanhId(id);
+            result.put(id, bienBanList);
+        }
+        return result;
     }
 
     //☺ delete khai bao loi

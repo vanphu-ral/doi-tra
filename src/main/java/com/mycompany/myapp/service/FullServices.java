@@ -186,12 +186,13 @@ public class FullServices {
                 this.khachHangRepository.findById(request.getKhachHang().getId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + request.getKhachHang().getId()));
 
-            if (!Objects.equals(khachHang.getTenKhachHang(), request.getKhachHang().getTenKhachHang())) {
-                khachHang.setTenKhachHang(request.getKhachHang().getTenKhachHang());
-                khachHang.setDiaChi(request.getKhachHang().getDiaChi());
-                khachHang.setSoDienThoai(request.getKhachHang().getSoDienThoai());
-                this.khachHangRepository.save(khachHang);
-            }
+            donBaoHanh.setKhachHang(khachHang);
+            //            if (!Objects.equals(khachHang.getTenKhachHang(), request.getKhachHang().getTenKhachHang())) {
+            //                khachHang.setTenKhachHang(request.getKhachHang().getTenKhachHang());
+            //                khachHang.setDiaChi(request.getKhachHang().getDiaChi());
+            //                khachHang.setSoDienThoai(request.getKhachHang().getSoDienThoai());
+            //                this.khachHangRepository.save(khachHang);
+            //            }
 
             donBaoHanh.setKhachHang(khachHang);
         }
@@ -283,6 +284,12 @@ public class FullServices {
         return phanLoaiChiTietTiepNhanList;
     }
 
+    // * xoa thong tin san pham phan loai
+    public void deleteItemPhanLoai(Long id) {
+        this.phanLoaiChiTietTiepNhanRepository.deleteByChiTietSanPhamTiepNhanId(id);
+        this.chiTietSanPhamTiepNhanRepository.deleteById(id);
+    }
+
     //☺ update phân loại chi tiết đơn hàng tiếp nhận
     public void updatePhanLoaiChiTietDonHangTiepNhan(List<PhanLoaiChiTietTiepNhan> requestList) {
         for (PhanLoaiChiTietTiepNhan phanLoaiChiTietTiepNhan : requestList) {
@@ -324,9 +331,28 @@ public class FullServices {
 
     //☺ hoàn thành phân loại
     //☺ Lấy danh sách mã biên bản
-    public List<MaBienBan> getAllMaBienBan() {
-        List<MaBienBan> maBienBanList = this.maBienBanRepository.findAll();
-        return maBienBanList;
+    public List<MaBienBan> getAllMaBienBan(String loai, Long idDonBaoHanh, String maKho) {
+        if (loai == null || idDonBaoHanh == null) {
+            return this.maBienBanRepository.findAll();
+        }
+
+        switch (loai) {
+            case "TN":
+                // Trả về tất cả biên bản tiếp nhận (danh sách)
+                return this.maBienBanRepository.getBienBanTiepNhanByDonBaoHanhId(idDonBaoHanh);
+            case "KN":
+                if (maKho != null) {
+                    return this.maBienBanRepository.getBienBanKiemNghiemByDonBaoHanhIdAndMaKho(idDonBaoHanh, maKho);
+                }
+                return this.maBienBanRepository.getBienBanKiemNghiemByDonBaoHanhId(idDonBaoHanh);
+            case "TL":
+                if (maKho != null) {
+                    return this.maBienBanRepository.getBienBanThanhLyByDonBaoHanhIdAndMaKho(idDonBaoHanh, maKho);
+                }
+                return this.maBienBanRepository.getBienBanThanhLyByDonBaoHanhId(idDonBaoHanh);
+            default:
+                return this.maBienBanRepository.getBienBanByDonBaoHanhId(idDonBaoHanh);
+        }
     }
 
     //☺ cập nhật thông tin in biên bản
@@ -422,9 +448,13 @@ public class FullServices {
     }
 
     //☺ lấy biên bản Tiếp nhận theo đơn bảo hành
+    //    public MaBienBan getBienBanTiepNhanByDonBaoHanhId(Long id) {
+    //        MaBienBan maBienBan = this.maBienBanRepository.getBienBanTiepNhanByDonBaoHanhId(id);
+    //        return maBienBan;
+    //    }
     public MaBienBan getBienBanTiepNhanByDonBaoHanhId(Long id) {
-        MaBienBan maBienBan = this.maBienBanRepository.getBienBanTiepNhanByDonBaoHanhId(id);
-        return maBienBan;
+        List<MaBienBan> list = maBienBanRepository.getBienBanTiepNhanByDonBaoHanhId(id);
+        return list.isEmpty() ? null : list.get(0);
     }
 
     //☺ lấy biên bản kiểm nghiệm theo đơn bảo hành
@@ -667,42 +697,29 @@ public class FullServices {
     // ? xoa don bao hanh
     @Transactional
     public void deleteError(Long idDBH) {
-        //        System.out.println(">>> Bắt đầu xóa dữ liệu cho đơn bảo hành ID: " + idDBH);
         try {
             List<Long> idCTTN = chiTietSanPhamTiepNhanRepository.findIdByDonBaoHanhId(idDBH);
             List<Long> idPLCTTN = phanLoaiChiTietTiepNhanRepository.findIdByDonBaoHanhId(idDBH);
             List<Long> idPTSP = phanTichSanPhamRepository.findIdByDonBaoHanhId(idDBH);
 
-            //            System.out.println(">>> ID chi tiết tiếp nhận: " + idCTTN);
-            //            System.out.println(">>> ID phân loại chi tiết tiếp nhận: " + idPLCTTN);
-            //            System.out.println(">>> ID phân tích sản phẩm: " + idPTSP);
-
             for (Long id : idPTSP) {
                 phanTichLoiRepository.deleteByPhanTichSanPhamId(id);
-                //                System.out.println("Đã xóa phân tích lỗi với ID: " + id);
             }
 
             for (Long id : idPLCTTN) {
                 phanTichSanPhamRepository.deleteByPhanLoaiChiTietTiepNhanId(id);
-                //                System.out.println("Đã xóa phân tích sản phẩm với ID: " + id);
             }
 
             for (Long id : idCTTN) {
                 phanLoaiChiTietTiepNhanRepository.deleteByChiTietSanPhamTiepNhanId(id);
-                //                System.out.println("Đã xóa phân loại chi tiết tiếp nhận với ID: " + id);
             }
 
             chiTietSanPhamTiepNhanRepository.deleteByDonBaoHanhId(idDBH);
-            //            System.out.println("Đã xóa chi tiết sản phẩm tiếp nhận theo đơn bảo hành ID: " + idDBH);
 
             danhSachBienBanRepository.deleteByDonBaoHanhId(idDBH);
-            //            System.out.println("Đã xóa danh sách biên bản theo đơn bảo hành ID: " + idDBH);
 
             donBaoHanhRepository.deleteById(idDBH);
-            //            System.out.println(">>> Hoàn tất xóa đơn bảo hành ID: " + idDBH);
-
         } catch (Exception e) {
-            //            System.out.println("!!! Lỗi khi xóa dữ liệu đơn bảo hành ID: " + idDBH);
             e.printStackTrace();
             throw e;
         }

@@ -4,6 +4,7 @@ import com.mycompany.myapp.domain.PhanLoaiChiTietDonBaoHanhResponse;
 import com.mycompany.myapp.domain.PhanLoaiChiTietTiepNhan;
 import com.mycompany.myapp.service.dto.DonBaoHanhSummaryDto;
 import java.util.List;
+import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -19,6 +20,25 @@ public interface PhanLoaiChiTietTiepNhanRepository extends JpaRepository<PhanLoa
     public List<PhanLoaiChiTietTiepNhan> findAllByChiTietSanPhamTiepNhanId(Long id);
 
     public PhanLoaiChiTietTiepNhan findByChiTietSanPhamTiepNhanIdAndDanhSachTinhTrangId(Long id1, Long id2);
+
+    @Transactional
+    @Modifying
+    @Query(
+        value = "DELETE FROM phan_loai_chi_tiet_tiep_nhan " +
+        "WHERE chi_tiet_san_pham_tiep_nhan_id IN (" +
+        "SELECT ct.id FROM chi_tiet_san_pham_tiep_nhan ct WHERE ct.don_bao_hanh_id = :donBaoHanhId" +
+        ")",
+        nativeQuery = true
+    )
+    void deleteByDonBaoHanhId(@Param("donBaoHanhId") Long donBaoHanhId);
+
+    @Query("SELECT p.id FROM PhanLoaiChiTietTiepNhan p WHERE p.chiTietSanPhamTiepNhan.donBaoHanh.id = :donBaoHanhId")
+    List<Long> findPhanLoaiIdsByDonBaoHanhId(@Param("donBaoHanhId") Long donBaoHanhId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PhanLoaiChiTietTiepNhan p WHERE p.id IN :phanLoaiIds")
+    void deletePhanLoaiByIds(@Param("phanLoaiIds") List<Long> phanLoaiIds);
 
     @Query(
         value = "SELECT\n" +

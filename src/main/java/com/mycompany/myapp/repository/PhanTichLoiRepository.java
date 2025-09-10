@@ -5,7 +5,9 @@ import com.mycompany.myapp.domain.TongHopNewResponse;
 import com.mycompany.myapp.domain.TongHopResponse;
 import java.time.LocalDateTime;
 import java.util.List;
+import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -20,6 +22,11 @@ public interface PhanTichLoiRepository extends JpaRepository<PhanTichLoi, Long> 
 
     @Query(value = "delete from `phan_tich_loi` where phan_tich_san_pham_id = ?1 ;", nativeQuery = true)
     public void deleteItem(Long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM phan_tich_loi WHERE phan_tich_san_pham_id IN (:ids)", nativeQuery = true)
+    void deleteByPhanTichIds(@Param("ids") List<Long> ids);
 
     @Query(
         value = "SELECT \n" +

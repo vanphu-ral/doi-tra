@@ -1,7 +1,8 @@
 package com.mycompany.myapp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
+import java.time.Instant;
+import java.time.LocalDateTime;
 import javax.persistence.*;
 
 @Entity
@@ -14,15 +15,23 @@ public class MaBienBan {
 
     @Column(name = "ma_bien_ban")
     private String maBienBan;
+
     @Column(name = "so_lan_in")
     private Long soLanIn;
-    @Column(name="loai_bien_ban")
+
+    @Column(name = "loai_bien_ban")
     private String loaiBienBan;
-    @Column(name="ma_kho")
+
+    @Column(name = "ma_kho")
     private String maKho;
+
+    @Column(name = "created_at")
+    private Instant createdAt;
+
     @ManyToOne
     @JsonIgnoreProperties(value = { "chiTietSanPhamTiepNhans", "khachHang" }, allowSetters = true)
     private DonBaoHanh donBaoHanh;
+
     public MaBienBan() {}
 
     public String getLoaiBienBan() {
@@ -76,5 +85,13 @@ public class MaBienBan {
 
     public void setMaBienBan(String maBienBan) {
         this.maBienBan = maBienBan;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 }

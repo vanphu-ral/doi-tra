@@ -3962,7 +3962,7 @@ body .slickgrid-container .slick-header-columns .slick-header-column.ui-state-de
   /* display: flex; */
   /* flex-direction: column; */
   padding-top: 2rem;
-  width: 14rem;
+  width: 16rem;
   height: 26rem;
   overflow: auto;
   /* overflow-x: hidden;
@@ -4388,7 +4388,8 @@ table {
   animation-delay: 0.16s !important;
 }
 
-.modal-confirm {
+.modal-confirm,
+.modal-confirm-delete-phan-loai {
   display: none;
   position: fixed;
   left: 0;
@@ -4402,7 +4403,8 @@ table {
   align-items: center;
 }
 
-.modal-confirm.active {
+.modal-confirm.active,
+.modal-confirm-delete-phan-loai.active {
   display: flex;
 }
 

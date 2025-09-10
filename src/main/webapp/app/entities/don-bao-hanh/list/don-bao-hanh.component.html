@@ -148,7 +148,12 @@
                     type="text"
                     [(ngModel)]="data.tenSanPham"
                     [ngModelOptions]="{ standalone: true }"
+                    list="field_danh_sach_san_pham"
+                    (change)="updateTenSanPham(data.tenSanPham, i)"
                   />
+                  <datalist id="field_danh_sach_san_pham">
+                    <option *ngFor="let item of danhSachSanPham" value="{{ item.name }}"></option>
+                  </datalist>
                 </td>
                 <td>
                   <input
@@ -164,7 +169,7 @@
                     type="text"
                     [(ngModel)]="data.slDoiMoi"
                     [ngModelOptions]="{ standalone: true }"
-                    (change)="updateChiTietDonBaoHanhInfo(data.slDoiMoi, data.slSuaChua, data.slKhongBaoHanh, data.slNhan, i)"
+                    (change)="updateChiTietDonBaoHanhInfo(data.slDoiMoi, data.slSuaChua, data.slKhongBaoHanh, i)"
                   />
                 </td>
                 <td>
@@ -173,7 +178,7 @@
                     type="text"
                     [(ngModel)]="data.slSuaChua"
                     [ngModelOptions]="{ standalone: true }"
-                    (change)="updateChiTietDonBaoHanhInfo(data.slDoiMoi, data.slSuaChua, data.slKhongBaoHanh, data.slNhan, i)"
+                    (change)="updateChiTietDonBaoHanhInfo(data.slDoiMoi, data.slSuaChua, data.slKhongBaoHanh, i)"
                   />
                 </td>
                 <td>
@@ -182,7 +187,7 @@
                     type="text"
                     [(ngModel)]="data.slKhongBaoHanh"
                     [ngModelOptions]="{ standalone: true }"
-                    (change)="updateChiTietDonBaoHanhInfo(data.slDoiMoi, data.slSuaChua, data.slKhongBaoHanh, data.slNhan, i)"
+                    (change)="updateChiTietDonBaoHanhInfo(data.slDoiMoi, data.slSuaChua, data.slKhongBaoHanh, i)"
                   />
                 </td>
                 <td>
@@ -496,7 +501,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index; trackBy: trackByResult" class="editable-row">
+                <tr *ngFor="let data of paginatedPhanLoai; let i = index; trackBy: trackByResult" class="editable-row">
                   <td>{{ i + 1 }}</td>
                   <td>
                     <input
@@ -505,7 +510,7 @@
                       [(ngModel)]="data.tenSanPham"
                       [ngModelOptions]="{ standalone: true }"
                       list="field_danh_sach_san_pham"
-                      (change)="updateTenSanPham(data.tenSanPham, i)"
+                      (change)="updateTenSanPham(data.tenSanPham ?? '', i)"
                     />
                     <datalist id="field_danh_sach_san_pham">
                       <option *ngFor="let item of danhSachSanPham" value="{{ item.name }}"></option>
@@ -566,7 +571,7 @@
                     />
                   </td>
                   <td>
-                    <button class="btn btn-danger" (click)="deleteRowPopupPhanLoai(data.id)">Xóa</button>
+                    <button class="btn btn-danger" (click)="deleteRowPopupPhanLoai(i)">Xóa</button>
                   </td>
                 </tr>
               </tbody>
@@ -605,6 +610,15 @@
   <div class="popup">
     <h3>{{ popupMessage }}</h3>
     <button (click)="closePopupNoti()">Close</button>
+  </div>
+</div>
+
+<div id="modal-confirm-delete-phan-loai" class="modal-confirm-delete-phan-loai" [ngClass]="{ active: isModalOpenConfirmDeletePhanLoai }">
+  <div class="modal-content-confirm">
+    <span class="close-modal-confirm" (click)="closeModalConfirmDeletePhanLoai()">&times;</span>
+    <h3>Bạn chắc chắn muốn xóa thông số này?</h3>
+    <button class="btn btn-danger" (click)="confirmDeleteDeletePhanLoai()">Xóa</button>
+    <button class="btn btn-primary" (click)="closeModalConfirmDeletePhanLoai()">Hủy</button>
   </div>
 </div>
 

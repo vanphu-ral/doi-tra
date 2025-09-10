@@ -2,6 +2,7 @@ package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.domain.PhanTichSanPham;
 import java.util.List;
+import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -23,4 +24,9 @@ public interface PhanTichSanPhamRepository extends JpaRepository<PhanTichSanPham
         "WHERE ct.donBaoHanh.id = :donBaoHanhId"
     )
     List<Long> findIdByDonBaoHanhId(@Param("donBaoHanhId") Long donBaoHanhId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PhanTichSanPham p WHERE p.phanLoaiChiTietTiepNhan.id IN :phanLoaiIds")
+    void deletePhanTichByPhanLoaiIds(@Param("phanLoaiIds") List<Long> phanLoaiIds);
 }

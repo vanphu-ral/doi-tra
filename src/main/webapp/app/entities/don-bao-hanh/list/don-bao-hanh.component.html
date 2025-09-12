@@ -92,8 +92,8 @@
         <h2>Sản phẩm</h2>
         <div class="btn-group-phanloai">
           <div class="group-header-tiepnhan">
-            <button class="btn-add btn-option" (click)="addRow()">Thêm mới</button>
-            <p style="margin-top: 20px">Tổng số lượng sản phẩm: {{ ExcelData.length }}</p>
+            <button class="btn-add btn-option" (click)="addRow('taoDon')">Thêm mới</button>
+            <p style="margin-top: 20px">Tổng số lượng sản phẩm: {{ themMoiDonBaoHanh.length }}</p>
           </div>
           <div>
             <button
@@ -396,7 +396,7 @@
 
           <div class="btn-group-phanloai">
             <div class="group-header-phanloai">
-              <button class="btn-add btn-option" (click)="addRow()">Thêm mới</button>
+              <button class="btn-add btn-option" (click)="addRow('phanLoai')">Thêm mới</button>
               <p style="margin-top: 20px">Tổng số lượng sản phẩm: {{ resultChiTietSanPhamTiepNhans.length }}</p>
               <p style="margin-top: 20px">
                 Tiến độ: {{ countItem }}/{{ resultChiTietSanPhamTiepNhans.length
@@ -502,7 +502,7 @@
               </thead>
               <tbody>
                 <tr *ngFor="let data of paginatedPhanLoai; let i = index; trackBy: trackByResult" class="editable-row">
-                  <td>{{ i + 1 }}</td>
+                  <td>{{ (pagePLTN - 1) * pageSizePLTN + i + 1 }}</td>
                   <td>
                     <input
                       type="text"
@@ -571,20 +571,53 @@
                     />
                   </td>
                   <td>
-                    <button class="btn btn-danger" (click)="deleteRowPopupPhanLoai(i)">Xóa</button>
+                    <button class="btn btn-danger" (click)="deleteRowPopupPhanLoai((pagePLTN - 1) * pageSizePLTN + i)">Xóa</button>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
           <div>
-            <pagination-controls (pageChange)="page = $event" style="float: right"></pagination-controls>
+            <ngb-pagination
+              [(page)]="pagePLTN"
+              [pageSize]="pageSizePLTN"
+              [collectionSize]="resultChiTietSanPhamTiepNhans.length"
+              [maxSize]="5"
+              [boundaryLinks]="true"
+              size="sm"
+            >
+            </ngb-pagination>
           </div>
         </div>
       </form>
     </div>
   </div>
 </div>
+<!------------------------------------------------------- Popup nhập người nhận ------------------------------------------------->
+<ng-template #nhapNguoiNhanTemplate let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Nhập người nhận</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <form #formNguoiNhan="ngForm">
+      <div class="form-group">
+        <label for="nguoiNhan">Tên người nhận</label>
+        <input type="text" id="nguoiNhan" name="nguoiNhan" class="form-control" [(ngModel)]="nguoiNhan" required />
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Hủy</button>
+    <button type="button" class="btn btn-success" [disabled]="!nguoiNhan" (click)="luuNguoiNhan(modal)">Lưu</button>
+    <button type="button" class="btn btn-primary" [disabled]="!nguoiNhan" (click)="submitNguoiNhan(modal)">Xác nhận & In</button>
+  </div>
+</ng-template>
+
 <!------------------------------------------------------- Popup chọn liên in biên bản ------------------------------------------------->
 <div class="table-responive popup-background" role="dialog" *ngIf="popupInBBTN === true">
   <div class="popup-container-btn-group">
@@ -676,8 +709,20 @@
         >
           <fa-icon [icon]="faPrint" style="padding-right: 5px"></fa-icon> In
         </button>
+        <!-- <button type="button" class="btn btn-primary" 
+          (click)="xacNhanInBienBan()" 
+          style="position: relative; z-index: 5">-->
         <!-- <button type="button" class="btn btn-success" style="float: right" (click)="addRow()">Thêm dòng</button> -->
+        <!-- <select [(ngModel)]="selectedFontSize" (change)="onFontSizeChange()" class="form-select"
+          style="width: 120px; display: inline-block; margin-left: 10px;">
+          <option value="12px">12px</option>
+          <option value="14px">14px</option>
+          <option value="16px">16px</option>
+          <option value="18px">18px</option>
+          <option value="20px">20px</option>
+        </select> -->
       </div>
+      <!-- <div id="BBTN" [ngStyle]="{ 'font-size': selectedFontSize }"> -->
       <div id="BBTN">
         <div id="lien1">
           <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">

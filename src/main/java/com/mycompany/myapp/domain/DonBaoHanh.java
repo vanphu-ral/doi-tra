@@ -54,6 +54,9 @@ public class DonBaoHanh implements Serializable {
     @Column(name = "ngay_tra_bien_ban")
     private ZonedDateTime ngayTraBienBan;
 
+    @Column(name = "nguoi_nhan")
+    private String nguoiNhan;
+
     //☺( cập nhật thì bật lên )
     @Column(name = "don_bao_hanh_id")
     private Integer donBaoHanhId;
@@ -298,5 +301,13 @@ public class DonBaoHanh implements Serializable {
     public int hashCode() {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
+    }
+
+    public String getNguoiNhan() {
+        return nguoiNhan;
+    }
+
+    public void setNguoiNhan(String nguoiNhan) {
+        this.nguoiNhan = nguoiNhan;
     }
 }

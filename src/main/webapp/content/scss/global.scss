@@ -230,3 +230,73 @@ angular-cli removes postcss-rtl processed inline css, processed rules must be ad
   padding-right: 0;
   transition: margin-left 0.5s;
 }
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #BBTN,
+  #BBTN * {
+    visibility: visible;
+  }
+
+  #BBTN {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 2rem !important;
+  }
+
+  h3 {
+    margin: 0 !important;
+    font-size: 18px !important;
+  }
+
+  .print-title {
+    margin-top: 1rem !important;
+    text-align: center !important;
+  }
+
+  /* Đảm bảo các font size được áp dụng trong print */
+  .font-size-12px,
+  .font-size-12px * {
+    font-size: 12px !important;
+  }
+
+  .font-size-14px,
+  .font-size-14px * {
+    font-size: 14px !important;
+  }
+
+  .font-size-16px,
+  .font-size-16px * {
+    font-size: 16px !important;
+  }
+
+  .font-size-18px,
+  .font-size-18px * {
+    font-size: 18px !important;
+  }
+
+  .font-size-20px,
+  .font-size-20px * {
+    font-size: 20px !important;
+  }
+
+  /* Override tất cả font-size trong print */
+  table,
+  th,
+  td,
+  p,
+  div,
+  span {
+    font-size: inherit !important;
+  }
+}

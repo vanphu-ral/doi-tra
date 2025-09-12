@@ -22,4 +22,5 @@ public interface DonBaoHanhResponse {
     String getTinhThanh(); // ****
     String getNgayTaoDon(); // ****
     String getTongTiepNhan(); // ****
+    String getNguoiNhan();
 }

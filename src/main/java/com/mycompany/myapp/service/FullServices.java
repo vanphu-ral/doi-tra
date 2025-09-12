@@ -203,6 +203,7 @@ public class FullServices {
         donBaoHanh.setNguoiTaoDon(request.getNguoiTaoDon());
         donBaoHanh.setNgaykhkb(request.getNgaykhkb());
         donBaoHanh.setTrangThaiIn(request.getTrangThaiIn());
+        donBaoHanh.setNguoiNhan(request.getNguoiNhan());
 
         return this.donBaoHanhRepository.save(donBaoHanh);
     }

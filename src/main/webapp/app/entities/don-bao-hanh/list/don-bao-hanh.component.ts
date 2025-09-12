@@ -24,9 +24,9 @@ import {
   SlickEventData,
   ExtensionName,
 } from './../../../../../../../node_modules/angular-slickgrid';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { HttpResponse, HttpClient } from '@angular/common/http';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DatePipe } from '@angular/common';
 import { IDonBaoHanh } from '../don-bao-hanh.model';
 import { DonBaoHanhService } from '../service/don-bao-hanh.service';
@@ -224,8 +224,21 @@ export class DonBaoHanhComponent implements OnInit {
   isAdmin = false;
   faPrint = faPrint;
   indexToDelete = -1;
+
+  selectedFontSize = '14px';
+  printStyles: { [key: string]: { [key: string]: string } } = {
+    '#BBTN': {
+      'font-size': '14px !important',
+    },
+  };
+  onPrintedCallback?: () => void;
+  nguoiNhan = '';
+  selectedRowData: any;
+  // logoPath = window.location.origin + '/content/images/logoRD.png';
+  @ViewChild('nhapNguoiNhanTemplate', { static: true }) nhapNguoiNhanTemplate!: TemplateRef<any>;
   private isGridReady = false;
   private shouldReloadAfterPopup = false;
+  private trustedTypesPolicy?: any;
   constructor(
     protected rowDetailViewComponent: RowDetailViewComponent,
     protected donBaoHanhService: DonBaoHanhService,
@@ -243,9 +256,19 @@ export class DonBaoHanhComponent implements OnInit {
     protected cdr: ChangeDetectorRef
   ) {}
   trackByResult(_idx: number, item: IResultItem): number {
-    console.log('[DEBUG] trackByResult idx, id=', _idx, item.id);
+    // console.log('[DEBUG] trackByResult idx, id=', _idx, item.id);
     return item.id;
   }
+  buttonnguoiNhan: Formatter<any> = (_row, _cell, _value, _colDef, dataContext) => {
+    const isEnabled = dataContext?.nguoiNhanEnabled;
+    const disabledClass = isEnabled ? '' : 'btn-disabled-custom';
+    const disabledAttr = isEnabled ? '' : 'disabled';
+
+    return `<button class="btn btn-info fa fa-user-plus btn-nhap-nguoi-nhan ${disabledClass}" ${disabledAttr}
+    style="height: 28px; line-height: 14px; min-width: 28px; padding: 0 10px"
+    title="${isEnabled ? 'Nhập người nhận' : 'Chưa đủ tiến độ để nhập người nhận'}"> </button>`;
+  };
+
   buttonBBTN: Formatter<any> = (_row, _cell, value) =>
     value
       ? `<button class="btn btn-success fa fa-print" style="height: 28px; line-height: 14px" title="In biên bản tiếp nhận"></button>`
@@ -300,11 +323,21 @@ export class DonBaoHanhComponent implements OnInit {
     });
   }
   ngOnInit(): void {
+    // if (window.trustedTypes && !this.trustedTypesPolicy) {
+    //   try {
+    //     this.trustedTypesPolicy = window.trustedTypes.createPolicy('fast-html', {
+    //       createHTML: (input: string) => input,
+    //     });
+    //   } catch (e) {
+    //     console.warn('Could not create trusted types policy:', e);
+    //   }
+    // }
     this.http.get<any[]>('api/tiep-nhan').subscribe((res: any[]) => {
       this.donBaoHanhs = res.sort((a, b) => b.id! - a.id!);
       // console.log('tiep-nhan:', res);
       for (let i = 0; i < this.donBaoHanhs.length; i++) {
         this.donBaoHanhs[i].tienDo = Number(this.donBaoHanhs[i].slDaPhanLoai / this.donBaoHanhs[i].slSanPham) * 100;
+        this.donBaoHanhs[i].nguoiNhanEnabled = this.donBaoHanhs[i].tienDo === 100;
       }
       if (!this.isGridReady || !this.donBaoHanhs.length) {
         return;
@@ -322,6 +355,23 @@ export class DonBaoHanhComponent implements OnInit {
 
     this.columnDefinitions = [];
     this.columnDefinitions1 = [
+      {
+        id: 'btnNguoiNhan',
+        field: 'btnNguoiNhan',
+        excludeFromColumnPicker: true,
+        excludeFromGridMenu: true,
+        excludeFromHeaderMenu: true,
+        formatter: this.buttonnguoiNhan,
+        maxWidth: 55,
+        cssClass: 'wrap-text',
+        minWidth: 55,
+        onCellClick: (e: Event, args: OnEventArgs) => {
+          const rowData = args.dataContext;
+          if (rowData.tienDo === 100) {
+            this.openNhapNguoiNhanDialog(rowData);
+          }
+        },
+      },
       {
         id: 'bbtn',
         field: 'id',
@@ -589,6 +639,30 @@ export class DonBaoHanhComponent implements OnInit {
         },
       },
       {
+        id: 'nguoiNhan',
+        name: 'Người nhận',
+        field: 'nguoiNhan',
+        sortable: true,
+        filterable: true,
+        minWidth: 115,
+        maxWidth: 115,
+        width: 115,
+        type: FieldType.string,
+        filter: {
+          placeholder: 'Search...',
+          model: Filters.compoundInputText,
+        },
+        editor: {
+          model: Editors.text,
+          required: true,
+          maxLength: 100,
+          editorOptions: {
+            col: 42,
+            rows: 5,
+          } as LongTextEditorOption,
+        },
+      },
+      {
         id: 'nhanVienGiaoHang',
         name: 'Nhân viên giao vận',
         field: 'nhanVienGiaoHang',
@@ -684,7 +758,12 @@ export class DonBaoHanhComponent implements OnInit {
           },
         });
       }
-      const presetColumns: { columnId: string }[] = [{ columnId: 'bbtn' }, { columnId: 'phanLoai' }, { columnId: 'edit' }];
+      const presetColumns: { columnId: string }[] = [
+        { columnId: 'btnNguoiNhan' },
+        { columnId: 'bbtn' },
+        { columnId: 'phanLoai' },
+        { columnId: 'edit' },
+      ];
 
       if (hasDeletePermission) {
         presetColumns.push({ columnId: 'delete' });
@@ -700,6 +779,7 @@ export class DonBaoHanhComponent implements OnInit {
         { columnId: 'ngaykhkb' },
         { columnId: 'ngayTraBienBan' },
         { columnId: 'nguoiTaoDon' },
+        { columnId: 'nguoiNhan' },
         { columnId: 'nhanVienGiaoHang' },
         { columnId: 'trangThai' }
       );
@@ -710,7 +790,7 @@ export class DonBaoHanhComponent implements OnInit {
         enablePagination: true,
         // enableAutoSizeColumns: true,
         asyncEditorLoadDelay: 2000,
-        frozenColumn: hasDeletePermission ? 3 : 2,
+        frozenColumn: hasDeletePermission ? 4 : 3,
         enableGridMenu: true,
         gridMenu: {
           iconCssClass: 'd-none',
@@ -1225,9 +1305,16 @@ export class DonBaoHanhComponent implements OnInit {
 
     const rawDate = this.thongTinDonBaoHanh.ngaykhkb;
     if (typeof rawDate === 'string') {
-      const isoLike = rawDate.replace(' ', 'T').slice(0, -2);
-      const date = new Date(isoLike);
-      this.thongTinDonBaoHanh.ngaykhkb = date.toISOString();
+      // Trường hợp chuỗi có định dạng "yyyy-MM-dd HH:mm:ss.SSS"
+      const cleaned = rawDate.trim().replace(' ', 'T').replace('.0', '');
+      const date = new Date(cleaned);
+
+      if (!isNaN(date.getTime())) {
+        this.thongTinDonBaoHanh.ngaykhkb = date.toISOString(); // ISO-8601
+      } else {
+        console.warn('Ngày không hợp lệ:', rawDate);
+        this.thongTinDonBaoHanh.ngaykhkb = null; //  fallback
+      }
     }
 
     this.http.put<any>(this.updateDonBaoHanhUrl, this.thongTinDonBaoHanh).subscribe({
@@ -1401,6 +1488,86 @@ export class DonBaoHanhComponent implements OnInit {
     // console.log('tao moi ma tiep nhan:', maTiepNhan);
     return maTiepNhan;
   }
+
+  //=============================================== Popup Nhập người nhận ================================================
+  openNhapNguoiNhanDialog(rowData: any): void {
+    this.selectedRowData = rowData;
+    this.nguoiNhan = '';
+    this.modalService.open(this.nhapNguoiNhanTemplate, {
+      size: 'xl',
+      centered: true,
+      windowClass: 'custom-modal-height',
+    });
+  }
+  submitNguoiNhan(modal: NgbModalRef): void {
+    if (!this.selectedRowData || !this.nguoiNhan) {
+      return;
+    }
+
+    this.selectedRowData.nguoiNhan = this.nguoiNhan;
+
+    // Format ngày
+    if (this.selectedRowData.ngaykhkb) {
+      const date = new Date(this.selectedRowData.ngaykhkb);
+      this.selectedRowData.ngaykhkb = date.toISOString();
+    }
+
+    modal.close();
+    this.donBaoHanh = { ...this.selectedRowData };
+    // Mở popup in, và chờ người dùng xác nhận in
+    this.openPopupInBBTNSaveNguoiNhan(this.selectedRowData.id, () => {
+      // Callback sau khi in xong
+      this.luuSauKhiIn();
+    });
+  }
+  luuSauKhiIn(): void {
+    this.http.put(`${this.updateDonBaoHanhUrl}`, this.selectedRowData).subscribe({
+      next: () => {
+        this.openPopupNoti('Đã lưu người nhận sau khi in', true);
+        const idx = this.donBaoHanhs.findIndex(d => d.id === this.selectedRowData.id);
+        if (idx > -1) {
+          this.donBaoHanhs[idx].nguoiNhan = this.selectedRowData.nguoiNhan;
+          this.angularGrid?.dataView.updateItem(this.selectedRowData.id, this.donBaoHanhs[idx]);
+          this.angularGrid?.slickGrid.invalidate();
+          this.angularGrid?.slickGrid.render();
+        }
+      },
+      error: () => {
+        this.openPopupNoti('Lưu người nhận thất bại sau khi in', false);
+      },
+    });
+  }
+
+  luuNguoiNhan(modal: NgbModalRef): void {
+    if (!this.selectedRowData || !this.nguoiNhan) {
+      return;
+    }
+
+    // Gán người nhận vào bản ghi
+    this.selectedRowData.nguoiNhan = this.nguoiNhan;
+    if (this.selectedRowData.ngaykhkb) {
+      const date = new Date(this.selectedRowData.ngaykhkb);
+      this.selectedRowData.ngaykhkb = date.toISOString();
+    }
+    // Gọi API lưu vào DB
+    this.http.put(`${this.updateDonBaoHanhUrl}`, this.selectedRowData).subscribe({
+      next: () => {
+        this.openPopupNoti('Đã lưu người nhận thành công', true);
+        const idx = this.donBaoHanhs.findIndex(d => d.id === this.selectedRowData.id);
+        if (idx > -1) {
+          this.donBaoHanhs[idx].nguoiNhan = this.selectedRowData.nguoiNhan;
+
+          this.angularGrid?.dataView.updateItem(this.selectedRowData.id, this.donBaoHanhs[idx]);
+          this.angularGrid?.slickGrid.invalidate();
+          this.angularGrid?.slickGrid.render();
+        }
+        modal.close();
+      },
+      error: () => {
+        this.openPopupNoti('Lưu người nhận thất bại', false);
+      },
+    });
+  }
   //=============================================== Popup phân loại ================================================
   closePopupPhanLoai(): void {
     this.popupPhanLoai = false;
@@ -1442,24 +1609,27 @@ export class DonBaoHanhComponent implements OnInit {
   //Cập nhật thông tin trong popup phân loại
   updatePopupPhanLoai(index: number): void {
     this.isChanged = true;
-    this.donBaoHanh.slTiepNhan = 0;
-    // tính toán số lượng tiếp nhận
-    this.resultChiTietSanPhamTiepNhans[index].slTiepNhan =
-      Number(this.resultChiTietSanPhamTiepNhans[index].slDoiMoi) +
-      Number(this.resultChiTietSanPhamTiepNhans[index].slSuaChua) +
-      Number(this.resultChiTietSanPhamTiepNhans[index].slKhongBaoHanh);
-    // gán vào dữ liệu gốc
-    for (let i = 0; i < this.danhSachGocPopupPhanLoai.length; i++) {
-      if (this.danhSachGocPopupPhanLoai[i].tenSanPham === this.resultChiTietSanPhamTiepNhans[index].tenSanPham) {
-        this.danhSachGocPopupPhanLoai[i].slDoiMoi = this.resultChiTietSanPhamTiepNhans[index].slDoiMoi;
-        this.danhSachGocPopupPhanLoai[i].slSuaChua = this.resultChiTietSanPhamTiepNhans[index].slSuaChua;
-        this.danhSachGocPopupPhanLoai[i].slKhongBaoHanh = this.resultChiTietSanPhamTiepNhans[index].slKhongBaoHanh;
-        this.danhSachGocPopupPhanLoai[i].slTiepNhan = this.resultChiTietSanPhamTiepNhans[index].slTiepNhan;
-      }
-      //Cập nhật thông tin số lượng tổng tiếp nhận
-      this.donBaoHanh.slTiepNhan = Number(this.donBaoHanh.slTiepNhan) + Number(this.danhSachGocPopupPhanLoai[i].slTiepNhan);
+
+    const item = this.resultChiTietSanPhamTiepNhans[index];
+    item.slTiepNhan = Number(item.slDoiMoi ?? 0) + Number(item.slSuaChua ?? 0) + Number(item.slKhongBaoHanh ?? 0);
+
+    // Đồng bộ với danhSachGocPopupPhanLoai
+    const matched = this.danhSachGocPopupPhanLoai.find(d => d.id === item.id || d.tenSanPham === item.tenSanPham);
+    if (matched) {
+      matched.slDoiMoi = item.slDoiMoi;
+      matched.slSuaChua = item.slSuaChua;
+      matched.slKhongBaoHanh = item.slKhongBaoHanh;
+      matched.slTiepNhan = item.slTiepNhan;
     }
-    // console.log('check: ', index, this.resultChiTietSanPhamTiepNhans[index]);
+
+    // Tính lại tổng tiếp nhận
+    this.donBaoHanh.slTiepNhan = this.resultChiTietSanPhamTiepNhans.reduce((tong: number, sp: any) => {
+      const doiMoi = typeof sp.slDoiMoi === 'number' ? sp.slDoiMoi : Number(sp.slDoiMoi) || 0;
+      const suaChua = typeof sp.slSuaChua === 'number' ? sp.slSuaChua : Number(sp.slSuaChua) || 0;
+      const khongBH = typeof sp.slKhongBaoHanh === 'number' ? sp.slKhongBaoHanh : Number(sp.slKhongBaoHanh) || 0;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/restrict-plus-operands
+      return tong + doiMoi + suaChua + khongBH;
+    }, 0);
   }
 
   // xacNhanPhanLoai(): void {
@@ -1594,11 +1764,10 @@ export class DonBaoHanhComponent implements OnInit {
   //   }
   // }
 
-  addRow(): void {
+  addRow(context: 'phanLoai' | 'taoDon'): void {
     this.isChanged = true;
     this.idAddRow++;
-    // cập nhật thông tin
-    //thêm mới dòng
+
     const newRow = {
       id: this.idAddRow,
       tenSanPham: '',
@@ -1612,13 +1781,24 @@ export class DonBaoHanhComponent implements OnInit {
       slKhongBaoHanh: 0,
       chiTietSanPhamTiepNhan: null,
     };
-    this.resultChiTietSanPhamTiepNhans.push({ ...newRow });
-    this.danhSachGocPopupPhanLoai.push({ ...newRow });
-    this.themMoiDonBaoHanh.push({ ...newRow });
-    // this.resultChiTietSanPhamTiepNhans = [...this.resultChiTietSanPhamTiepNhans, newRow];
-    // this.danhSachGocPopupPhanLoai = [...this.danhSachGocPopupPhanLoai, newRow];
-    // console.log('them dong', this.resultChiTietSanPhamTiepNhans);
+
+    // Chỉ thêm vào đúng mảng theo ngữ cảnh
+    if (context === 'phanLoai') {
+      this.danhSachGocPopupPhanLoai.push({ ...newRow });
+    } else if (context === 'taoDon') {
+      this.resultChiTietSanPhamTiepNhans.push({ ...newRow });
+      this.themMoiDonBaoHanh.push({ ...newRow });
+    }
   }
+  //chinh co chu khi in
+  onFontSizeChange(): void {
+    // Áp dụng font size ngay lập tức cho preview
+    const bbtnElement = document.getElementById('BBTN');
+    if (bbtnElement) {
+      bbtnElement.style.fontSize = this.selectedFontSize;
+    }
+  }
+
   //tích phân loại nhanh
   phanLoaiCheckAll(): void {
     this.isChanged = true;
@@ -1673,6 +1853,76 @@ export class DonBaoHanhComponent implements OnInit {
 
     // lấy dữ liệu từ sessision
     this.getDuLieuInChinhThuc(id);
+  }
+
+  openPopupInBBTNSaveNguoiNhan(id: number, onPrinted?: () => void): void {
+    this.maBienBan = '';
+    this.popupInBBTNtest = true;
+    this.navBarComponent.toggleSidebar2();
+    this.loaiBienBan = 'Tiếp nhận';
+    this.resultChiTietSanPhamTiepNhans.sort((a, b) => b.slSuaChua - a.slSuaChua);
+    console.log(
+      'sap xep ',
+      this.resultChiTietSanPhamTiepNhans.sort((a, b) => b.slSuaChua - a.slSuaChua)
+    );
+    for (let i = 0; i < this.danhSachBienBan.length; i++) {
+      if (this.loaiBienBan === this.danhSachBienBan[i].loaiBienBan && this.idDonBaoHanh === this.danhSachBienBan[i].donBaoHanh.id) {
+        this.maBienBan = this.danhSachBienBan[i].maBienBan;
+        //lưu thông tin thêm mới biên bản
+        this.themMoiBienBan = this.danhSachBienBan[i];
+        // console.log('Cap nhat thong tin bien ban:', this.themMoiBienBan);
+      }
+    }
+    if (this.maBienBan === '') {
+      const date = new Date();
+      this.year = date.getFullYear().toString().slice(-2);
+      const getMonth = date.getMonth() + 1;
+      if (getMonth < 10) {
+        this.month = `0${getMonth}`;
+      } else {
+        this.month = getMonth.toString();
+      }
+      if (date.getDate() < 10) {
+        this.date = `0${date.getDate()}`;
+      } else {
+        this.date = date.getDate().toString();
+      }
+      if (date.getHours() < 10) {
+        this.hours = `0${date.getHours()}`;
+      } else {
+        this.hours = date.getHours().toString();
+      }
+      if (date.getMinutes() < 10) {
+        this.minutes = `0${date.getMinutes()}`;
+      } else {
+        this.minutes = date.getMinutes().toString();
+      }
+      if (date.getSeconds() < 10) {
+        this.seconds = `0${date.getSeconds()}`;
+      } else {
+        this.seconds = date.getSeconds().toString();
+      }
+      this.maBienBan = `TN${this.date}${this.month}${this.year}${this.hours}${this.minutes}${this.seconds}`;
+      this.themMoiBienBan = { id: null, maBienBan: this.maBienBan, loaiBienBan: this.loaiBienBan, soLanIn: 0, donBaoHanh: this.donBaoHanh };
+      this.yearTN = this.donBaoHanh?.ngayTiepNhan.substr(2, 2);
+      this.monthTN = this.donBaoHanh?.ngayTiepNhan.substr(5, 2);
+      this.dateTN = this.donBaoHanh?.ngayTiepNhan.substr(8, 2);
+      console.log('ngày', this.dateTN);
+      console.log('tháng', this.monthTN);
+      console.log('năm', this.yearTN);
+
+      // console.log('them moi bien ban:', this.themMoiBienBan);
+    }
+    this.resultChiTietSanPhamTiepNhans.sort((a, b) => b.slSuaChua - a.slSuaChua);
+    console.log(
+      'sap xep ',
+      this.resultChiTietSanPhamTiepNhans.sort((a, b) => b.slSuaChua - a.slSuaChua)
+    );
+    // lấy dữ liệu từ sessision
+    this.getDuLieuInTest(id);
+    if (onPrinted) {
+      this.onPrintedCallback = onPrinted;
+    }
   }
 
   openPopupInBBTNTest(id: number): void {
@@ -1970,6 +2220,341 @@ export class DonBaoHanhComponent implements OnInit {
     this.http.put<any>(this.updateDonBaoHanhUrl, this.donBaoHanh).subscribe();
     console.log('test', this.donBaoHanh.trangThaiIn);
   }
+  // xacNhanInBienBan(): void {
+  //   const element = document.getElementById('BBTN');
+  //   if (element) {
+  //     element.classList.remove('font-size-12px', 'font-size-14px', 'font-size-16px', 'font-size-18px', 'font-size-20px');
+  //     element.classList.add(`font-size-${this.selectedFontSize}`);
+  //   }
+
+  //   this.customPrintSafe();
+  // }
+
+  // // Phiên bản an toàn với CSP
+  // async customPrintSafe(): Promise<void> {
+  //   const printElement = document.getElementById('BBTN');
+  //   if (!printElement) {
+  //     return;
+  //   }
+
+  //   try {
+  //     const printHTML = await this.generatePrintHTML(printElement); // Thêm await
+  //     const blob = new Blob([printHTML], { type: 'text/html' });
+  //     const blobUrl = URL.createObjectURL(blob);
+
+  //     // Phần còn lại giữ nguyên...
+  //     const printWindow = window.open(blobUrl, '_blank');
+  //     if (!printWindow) {
+  //       console.error('Không thể mở cửa sổ in');
+  //       return;
+  //     }
+
+  //     printWindow.onload = () => {
+  //       setTimeout(() => {
+  //         printWindow.focus();
+  //         printWindow.print();
+
+  //         setTimeout(() => {
+  //           if (confirm('Bạn đã in thành công? Cập nhật trạng thái in?')) {
+  //             this.updateAfterPrint();
+  //           }
+  //           printWindow.close();
+  //           URL.revokeObjectURL(blobUrl);
+  //         }, 1000);
+  //       }, 100);
+  //     };
+
+  //     setTimeout(() => {
+  //       if (printWindow.document.readyState === 'complete') {
+  //         printWindow.focus();
+  //         printWindow.print();
+  //       }
+  //     }, 500);
+  //   } catch (error) {
+  //     console.error('Lỗi khi in:', error);
+  //     await this.customPrintFallback(); // Thêm await
+  //   }
+  // }
+
+  // // Fallback method sử dụng iframe
+  // async customPrintFallback(): Promise<void> {
+  //   const printElement = document.getElementById('BBTN');
+  //   if (!printElement) {
+  //     return;
+  //   }
+
+  //   try {
+  //     // Tạo iframe ẩn
+  //     const iframe = document.createElement('iframe');
+  //     iframe.style.position = 'absolute';
+  //     iframe.style.left = '-9999px';
+  //     iframe.style.width = '0';
+  //     iframe.style.height = '0';
+  //     iframe.style.border = '0';
+  //     document.body.appendChild(iframe);
+
+  //     // Tạo nội dung HTML để in
+  //     const printHTML = await this.generatePrintHTML(printElement);
+
+  //     // Dùng srcdoc thay cho document.write (không cần TrustedTypes)
+  //     iframe.srcdoc = printHTML;
+
+  //     iframe.onload = () => {
+  //       if (iframe.contentWindow) {
+  //         iframe.contentWindow.focus();
+  //         iframe.contentWindow.print();
+
+  //         setTimeout(() => {
+  //           if (confirm('Bạn đã in thành công? Cập nhật trạng thái in?')) {
+  //             this.updateAfterPrint();
+  //           }
+  //           document.body.removeChild(iframe);
+  //         }, 1000);
+  //       }
+  //     };
+  //   } catch (error) {
+  //     console.error('Lỗi fallback print:', error);
+  //   }
+  // }
+
+  // async processImagesForPrint(element: HTMLElement): Promise<void> {
+  //   const images = element.querySelectorAll('img');
+
+  //   for (const img of Array.from(images)) {
+  //     try {
+  //       const originalSrc = img.getAttribute('src') ?? '';
+  //       console.log('Original src:', originalSrc);
+
+  //       if (originalSrc.startsWith('data:') || originalSrc.startsWith('http')) {
+  //         continue; // Đã là absolute URL hoặc data URL
+  //       }
+
+  //       // Tạo absolute URL
+  //       let absoluteUrl: string;
+  //       if (originalSrc.startsWith('/')) {
+  //         absoluteUrl = window.location.origin + originalSrc;
+  //       } else {
+  //         // Với relative path như ../../../../content/images/logoRD.png
+  //         absoluteUrl = this.getAbsoluteImagePath(originalSrc);
+  //       }
+
+  //       console.log('Trying absolute URL:', absoluteUrl);
+
+  //       // Thử load ảnh trực tiếp trước
+  //       const testImg = new Image();
+  //       testImg.crossOrigin = 'anonymous';
+
+  //       await new Promise((resolve, reject) => {
+  //         testImg.onload = () => resolve(testImg);
+  //         testImg.onerror = () => reject(new Error('Cannot load'));
+  //         testImg.src = absoluteUrl;
+  //       });
+
+  //       // Nếu load được thì convert sang base64
+  //       const base64 = await this.imageToBase64(absoluteUrl);
+  //       img.src = base64;
+  //       console.log('Successfully converted to base64');
+  //     } catch (error) {
+  //       console.warn('Error processing image:', error);
+  //       // Fallback: set absolute URL trực tiếp
+  //       const originalSrc = img.getAttribute('src') ?? '';
+  //       if (!originalSrc.startsWith('http') && !originalSrc.startsWith('data:')) {
+  //         img.src = this.getAbsoluteImagePath(originalSrc);
+  //       }
+  //     }
+  //   }
+  // }
+  // getAbsoluteImagePath(relativePath: string): string {
+  //   // Tạo absolute path từ window location
+  //   const baseUrl = window.location.origin;
+  //   // Loại bỏ các ../ và tạo path đúng
+  //   const cleanPath = relativePath.replace(/\.\.\//g, '').replace(/\.\//g, '');
+  //   return `${baseUrl}/${cleanPath}`;
+  // }
+  // async processImage(img: HTMLImageElement): Promise<void> {
+  //   try {
+  //     const originalSrc = img.src;
+  //     console.log('Processing image with src:', originalSrc);
+
+  //     // Nếu đã là data URL thì không cần xử lý
+  //     if (originalSrc.startsWith('data:')) {
+  //       return;
+  //     }
+
+  //     // Xử lý tất cả các loại path
+  //     let absoluteUrl: string;
+
+  //     if (originalSrc.startsWith('http://') || originalSrc.startsWith('https://')) {
+  //       absoluteUrl = originalSrc;
+  //     } else {
+  //       // Tạo absolute URL từ relative path
+  //       absoluteUrl = new URL(originalSrc, window.location.href).href;
+  //     }
+
+  //     console.log('Absolute URL:', absoluteUrl);
+
+  //     try {
+  //       const base64 = await this.imageToBase64(absoluteUrl);
+  //       img.src = base64;
+  //       console.log('Successfully converted to base64');
+  //     } catch (e) {
+  //       console.warn('Không thể chuyển ảnh thành base64:', e);
+  //       // Fallback: sử dụng absolute URL
+  //       img.src = absoluteUrl;
+  //       console.log('Using absolute URL as fallback');
+  //     }
+  //   } catch (error) {
+  //     console.error('Lỗi xử lý ảnh:', error, 'Original src:', img.src);
+  //   }
+  // }
+  // imageToBase64(src: string): Promise<string> {
+  //   return new Promise((resolve, reject) => {
+  //     const img = new Image();
+
+  //     // Bỏ crossOrigin cho local images
+  //     if (!src.startsWith('http')) {
+  //       // img.crossOrigin = 'anonymous'; // Bỏ dòng này
+  //     } else {
+  //       img.crossOrigin = 'anonymous';
+  //     }
+
+  //     img.onload = () => {
+  //       try {
+  //         const canvas = document.createElement('canvas');
+  //         const ctx = canvas.getContext('2d');
+
+  //         if (!ctx) {
+  //           reject(new Error('Cannot get canvas context'));
+  //           return;
+  //         }
+
+  //         canvas.width = img.naturalWidth;
+  //         canvas.height = img.naturalHeight;
+
+  //         ctx.drawImage(img, 0, 0);
+
+  //         const dataURL = canvas.toDataURL('image/png');
+  //         resolve(dataURL);
+  //       } catch (e) {
+  //         console.error('Canvas error:', e);
+  //         reject(e);
+  //       }
+  //     };
+
+  //     img.onerror = error => {
+  //       console.error('Image load error:', error, 'src:', src);
+  //       reject(new Error(`Cannot load image: ${src}`));
+  //     };
+
+  //     img.src = src;
+  //   });
+  // }
+  // async generatePrintHTML(printElement: HTMLElement): Promise<string> {
+  //   const clonedElement = printElement.cloneNode(true) as HTMLElement;
+
+  //   // Lấy nguyên nội dung head (có link styles.[hash].css do Angular build)
+  //   const headContent = document.head.innerHTML;
+
+  //   // Xử lý ảnh cho chắc ăn
+  //   await this.processImagesForPrint(clonedElement);
+
+  //   return `
+  // <!DOCTYPE html>
+  // <html>
+  // <head>
+  //   <meta charset="UTF-8">
+  //   ${headContent}
+  //   <style>
+  //     @page { size: A4; margin: 1cm; }
+  //     body { margin: 20px; font-family: Arial, sans-serif; line-height: 1.4; }
+  //   </style>
+  // </head>
+  // <body>
+  //   ${clonedElement.outerHTML}
+  // </body>
+  // </html>
+  // `;
+  // }
+
+  // // Phiên bản an toàn hơn để lấy styles
+  // getAllStylesSafe(): string {
+  //   let styles = '';
+
+  //   try {
+  //     // Lấy tất cả stylesheets
+  //     for (let i = 0; i < document.styleSheets.length; i++) {
+  //       const styleSheet = document.styleSheets[i];
+  //       try {
+  //         if (styleSheet.href === null) {
+  //           // Inline styles
+  //           const rules = styleSheet.cssRules || styleSheet.rules;
+  //           if (rules) {
+  //             for (let j = 0; j < rules.length; j++) {
+  //               if (rules[j].cssText) {
+  //                 styles += rules[j].cssText + '\n';
+  //               }
+  //             }
+  //           }
+  //         } else {
+  //           // External stylesheets - chỉ link đến same-origin
+  //           if (
+  //             styleSheet.href.startsWith(window.location.origin) ||
+  //             styleSheet.href.startsWith('/') ||
+  //             styleSheet.href.includes('googleapis.com')
+  //           ) {
+  //             styles += `<link rel="stylesheet" href="${styleSheet.href}">\n`;
+  //           }
+  //         }
+  //       } catch (e) {
+  //         // Bỏ qua CORS errors
+  //         if (styleSheet.href) {
+  //           styles += `<link rel="stylesheet" href="${styleSheet.href}">\n`;
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.warn('Error getting styles:', error);
+  //   }
+
+  //   return styles ? `<style>${styles}</style>` : '';
+  // }
+
+  // updateAfterPrint(): void {
+  //   this.themMoiBienBan.soLanIn++;
+  //   this.donBaoHanh.trangThaiIn = 'Đã in';
+
+  //   // Gửi biên bản
+  //   this.http.post<any>(this.postMaBienBanUrl, this.themMoiBienBan).subscribe(res => {
+  //     this.getDanhSachBienBan();
+
+  //     if (this.onPrintedCallback) {
+  //       this.onPrintedCallback();
+  //       this.onPrintedCallback = undefined;
+  //     }
+
+  //     this.closeAllPopups();
+  //   });
+
+  //   // Cập nhật đơn bảo hành
+  //   this.http.put<any>(this.updateDonBaoHanhUrl, this.donBaoHanh).subscribe(() => {
+  //     this.http.get<any[]>('api/tiep-nhan').subscribe((res: any[]) => {
+  //       const idx = this.donBaoHanhs.findIndex(d => d.id === this.selectedRowData.id);
+  //       if (idx > -1) {
+  //         this.donBaoHanhs[idx].nguoiNhan = this.selectedRowData.nguoiNhan;
+  //         this.angularGrid?.dataView.updateItem(this.selectedRowData.id, this.donBaoHanhs[idx]);
+  //         this.angularGrid?.slickGrid.invalidate();
+  //         this.angularGrid?.slickGrid.render();
+  //       }
+  //     });
+  //   });
+  // }
+
+  // closeAllPopups(): void {
+  //   this.popupInBBTN1 = false;
+  //   this.popupInBBTN2 = false;
+  //   this.popupInBBTN3 = false;
+  //   this.popupInBBTN4 = false;
+  // }
   //--------------------------------------------------- import file --------------------------------------------------------
   ReadExcel(event: any): void {
     this.ExcelData = [];
@@ -2046,7 +2631,9 @@ export class DonBaoHanhComponent implements OnInit {
         item.slDoiMoi = item.slDoiMoi === '' ? 0 : Number(item.slDoiMoi);
 
         this.themMoiDonBaoHanh.push(item);
-        this.donBaoHanh.slTiepNhan += Number(item.slDoiMoi) + Number(item.slSuaChua) + Number(item.slKhongBaoHanh);
+        // this.ExcelData = [...this.ExcelData, item];
+        const tong = Number(item.slDoiMoi) + Number(item.slSuaChua) + Number(item.slKhongBaoHanh);
+        this.donBaoHanh.slTiepNhan += tong;
       }
     };
   }
@@ -2269,7 +2856,6 @@ export class DonBaoHanhComponent implements OnInit {
             }
           }
           this.themMoiPhanLoaiChiTietTiepNhan = arr;
-
           return this.http.put<any>(this.putPhanLoaiChiTietTiepNhanUrl, this.themMoiPhanLoaiChiTietTiepNhan);
         }),
         switchMap(() => this.http.put<any>(`${this.updateDonBaoHanhUrl}`, this.donBaoHanh))

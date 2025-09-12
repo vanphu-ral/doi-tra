@@ -24,7 +24,7 @@ public interface ChiTietSanPhamTiepNhanRepository extends JpaRepository<ChiTietS
     //    })
     //    List<ChiTietSanPhamTiepNhan> findAllByDonBaoHanhId(Long id);
     @Query(
-        "SELECT ct FROM ChiTietSanPhamTiepNhan ct " +
+        "SELECT DISTINCT ct FROM ChiTietSanPhamTiepNhan ct " +
         "LEFT JOIN FETCH ct.sanPham " +
         "LEFT JOIN FETCH ct.phanLoaiChiTietTiepNhans pl " +
         "LEFT JOIN FETCH pl.danhSachTinhTrang " +

@@ -30,6 +30,7 @@ public interface DonBaoHanhRepository extends JpaRepository<DonBaoHanh, Long> {
         " dbh.ngaykhkb as ngaykhkb,\n" +
         " dbh.nguoi_tao_don as nguoiTaoDon,\n" +
         " dbh.sl_tiep_nhan as slTiepNhan,\n" +
+        "dbh.nguoi_nhan as nguoiNhan,\n" +
         " dbh.sl_da_phan_tich as slDaPhanTich,\n" +
         " dbh.ghi_chu as ghiChu,\n" +
         " dbh.ngay_tra_bien_ban as ngayTraBienBan,\n" +

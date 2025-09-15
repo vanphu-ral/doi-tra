@@ -596,7 +596,7 @@
 <!------------------------------------------------------- Popup nhập người nhận ------------------------------------------------->
 <ng-template #nhapNguoiNhanTemplate let-modal>
   <div class="modal-header">
-    <h4 class="modal-title">Nhập người nhận</h4>
+    <h4 class="modal-title">Thông tin giao nhận</h4>
     <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -607,6 +607,10 @@
       <div class="form-group">
         <label for="nguoiNhan">Tên người nhận</label>
         <input type="text" id="nguoiNhan" name="nguoiNhan" class="form-control" [(ngModel)]="nguoiNhan" required />
+      </div>
+      <div class="form-group">
+        <label for="ngayTraBienBan">Ngày trả biên bản</label>
+        <input type="date" id="ngayTraBienBan" name="ngayTraBienBan" class="form-control" [(ngModel)]="ngayTraBienBan" required />
       </div>
     </form>
   </div>

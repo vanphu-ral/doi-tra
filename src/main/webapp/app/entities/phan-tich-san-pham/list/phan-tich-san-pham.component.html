@@ -312,7 +312,6 @@
                       id="lot"
                       [(ngModel)]="saveLOT"
                       (ngModelChange)="onScan('lot', $event)"
-                      inputmode="none"
                       [disabled]="scanMode !== 'lot'"
                     />
                     <label class="form-label" *ngIf="!saveLOT">LOT</label>
@@ -327,7 +326,6 @@
                       id="serial"
                       [(ngModel)]="saveSerial"
                       (ngModelChange)="onScan('serial', $event)"
-                      inputmode="none"
                       [disabled]="scanMode !== 'serial'"
                     />
                     <label class="form-label" *ngIf="!saveSerial">Serial</label>
@@ -346,14 +344,14 @@
                     />
                   </div>
 
-                  <button
+                  <!-- <button
                     class="btn btn-success btn-scan"
                     style="height: 2.6rem; color: #fff"
                     *ngIf="listOfChiTietSanPhamPhanTich[indexOfPhanTichSanPham]?.tienDo === 100"
                     (click)="saveKhaiBaoLoi()"
                   >
                     Lưu
-                  </button>
+                  </button> -->
                 </div>
               </div>
             </div>
@@ -567,8 +565,8 @@
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title">Thông tin kiểm tra</h4>
-        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
-          <span aria-hidden="true">&times;</span>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()">
+          <!-- <span aria-hidden="true">&times;</span> -->
         </button>
       </div>
 
@@ -664,7 +662,8 @@
             <thead class="table-primary text-center align-middle">
               <tr>
                 <th>STT</th>
-                <th>Tên sản phẩm</th>
+                <th>Material</th>
+                <th>Mã Feeder</th>
                 <th>LOT</th>
                 <th>Vendor</th>
                 <th>PartNumber</th>
@@ -678,6 +677,7 @@
               <tr *ngFor="let item of paginatedScan100; let i = index">
                 <td>{{ (currentPageScan100 - 1) * pageSizeScan100 + i + 1 }}</td>
                 <td>{{ item.tenSanPham }}</td>
+                <td>{{ item.feeder }}</td>
                 <td>{{ item.lotNumber }}</td>
                 <td>{{ item.vendor }}</td>
                 <td>{{ item.partNumber }}</td>
@@ -719,7 +719,7 @@
   <ng-template #detailModal let-modal>
     <div class="modal-header">
       <h5 class="modal-title">Thông tin kiểm tra vật tư</h5>
-      <button type="button" class="close" (click)="modal.dismiss()">&times;</button>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
       <table class="table table-hover table-bordered table-sm mt-3" *ngIf="selectedLotDetail?.testNVL?.length">
@@ -794,7 +794,7 @@
           <div class="btn-kho-wrapper" style="display: flex; gap: 5px">
             <ng-container *ngFor="let data of resultOfSanPhamTheoKho; let i = index">
               <button
-                *ngIf="data.key"
+                *ngIf="data.key && getUniqueCount(data.value) > 0"
                 class="btn"
                 style="background: #3399cc; border-radius: 5px; color: #fff"
                 (click)="openPopupInBBKN(i, data.key)"
@@ -808,7 +808,12 @@
       <div>
         <div class="group-select-btn-in">
           <span class="label-btn-select-bb">Trạng thái: {{ trangThaiInTL }} {{ maKhoPrint }}</span>
-          <button type="button" class="btn btn-primary btn-options-in btn-popup-in-2" (click)="showGroupOptionsTL()">
+          <button
+            type="button"
+            class="btn btn-primary btn-options-in btn-popup-in-2"
+            *ngIf="resultOfSanPhamTheoKhoTL.length > 0"
+            (click)="groupOptionsTL = true; groupOptionsKN = false; groupOptionsTN = false"
+          >
             Biên bản thanh lý
           </button>
         </div>
@@ -816,7 +821,7 @@
           <div class="btn-kho-wrapper" style="display: flex; gap: 5px">
             <ng-container *ngFor="let data of resultOfSanPhamTheoKhoTL; let i = index">
               <button
-                *ngIf="data.key"
+                *ngIf="data.key && getUniqueCount(data.value) > 0"
                 class="btn"
                 style="background: #3399cc; border-radius: 5px; color: #fff"
                 (click)="openPopupInBBTL(i, data.key)"
@@ -826,19 +831,6 @@
             </ng-container>
           </div>
         </div>
-        <!-- <div class="group-btn-options" *ngIf="groupOptionsTL === true">
-          <table class="table table-striped">
-            <tbody>
-              <td class="inventory-name">
-                <tr *ngFor="let data of resultOfSanPhamTheoKhoTL; let i = index" style="border: none">
-                  <button *ngIf="data.key" class="btn btn-primary btn-options-in btn-options-in-pt" (click)="openPopupInBBTL(i, data.key)">
-                    {{ data.key }}: {{ data.value.length }} SP
-                  </button>
-                </tr>
-              </td>
-            </tbody>
-          </table>
-        </div> -->
       </div>
     </div>
   </div>
@@ -1220,6 +1212,7 @@
               printTitle="BIÊN BẢN KIỂM NGHIỆM SẢN PHẨM BẢO HÀNH"
               (click)="xacNhanInBienBan()"
               printSectionId="BBKN"
+              [printStyle]="{ '#signatureSelect': { display: 'none' } }"
               style="position: relative; z-index: 5"
               ngxPrint
             >
@@ -1524,7 +1517,7 @@
                       style="font-size: 18px; display: block; margin-top: 6rem; text-decoration: none; color: black"
                       >{{ selectedValue }}</a
                     >
-                    <select style="float: right; margin-right: 7em" (change)="onSelectChanged($event)">
+                    <select id="signatureSelect" style="float: right; margin-right: 7em" (change)="onSelectChanged($event)">
                       <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
                       <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
                       <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
@@ -1556,6 +1549,7 @@
               (click)="xacNhanInBienBan()"
               printSectionId="BBTL"
               style="position: relative; z-index: 5"
+              [printStyle]="{ '#signatureSelect': { display: 'none' } }"
               ngxPrint
             >
               <fa-icon [icon]="faPrint" style="padding-right: 5px"></fa-icon>In
@@ -1761,13 +1755,11 @@
                   <div class="col" style="text-align: center"><strong>PHÒNG TKKTTC</strong></div>
                   <div class="col" style="text-align: center"><strong>BẢO VỆ</strong></div>
                   <div class="col" style="text-align: center">
-                    <strong>TỔ BẢO HÀNH SẢN PHẨM</strong> <br />
-                    <!-- <select class="nhanvien" style="text-align:center; margin-top: 5rem;"></select>
-                    -->
+                    <strong>TỔ BẢO HÀNH SẢN PHẨM</strong><br />
                     <a [href]="selectedValue" style="display: block; margin-top: 6rem; text-decoration: none; color: black">{{
                       selectedValue
                     }}</a>
-                    <select style="float: right; margin-right: 3em" (change)="onSelectChanged($event)">
+                    <select id="signatureSelect" style="float: right; margin-right: 7em" (change)="onSelectChanged($event)">
                       <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
                       <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
                       <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
@@ -2359,7 +2351,7 @@
               <div class="col" style="text-align: center"><strong>BẢO VỆ</strong></div>
               <div class="col" style="text-align: center">
                 <strong>TỔ BẢO HÀNH SẢN PHẨM</strong><br />
-                <a [href]="selectedValue" style="font-size: 18px; display: block; margin-top: 6rem; text-decoration: none; color: black">{{
+                <a [href]="selectedValue" style="display: block; margin-top: 6rem; text-decoration: none; color: black">{{
                   selectedValue
                 }}</a>
                 <select id="signatureSelect" style="float: right; margin-right: 7em" (change)="onSelectChanged($event)">

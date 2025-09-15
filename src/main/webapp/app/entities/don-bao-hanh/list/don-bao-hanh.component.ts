@@ -217,13 +217,14 @@ export class DonBaoHanhComponent implements OnInit {
   isModalOpenConfirmDeletePhanLoai = false;
 
   savePhanLoai: any;
-  selectedValue = '';
+  selectedValue = 'Đỗ Văn Việt';
 
   popupInBBTNtest = false;
   loading = false;
   isAdmin = false;
   faPrint = faPrint;
   indexToDelete = -1;
+  ngayTraBienBan = '';
 
   selectedFontSize = '14px';
   printStyles: { [key: string]: { [key: string]: string } } = {
@@ -588,32 +589,32 @@ export class DonBaoHanhComponent implements OnInit {
           } as LongTextEditorOption,
         },
       },
-      // {
-      //   id: 'ngayTraBienBan',
-      //   name: 'Ngày trả biên bản',
-      //   field: 'ngayTraBienBan',
-      //   dataKey: 'ngayTraBienBan',
-      //   width: 140,
-      //   sortable: true,
-      //   filterable: true,
-      //   minWidth: 140,
-      //   // maxWidth: 140,
-      //   type: FieldType.object,
-      //   formatter: Formatters.dateTimeIso,
-      //   filter: {
-      //     placeholder: 'Search...',
-      //     model: Filters.compoundDate,
-      //   },
-      //   editor: {
-      //     model: Editors.text,
-      //     required: true,
-      //     maxLength: 100,
-      //     editorOptions: {
-      //       col: 42,
-      //       rows: 5,
-      //     } as LongTextEditorOption,
-      //   },
-      // },
+      {
+        id: 'ngayTraBienBan',
+        name: 'Ngày trả biên bản',
+        field: 'ngayTraBienBan',
+        dataKey: 'ngayTraBienBan',
+        width: 140,
+        sortable: true,
+        filterable: true,
+        minWidth: 140,
+        // maxWidth: 140,
+        type: FieldType.object,
+        formatter: Formatters.dateTimeIso,
+        filter: {
+          placeholder: 'Search...',
+          model: Filters.compoundDate,
+        },
+        editor: {
+          model: Editors.text,
+          required: true,
+          maxLength: 100,
+          editorOptions: {
+            col: 42,
+            rows: 5,
+          } as LongTextEditorOption,
+        },
+      },
       {
         id: 'nguoiTaoDon',
         name: 'Người tạo đơn',
@@ -1500,13 +1501,17 @@ export class DonBaoHanhComponent implements OnInit {
     });
   }
   submitNguoiNhan(modal: NgbModalRef): void {
-    if (!this.selectedRowData || !this.nguoiNhan) {
+    if (!this.selectedRowData || !this.nguoiNhan || !this.ngayTraBienBan) {
       return;
     }
 
     this.selectedRowData.nguoiNhan = this.nguoiNhan;
 
-    // Format ngày
+    const selectedDate = new Date(this.ngayTraBienBan);
+    const now = new Date();
+    selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+    this.selectedRowData.ngayTraBienBan = selectedDate.toISOString();
+
     if (this.selectedRowData.ngaykhkb) {
       const date = new Date(this.selectedRowData.ngaykhkb);
       this.selectedRowData.ngaykhkb = date.toISOString();
@@ -1514,12 +1519,12 @@ export class DonBaoHanhComponent implements OnInit {
 
     modal.close();
     this.donBaoHanh = { ...this.selectedRowData };
-    // Mở popup in, và chờ người dùng xác nhận in
+
     this.openPopupInBBTNSaveNguoiNhan(this.selectedRowData.id, () => {
-      // Callback sau khi in xong
       this.luuSauKhiIn();
     });
   }
+
   luuSauKhiIn(): void {
     this.http.put(`${this.updateDonBaoHanhUrl}`, this.selectedRowData).subscribe({
       next: () => {
@@ -1539,23 +1544,29 @@ export class DonBaoHanhComponent implements OnInit {
   }
 
   luuNguoiNhan(modal: NgbModalRef): void {
-    if (!this.selectedRowData || !this.nguoiNhan) {
+    if (!this.selectedRowData || !this.nguoiNhan || !this.ngayTraBienBan) {
       return;
     }
 
-    // Gán người nhận vào bản ghi
     this.selectedRowData.nguoiNhan = this.nguoiNhan;
+
+    const selectedDate = new Date(this.ngayTraBienBan);
+    const now = new Date();
+    selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+    this.selectedRowData.ngayTraBienBan = selectedDate.toISOString();
+
     if (this.selectedRowData.ngaykhkb) {
       const date = new Date(this.selectedRowData.ngaykhkb);
       this.selectedRowData.ngaykhkb = date.toISOString();
     }
-    // Gọi API lưu vào DB
+
     this.http.put(`${this.updateDonBaoHanhUrl}`, this.selectedRowData).subscribe({
       next: () => {
         this.openPopupNoti('Đã lưu người nhận thành công', true);
         const idx = this.donBaoHanhs.findIndex(d => d.id === this.selectedRowData.id);
         if (idx > -1) {
           this.donBaoHanhs[idx].nguoiNhan = this.selectedRowData.nguoiNhan;
+          this.donBaoHanhs[idx].ngayTraBienBan = this.selectedRowData.ngayTraBienBan;
 
           this.angularGrid?.dataView.updateItem(this.selectedRowData.id, this.donBaoHanhs[idx]);
           this.angularGrid?.slickGrid.invalidate();
@@ -1568,6 +1579,7 @@ export class DonBaoHanhComponent implements OnInit {
       },
     });
   }
+
   //=============================================== Popup phân loại ================================================
   closePopupPhanLoai(): void {
     this.popupPhanLoai = false;
@@ -2207,17 +2219,27 @@ export class DonBaoHanhComponent implements OnInit {
   xacNhanInBienBan(): void {
     this.themMoiBienBan.soLanIn++;
     this.donBaoHanh.trangThaiIn = 'Đã in';
-    this.http.post<any>(this.postMaBienBanUrl, this.themMoiBienBan).subscribe(res => {
-      // console.log('thành công:', res);
-      // window.location.reload();
-      this.getDanhSachBienBan();
-      this.popupInBBTN1 = false;
-      this.popupInBBTN2 = false;
-      this.popupInBBTN3 = false;
-      this.popupInBBTN4 = false;
+    if (this.donBaoHanh.ngaykhkb) {
+      const date = new Date(this.donBaoHanh.ngaykhkb);
+      this.donBaoHanh.ngaykhkb = date.toISOString();
+    }
+    forkJoin([
+      this.http.put<any>(this.updateDonBaoHanhUrl, this.donBaoHanh),
+      this.http.post<any>(this.postMaBienBanUrl, this.themMoiBienBan),
+    ]).subscribe({
+      next: ([putRes, postRes]) => {
+        console.log('Cập nhật trạng thái in và tạo biên bản thành công');
+        this.getDanhSachBienBan();
+        this.popupInBBTN1 = false;
+        this.popupInBBTN2 = false;
+        this.popupInBBTN3 = false;
+        this.popupInBBTN4 = false;
+      },
+      error: err => {
+        console.error(err);
+      },
     });
 
-    this.http.put<any>(this.updateDonBaoHanhUrl, this.donBaoHanh).subscribe();
     console.log('test', this.donBaoHanh.trangThaiIn);
   }
   // xacNhanInBienBan(): void {

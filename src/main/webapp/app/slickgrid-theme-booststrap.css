@@ -47,7 +47,44 @@
 .pointer {
   cursor: pointer;
 }
+@media print {
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+  }
 
+  h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .print-title {
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+  .font-size-12px {
+    font-size: 12px !important;
+  }
+
+  .font-size-14px {
+    font-size: 14px !important;
+  }
+
+  .font-size-16px {
+    font-size: 16px !important;
+  }
+
+  .font-size-18px {
+    font-size: 18px !important;
+  }
+
+  .font-size-20px {
+    font-size: 20px !important;
+  }
+}
 .slickgrid-container .slick-header-columns,
 .slickgrid-container .slick-header-column {
   box-sizing: content-box !important;

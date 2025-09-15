@@ -75,6 +75,7 @@ interface Scan100PassItem {
   stt: number;
   tenSanPham: string;
   lotNumber: string;
+  feeder: string;
   vendor: string;
   partNumber: string;
   sap: string;
@@ -192,8 +193,8 @@ export class PhanTichSanPhamComponent implements OnInit {
   popupInBBTN3 = false;
   popupInBBTN4 = false;
   groupOptionsTN = false;
-  groupOptionsKN = false;
-  groupOptionsTL = false;
+  groupOptionsKN = true;
+  groupOptionsTL = true;
 
   popupInBBKN = false;
   popupInBBTL = false;
@@ -309,7 +310,7 @@ export class PhanTichSanPhamComponent implements OnInit {
   phanTichSanPhams: any;
   isChanged = false;
   idAddRow = 0;
-  selectedValue = '';
+  selectedValue = 'Đỗ Văn Việt';
   faPrint = faPrint;
   faBarcode = faBarcode;
   faTrash = faTrash;
@@ -1235,7 +1236,7 @@ export class PhanTichSanPhamComponent implements OnInit {
       return;
     }
     this.groupOptionsKN = true;
-    this.groupOptionsTL = false;
+    this.groupOptionsTL = true;
     this.groupOptionsTN = false;
     console.log('trangThaiInTN:', this.trangThaiInTN);
     console.log('bienBanTiepNhan:', this.bienBanTiepNhan);
@@ -1243,16 +1244,33 @@ export class PhanTichSanPhamComponent implements OnInit {
   }
 
   showGroupOptionsTL(): void {
-    if (this.trangThaiInTN !== 'Đã in' || !this.bienBanTiepNhan || !this.bienBanKiemNghiem) {
-      this.openPopupNoti('Vui lòng in biên bản tiếp nhận và kiểm nghiệm trước');
+    if (this.trangThaiInTN !== 'Đã in' || !this.bienBanTiepNhan) {
+      this.openPopupNoti('Vui lòng in biên bản tiếp nhận trước');
       return;
     }
+
+    // Lọc lại danh sách kho thanh lý: chỉ giữ kho đã in kiểm nghiệm
+    this.resultOfSanPhamTheoKhoTL = this.resultOfSanPhamTheoKhoTL.filter(data => {
+      const maKho = this.getMaKhoFromTenKho(data.key);
+      const daInKiemNghiem = (this.bienBanKiemNghiem as any[])?.some(
+        (b: any) => b?.maKho === maKho && b?.donBaoHanh?.id === this.donBaoHanh.id
+      );
+      return daInKiemNghiem;
+    });
+
+    if (this.resultOfSanPhamTheoKhoTL.length === 0) {
+      this.openPopupNoti('Chưa có kho nào được in kiểm nghiệm để in biên bản thanh lý');
+      return;
+    }
+
     this.groupOptionsTL = true;
-    this.groupOptionsKN = false;
+    this.groupOptionsKN = true;
     this.groupOptionsTN = false;
-    console.log('trangThaiInTN:', this.trangThaiInTN);
-    console.log('bienBanTiepNhan:', this.bienBanTiepNhan);
-    console.log('bienBanKiemNghiem:', this.bienBanKiemNghiem);
+
+    // console.log(
+    //   '✅ Kho thanh lý được phép:',
+    //   this.resultOfSanPhamTheoKhoTL.map(k => k.key)
+    // );
   }
 
   caculateErrors(index: any): void {
@@ -1337,6 +1355,7 @@ export class PhanTichSanPhamComponent implements OnInit {
         (item, idx, self) =>
           item.sanPham?.name &&
           item.phanLoaiChiTietTiepNhan?.danhSachTinhTrang?.id &&
+          item.phanLoaiChiTietTiepNhan?.danhSachTinhTrang?.tenTinhTrangPhanLoai === 'Đổi mới' &&
           idx ===
             self.findIndex(
               i =>
@@ -1353,7 +1372,8 @@ export class PhanTichSanPhamComponent implements OnInit {
   openPopupInBBTL(index: number, tenKho: string): void {
     this.isLoading = true;
 
-    if (!this.resultOfSanPhamTheoKhoTL[index]) {
+    const khoData = this.resultOfSanPhamTheoKhoTL[index];
+    if (!khoData) {
       this.openPopupNoti('Không tìm thấy dữ liệu kho thanh lý');
       this.isLoading = false;
       return;
@@ -1366,12 +1386,13 @@ export class PhanTichSanPhamComponent implements OnInit {
     this.maKho = khoInfo?.maKho ?? '';
     this.tenKho = khoInfo?.tenKho ?? '';
 
-    const rawList = this.resultOfSanPhamTheoKhoTL[index].value;
+    const rawList = khoData.value;
 
     const uniqueList = rawList.filter(
       (item, idx, self) =>
         item.sanPham?.name &&
         item.phanLoaiChiTietTiepNhan?.danhSachTinhTrang?.id &&
+        item.phanLoaiChiTietTiepNhan?.danhSachTinhTrang?.tenTinhTrangPhanLoai === 'Đổi mới' &&
         idx ===
           self.findIndex(
             i =>
@@ -1386,7 +1407,7 @@ export class PhanTichSanPhamComponent implements OnInit {
 
     forkJoin({
       bienBanTiepNhan: this.http.get(`api/danh-sach-bien-ban/tiep-nhan/${id}`),
-      bienBanKiemNghiem: this.http.get(`api/danh-sach-bien-ban/kiem-nghiem/${id}`),
+      bienBanKiemNghiem: this.http.get<any[]>(`api/ma-bien-bans?loai=KN&idDonBaoHanh=${id}`),
       danhSachBienBan: this.http.get<any[]>(`api/ma-bien-bans?loai=TL&idDonBaoHanh=${id}&maKho=${maKho}`),
     }).subscribe(({ bienBanTiepNhan, bienBanKiemNghiem, danhSachBienBan }) => {
       let bienBanTN: any = null;
@@ -1396,13 +1417,12 @@ export class PhanTichSanPhamComponent implements OnInit {
         bienBanTN = bienBanTiepNhan;
       }
 
-      const danhSachBBKN = bienBanKiemNghiem as any[];
-      this.bienBanKiemNghiem = danhSachBBKN.find(b => b?.maKho === maKho);
+      const bienBanKNTheoKho = bienBanKiemNghiem.find(b => b?.maKho === maKho && b?.donBaoHanh?.id === this.donBaoHanh.id);
 
       this.danhSachBienBan = danhSachBienBan;
 
-      if (!bienBanTN || !this.bienBanKiemNghiem) {
-        this.openPopupNoti('Vui lòng in biên bản tiếp nhận và kiểm nghiệm trước');
+      if (!bienBanTN || !bienBanKNTheoKho) {
+        this.openPopupNoti(`Vui lòng in biên bản tiếp nhận và kiểm nghiệm trước cho ${tenKho}`);
         this.isLoading = false;
         return;
       }
@@ -1435,6 +1455,7 @@ export class PhanTichSanPhamComponent implements OnInit {
       this.isLoading = false;
     });
   }
+
   get dynamicValue(): string {
     return this.scanMode === 'lot' ? this.saveLOT : this.saveSerial;
   }
@@ -1509,6 +1530,7 @@ export class PhanTichSanPhamComponent implements OnInit {
     this.http.post<any>(this.postMaBienBanUrl, this.themMoiBienBan).subscribe(res => {
       console.log('thành công:', res);
       this.getDanhSachBienBan();
+      this.openPopupBtn();
       // window.location.reload();
       this.popupInBBTL = false;
       this.popupInBBTN = false;
@@ -1764,6 +1786,7 @@ export class PhanTichSanPhamComponent implements OnInit {
             return {
               stt: index + 1,
               tenSanPham: item.material || '',
+              feeder: item.feeder,
               lotNumber: lot,
               vendor: parts[2] || '',
               partNumber: parts[1] || '',
@@ -2525,7 +2548,9 @@ export class PhanTichSanPhamComponent implements OnInit {
       return 0;
     }
 
-    const unique = list.filter(
+    const filtered = list.filter(item => item.phanLoaiChiTietTiepNhan?.danhSachTinhTrang?.tenTinhTrangPhanLoai === 'Đổi mới');
+
+    const unique = filtered.filter(
       (item, idx, self) =>
         item.sanPham?.name &&
         item.phanLoaiChiTietTiepNhan?.danhSachTinhTrang?.id &&

@@ -226,12 +226,215 @@ export class DonBaoHanhComponent implements OnInit {
   indexToDelete = -1;
   ngayTraBienBan = '';
 
-  selectedFontSize = '14px';
-  printStyles: { [key: string]: { [key: string]: string } } = {
-    '#BBTN': {
-      'font-size': '14px !important',
-    },
-  };
+  selectedFontSize = '12px';
+  get printStyles(): { [key: string]: { [key: string]: string } } {
+    return {
+      '.popup-container': {
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        background: 'white',
+        'max-width': '95vw',
+        'max-height': '95vh',
+        overflow: 'auto',
+        'font-size': this.selectedFontSize,
+      },
+      '.popup-header-in': {
+        padding: '20px',
+        'font-size': this.selectedFontSize,
+      },
+      '.close-btn': {
+        float: 'right',
+        'font-size': '28px',
+        'font-weight': 'bold',
+        cursor: 'pointer',
+      },
+      '#hiddenToolbar': {
+        'margin-bottom': '20px',
+      },
+      '.print-btn': {
+        position: 'relative',
+        'z-index': '5',
+      },
+      '.print-btn fa-icon': {
+        'padding-right': '5px',
+      },
+      '.font-size-selector': {
+        width: '120px',
+        display: 'inline-block',
+        'margin-left': '10px',
+      },
+      '.document-header': {
+        display: 'flex',
+        'justify-content': 'space-between',
+        'align-items': 'center',
+        padding: '0 1rem',
+        'font-size': this.selectedFontSize,
+      },
+      '.logo-container': {
+        align: 'left',
+        height: '0px',
+      },
+      '.logo': {
+        width: '150px',
+        'margin-top': '0',
+      },
+      '.document-title': {
+        align: 'center',
+        'text-align': 'center',
+        'margin-top': '1rem',
+        'font-size': this.selectedFontSize,
+      },
+      '.document-title h3': {
+        margin: '0',
+        'font-size': this.selectedFontSize,
+      },
+      '.document-code': {
+        'font-size': this.selectedFontSize,
+        'margin-right': '15px',
+        'text-align': 'right',
+      },
+      '.document-number': {
+        'text-align': 'right',
+        'margin-right': '45px',
+        'font-size': this.selectedFontSize,
+        'margin-top': '7px',
+      },
+      '.document-info': {
+        display: 'flex',
+        'justify-content': 'space-between',
+        'font-size': this.selectedFontSize,
+      },
+      '.document-info p,div': {
+        display: 'flex',
+        'justify-content': 'space-between',
+        'font-size': this.selectedFontSize,
+      },
+      '.qr-container': {
+        'text-align': 'right',
+        'margin-right': '50px',
+      },
+      '.qr-text': {
+        'margin-right': '40px',
+        'font-size': this.selectedFontSize,
+        'margin-top': '-9px',
+        'text-align': 'center',
+        width: '70%',
+      },
+      '.table-container': {
+        margin: '20px 0',
+        'font-size': this.selectedFontSize,
+      },
+      '.table-TN': {
+        'min-width': '82vw',
+        'border-spacing': '0px',
+        'font-size': this.selectedFontSize,
+      },
+      '.col-stt': {
+        width: '1rem',
+        'border-left': '0.5px solid black',
+        'border-top': '0.5px solid black',
+        'border-bottom': '0.5px solid black',
+      },
+      '.col-ten-sp': {
+        width: '50rem',
+        'border-left': '0.5px solid black',
+        'border-top': '0.5px solid black',
+        'border-bottom': '0.5px solid black',
+      },
+      '.col-dvt': {
+        width: '3rem',
+        'border-left': '0.5px solid black',
+        'border-top': '0.5px solid black',
+        'border-bottom': '0.5px solid black',
+      },
+      '.col-sl-khach': {
+        width: '4rem',
+        'border-left': '0.5px solid black',
+        'border-top': '0.5px solid black',
+        'border-bottom': '0.5px solid black',
+      },
+      '.col-sl-nhan': {
+        width: '4rem',
+        'border-left': '0.5px solid black',
+        'border-top': '0.5px solid black',
+        'border-bottom': '0.5px solid black',
+      },
+      '.col-sl-doi': {
+        width: '3rem',
+        'border-left': '0.5px solid black',
+        'border-top': '0.5px solid black',
+        'border-bottom': '0.5px solid black',
+      },
+      '.col-sl-sua': {
+        width: '3.5rem',
+        'border-left': '0.5px solid black',
+        'border-top': '0.5px solid black',
+        'border-bottom': '0.5px solid black',
+      },
+      '.col-sl-khong-bh': {
+        width: '4rem',
+        'border-left': '0.5px solid black',
+        'border-top': '0.5px solid black',
+        'border-bottom': '0.5px solid black',
+      },
+      '.col-ly-do-khong': {
+        width: '10rem',
+        'border-left': '0.5px solid black',
+        'border-top': '0.5px solid black',
+        'border-bottom': '0.5px solid black',
+      },
+      '.col-ly-do-sua': {
+        width: '10rem',
+        border: '0.5px solid black',
+      },
+      '.body-table td': {
+        height: '12px',
+        'border-left': '0.5px solid black',
+        'border-bottom': '0.5px solid black',
+        'font-size': this.selectedFontSize,
+      },
+      '.cell-center': {
+        'text-align': 'center',
+      },
+      '.cell-last': {
+        'border-right': '0.5px solid black',
+      },
+      '.document-footer': {
+        'margin-top': '20px',
+        'font-size': this.selectedFontSize,
+      },
+      '.signature-row': {
+        'margin-left': '-4rem',
+        display: 'flex',
+        'justify-content': 'space-around',
+      },
+      '.signature-col': {
+        'text-align': 'center',
+        'font-size': this.selectedFontSize,
+      },
+      '.signature-name': {
+        display: 'block',
+        'margin-top': '6rem',
+        'text-decoration': 'none',
+        color: 'black',
+        'font-size': this.selectedFontSize,
+      },
+      '.signature-select': {
+        float: 'right',
+        'margin-right': '12em',
+      },
+      '.page-break': {
+        'page-break-after': 'always',
+      },
+      '.notes': {
+        margin: '20px 0',
+        'font-size': this.selectedFontSize,
+      },
+      '#signatureSelect': { display: 'none' },
+    };
+  }
   onPrintedCallback?: () => void;
   nguoiNhan = '';
   selectedRowData: any;
@@ -2217,6 +2420,11 @@ export class DonBaoHanhComponent implements OnInit {
   }
 
   xacNhanInBienBan(): void {
+    Object.keys(this.printStyles).forEach(selector => {
+      if (this.printStyles[selector]['font-size'] !== undefined) {
+        this.printStyles[selector]['font-size'] = this.selectedFontSize;
+      }
+    });
     this.themMoiBienBan.soLanIn++;
     this.donBaoHanh.trangThaiIn = 'Đã in';
     if (this.donBaoHanh.ngaykhkb) {

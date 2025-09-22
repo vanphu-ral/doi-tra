@@ -700,58 +700,49 @@
 <div class="table-responive popup-background" role="dialog" *ngIf="popupInBBTNtest === true">
   <div class="popup-container popup-in">
     <div class="popup-header-in">
-      <span class="close-btn" style="float: right" (click)="closePopupInBBTNTest()">&times;</span>
+      <span class="close-btn" (click)="closePopupInBBTNTest()">&times;</span>
       <div id="hiddenToolbar">
         <button
           type="button"
-          class="btn btn-primary"
+          class="btn btn-primary print-btn"
           printTitle="BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH"
           (click)="xacNhanInBienBan()"
           printSectionId="BBTN"
-          style="position: relative; z-index: 5"
+          [printStyle]="printStyles"
           ngxPrint
         >
-          <fa-icon [icon]="faPrint" style="padding-right: 5px"></fa-icon> In
+          <fa-icon [icon]="faPrint"></fa-icon> In
         </button>
-        <!-- <button type="button" class="btn btn-primary" 
-          (click)="xacNhanInBienBan()" 
-          style="position: relative; z-index: 5">-->
-        <!-- <button type="button" class="btn btn-success" style="float: right" (click)="addRow()">Thêm dòng</button> -->
-        <!-- <select [(ngModel)]="selectedFontSize" (change)="onFontSizeChange()" class="form-select"
-          style="width: 120px; display: inline-block; margin-left: 10px;">
+        <select [(ngModel)]="selectedFontSize" (change)="onFontSizeChange()" class="form-select font-size-selector">
           <option value="12px">12px</option>
           <option value="14px">14px</option>
           <option value="16px">16px</option>
           <option value="18px">18px</option>
           <option value="20px">20px</option>
-        </select> -->
+        </select>
       </div>
-      <!-- <div id="BBTN" [ngStyle]="{ 'font-size': selectedFontSize }"> -->
+
       <div id="BBTN">
         <div id="lien1">
-          <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
+          <header class="document-header">
             <div class="row">
-              <div class="col-6" align="left" style="height: 0px">
-                <img
-                  src="../../../../content/images/logoRD.png"
-                  alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
-                  width="150"
-                  style="margin-top: 0"
-                />
+              <div class="col-6 logo-container">
+                <img src="../../../../content/images/logoRD.png" alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG" class="logo" />
               </div>
             </div>
           </header>
-          <div align="center" style="text-align: center; margin-top: 1rem">
-            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH</h3>
-            <p style="text-align: center">Liên 1: Lưu tổ phục vụ đổi sản phẩm</p>
+
+          <div class="document-title">
+            <h3>BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH</h3>
+            <p>Liên 1: Lưu tổ phục vụ đổi sản phẩm</p>
           </div>
-          <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
-          <br />
-          <br />
-          <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
-          <br />
-          <div style="display: flex; justify-content: space-between">
-            <div>
+
+          <div class="document-code">RĐ.QID05.BM01 Ban hành lần 1</div>
+
+          <div class="document-number">Số: {{ maBienBan }}</div>
+
+          <div class="document-info">
+            <div class="info-left">
               <p>
                 Ngày {{ dateTN }} tháng {{ monthTN }} năm 20{{ yearTN }}
                 Công ty CP Bóng đèn Phích nước Rạng Đông nhận sản phẩm đổi của
@@ -760,82 +751,49 @@
               <p>Địa chỉ: {{ donBaoHanh.diaChi }}</p>
               <div>Kèm giấy đề nghị đổi sản phẩm (nếu có) ngày ... tháng ... năm 20...</div>
             </div>
-            <div>
-              <div align="right" style="margin-right: 50px">
+            <div class="info-right">
+              <div class="qr-container">
                 <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
               </div>
-              <br />
-              <div style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+              <div class="qr-text">
                 {{ donBaoHanh.maTiepNhan }}
               </div>
             </div>
           </div>
-          <div>
-            <table id="table" class="table-TN" style="min-width: 82vw; border-spacing: 0px">
+
+          <div class="table-container">
+            <table id="table" class="table-TN">
               <thead>
                 <tr>
-                  <th style="width: 1rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    STT
-                  </th>
-                  <th style="width: 30rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Tên sản phẩm
-                  </th>
-                  <th style="width: 3rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Đ.vị tính
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL khách giao
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL thực nhận
-                  </th>
-                  <th style="width: 3rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL SP đổi mới
-                  </th>
-                  <th
-                    style="width: 3.5rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black"
-                  >
-                    SL SP sửa chữa
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL SP không được bảo hành
-                  </th>
-                  <th style="width: 10rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Lý do không bảo hành
-                  </th>
-                  <th style="width: 10rem; border: 0.5px solid black">Lý do sửa chữa</th>
+                  <th class="col-stt">STT</th>
+                  <th class="col-ten-sp">Tên sản phẩm</th>
+                  <th class="col-dvt">Đ.vị tính</th>
+                  <th class="col-sl-khach">SL khách giao</th>
+                  <th class="col-sl-nhan">SL thực nhận</th>
+                  <th class="col-sl-doi">SL SP đổi mới</th>
+                  <th class="col-sl-sua">SL SP sửa chữa</th>
+                  <th class="col-sl-khong-bh">SL SP không được bảo hành</th>
+                  <th class="col-ly-do-khong">Lý do không bảo hành</th>
+                  <th class="col-ly-do-sua">Lý do sửa chữa</th>
                 </tr>
               </thead>
               <tbody class="body-table">
                 <tr *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index">
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ i + 1 }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.tenSanPham }}</td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.donVi }}</td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slKhachGiao }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slTiepNhan }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slDoiMoi }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slSuaChua }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slKhongBaoHanh }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black"></td>
-                  <td
-                    style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; border-right: 0.5px solid black"
-                  ></td>
+                  <td class="cell-center">{{ i + 1 }}</td>
+                  <td>{{ data.tenSanPham }}</td>
+                  <td>{{ data.donVi }}</td>
+                  <td class="cell-center">{{ data.slKhachGiao }}</td>
+                  <td class="cell-center">{{ data.slTiepNhan }}</td>
+                  <td class="cell-center">{{ data.slDoiMoi }}</td>
+                  <td class="cell-center">{{ data.slSuaChua }}</td>
+                  <td class="cell-center">{{ data.slKhongBaoHanh }}</td>
+                  <td></td>
+                  <td class="cell-last"></td>
                 </tr>
               </tbody>
             </table>
           </div>
+
           <div class="notes">
             <p>
               Biên bản được lập thành 03 liên (hoặc 4 liên): liên 1 lưu Tổ bảo hành sản phẩm, liên 2 giao khách hàng, liên 3 giao P. Kh,
@@ -844,16 +802,15 @@
             </p>
             <p><strong>Lưu ý: Khi khách hàng lấy sản phẩm đổi, phải giao liên 2 cho thủ kho công ty</strong></p>
           </div>
-          <footer>
-            <div class="row" style="margin-left: -4rem; display: flex; justify-content: space-around">
-              <div class="col" style="text-align: center"><strong>ĐẠI DIỆN KHÁCH HÀNG</strong></div>
-              <div class="col" style="text-align: center"><strong>BẢO VỆ</strong></div>
-              <div class="col" style="text-align: center">
+
+          <footer class="document-footer">
+            <div class="row signature-row">
+              <div class="col signature-col"><strong>ĐẠI DIỆN KHÁCH HÀNG</strong></div>
+              <div class="col signature-col"><strong>BẢO VỆ</strong></div>
+              <div class="col signature-col">
                 <strong>TỔ BẢO HÀNH SẢN PHẨM</strong><br />
-                <a [href]="selectedValue" style="display: block; margin-top: 6rem; text-decoration: none; color: black">{{
-                  selectedValue
-                }}</a>
-                <select style="float: right; margin-right: 12em" (change)="onSelectChanged($event)">
+                <a [href]="selectedValue" class="signature-name">{{ selectedValue }}</a>
+                <select id="signatureSelect" class="signature-select" (change)="onSelectChanged($event)">
                   <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
                   <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
                   <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
@@ -864,33 +821,29 @@
               </div>
             </div>
           </footer>
-          <p style="page-break-after: always"></p>
-          <br />
-          <br />
 
-          <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
+          <p class="page-break"></p>
+
+          <!-- Liên 2: Khách hàng -->
+          <header class="document-header">
             <div class="row">
-              <div class="col-6" align="left" style="height: 0px">
-                <img
-                  src="../../../../content/images/logoRD.png"
-                  alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
-                  width="150"
-                  style="margin-top: 0"
-                />
+              <div class="col-6 logo-container">
+                <img src="../../../../content/images/logoRD.png" alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG" class="logo" />
               </div>
             </div>
           </header>
-          <div align="center" style="text-align: center; margin-top: 1rem">
-            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH</h3>
-            <p style="text-align: center">Liên 2: Khách hàng</p>
+
+          <div class="document-title">
+            <h3>BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH</h3>
+            <p>Liên 2: Khách hàng</p>
           </div>
-          <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
-          <br />
-          <br />
-          <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
-          <br />
-          <div style="display: flex; justify-content: space-between">
-            <div>
+
+          <div class="document-code">RĐ.QID05.BM01 Ban hành lần 1</div>
+
+          <div class="document-number">Số: {{ maBienBan }}</div>
+
+          <div class="document-info">
+            <div class="info-left">
               <p>
                 Ngày {{ dateTN }} tháng {{ monthTN }} năm 20{{ yearTN }}
                 Công ty CP Bóng đèn Phích nước Rạng Đông nhận sản phẩm đổi của
@@ -899,82 +852,49 @@
               <p>Địa chỉ: {{ donBaoHanh.diaChi }}</p>
               <div>Kèm giấy đề nghị đổi sản phẩm (nếu có) ngày ... tháng ... năm 20...</div>
             </div>
-            <div>
-              <div align="right" style="margin-right: 50px">
+            <div class="info-right">
+              <div class="qr-container">
                 <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
               </div>
-              <br />
-              <div style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+              <div class="qr-text">
                 {{ donBaoHanh.maTiepNhan }}
               </div>
             </div>
           </div>
-          <div>
-            <table id="table" class="table-TN" style="min-width: 82vw; border-spacing: 0px">
+
+          <div class="table-container">
+            <table id="table" class="table-TN">
               <thead>
                 <tr>
-                  <th style="width: 1rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    STT
-                  </th>
-                  <th style="width: 30rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Tên sản phẩm
-                  </th>
-                  <th style="width: 3rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Đ.vị tính
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL khách giao
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL thực nhận
-                  </th>
-                  <th style="width: 3rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL SP đổi mới
-                  </th>
-                  <th
-                    style="width: 3.5rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black"
-                  >
-                    SL SP sửa chữa
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL SP không được bảo hành
-                  </th>
-                  <th style="width: 10rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Lý do không bảo hành
-                  </th>
-                  <th style="width: 10rem; border: 0.5px solid black">Lý do sửa chữa</th>
+                  <th class="col-stt">STT</th>
+                  <th class="col-ten-sp">Tên sản phẩm</th>
+                  <th class="col-dvt">Đ.vị tính</th>
+                  <th class="col-sl-khach">SL khách giao</th>
+                  <th class="col-sl-nhan">SL thực nhận</th>
+                  <th class="col-sl-doi">SL SP đổi mới</th>
+                  <th class="col-sl-sua">SL SP sửa chữa</th>
+                  <th class="col-sl-khong-bh">SL SP không được bảo hành</th>
+                  <th class="col-ly-do-khong">Lý do không bảo hành</th>
+                  <th class="col-ly-do-sua">Lý do sửa chữa</th>
                 </tr>
               </thead>
               <tbody class="body-table">
                 <tr *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index">
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ i + 1 }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.tenSanPham }}</td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.donVi }}</td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slKhachGiao }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slTiepNhan }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slDoiMoi }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slSuaChua }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slKhongBaoHanh }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black"></td>
-                  <td
-                    style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; border-right: 0.5px solid black"
-                  ></td>
+                  <td class="cell-center">{{ i + 1 }}</td>
+                  <td>{{ data.tenSanPham }}</td>
+                  <td>{{ data.donVi }}</td>
+                  <td class="cell-center">{{ data.slKhachGiao }}</td>
+                  <td class="cell-center">{{ data.slTiepNhan }}</td>
+                  <td class="cell-center">{{ data.slDoiMoi }}</td>
+                  <td class="cell-center">{{ data.slSuaChua }}</td>
+                  <td class="cell-center">{{ data.slKhongBaoHanh }}</td>
+                  <td></td>
+                  <td class="cell-last"></td>
                 </tr>
               </tbody>
             </table>
           </div>
+
           <div class="notes">
             <p>
               Biên bản được lập thành 03 liên (hoặc 4 liên): liên 1 lưu Tổ bảo hành sản phẩm, liên 2 giao khách hàng, liên 3 giao P. Kh,
@@ -983,16 +903,15 @@
             </p>
             <p><strong>Lưu ý: Khi khách hàng lấy sản phẩm đổi, phải giao liên 2 cho thủ kho công ty</strong></p>
           </div>
-          <footer>
-            <div class="row" style="margin-left: -4rem; display: flex; justify-content: space-around">
-              <div class="col" style="text-align: center"><strong>ĐẠI DIỆN KHÁCH HÀNG</strong></div>
-              <div class="col" style="text-align: center"><strong>BẢO VỆ</strong></div>
-              <div class="col" style="text-align: center">
+
+          <footer class="document-footer">
+            <div class="row signature-row">
+              <div class="col signature-col"><strong>ĐẠI DIỆN KHÁCH HÀNG</strong></div>
+              <div class="col signature-col"><strong>BẢO VỆ</strong></div>
+              <div class="col signature-col">
                 <strong>TỔ BẢO HÀNH SẢN PHẨM</strong><br />
-                <a [href]="selectedValue" style="display: block; margin-top: 6rem; text-decoration: none; color: black">{{
-                  selectedValue
-                }}</a>
-                <select style="float: right; margin-right: 12em" (change)="onSelectChanged($event)">
+                <a [href]="selectedValue" class="signature-name">{{ selectedValue }}</a>
+                <select id="signatureSelect" class="signature-select" (change)="onSelectChanged($event)">
                   <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
                   <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
                   <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
@@ -1003,33 +922,29 @@
               </div>
             </div>
           </footer>
-          <p style="page-break-after: always"></p>
-          <br />
-          <br />
 
-          <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem">
+          <p class="page-break"></p>
+
+          <!-- Liên 3: P. KHTT -->
+          <header class="document-header">
             <div class="row">
-              <div class="col-6" align="left" style="height: 0px">
-                <img
-                  src="../../../../content/images/logoRD.png"
-                  alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
-                  width="150"
-                  style="margin-top: 0"
-                />
+              <div class="col-6 logo-container">
+                <img src="../../../../content/images/logoRD.png" alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG" class="logo" />
               </div>
             </div>
           </header>
-          <div align="center" style="text-align: center; margin-top: 1rem">
-            <h3 style="margin: 0">BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH</h3>
-            <p style="text-align: center">Liên 3: P. KHTT</p>
+
+          <div class="document-title">
+            <h3>BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH</h3>
+            <p>Liên 3: P. KHTT</p>
           </div>
-          <div style="font-size: 14px; margin-right: 15px" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
-          <br />
-          <br />
-          <div align="right" style="margin-right: 45px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
-          <br />
-          <div style="display: flex; justify-content: space-between">
-            <div>
+
+          <div class="document-code">RĐ.QID05.BM01 Ban hành lần 1</div>
+
+          <div class="document-number">Số: {{ maBienBan }}</div>
+
+          <div class="document-info">
+            <div class="info-left">
               <p>
                 Ngày {{ dateTN }} tháng {{ monthTN }} năm 20{{ yearTN }}
                 Công ty CP Bóng đèn Phích nước Rạng Đông nhận sản phẩm đổi của
@@ -1038,82 +953,49 @@
               <p>Địa chỉ: {{ donBaoHanh.diaChi }}</p>
               <div>Kèm giấy đề nghị đổi sản phẩm (nếu có) ngày ... tháng ... năm 20...</div>
             </div>
-            <div>
-              <div align="right" style="margin-right: 50px">
+            <div class="info-right">
+              <div class="qr-container">
                 <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
               </div>
-              <br />
-              <div style="margin-right: 40px; font-size: 14px; margin-top: -30px; text-align: center; width: 70%">
+              <div class="qr-text">
                 {{ donBaoHanh.maTiepNhan }}
               </div>
             </div>
           </div>
-          <div>
-            <table id="table" class="table-TN" style="min-width: 82vw; border-spacing: 0px">
+
+          <div class="table-container">
+            <table id="table" class="table-TN">
               <thead>
                 <tr>
-                  <th style="width: 1rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    STT
-                  </th>
-                  <th style="width: 30rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Tên sản phẩm
-                  </th>
-                  <th style="width: 3rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Đ.vị tính
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL khách giao
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL thực nhận
-                  </th>
-                  <th style="width: 3rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL SP đổi mới
-                  </th>
-                  <th
-                    style="width: 3.5rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black"
-                  >
-                    SL SP sửa chữa
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL SP không được bảo hành
-                  </th>
-                  <th style="width: 10rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Lý do không bảo hành
-                  </th>
-                  <th style="width: 10rem; border: 0.5px solid black">Lý do sửa chữa</th>
+                  <th class="col-stt">STT</th>
+                  <th class="col-ten-sp">Tên sản phẩm</th>
+                  <th class="col-dvt">Đ.vị tính</th>
+                  <th class="col-sl-khach">SL khách giao</th>
+                  <th class="col-sl-nhan">SL thực nhận</th>
+                  <th class="col-sl-doi">SL SP đổi mới</th>
+                  <th class="col-sl-sua">SL SP sửa chữa</th>
+                  <th class="col-sl-khong-bh">SL SP không được bảo hành</th>
+                  <th class="col-ly-do-khong">Lý do không bảo hành</th>
+                  <th class="col-ly-do-sua">Lý do sửa chữa</th>
                 </tr>
               </thead>
               <tbody class="body-table">
                 <tr *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index">
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ i + 1 }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.tenSanPham }}</td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.donVi }}</td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slKhachGiao }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slTiepNhan }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slDoiMoi }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slSuaChua }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                    {{ data.slKhongBaoHanh }}
-                  </td>
-                  <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black"></td>
-                  <td
-                    style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; border-right: 0.5px solid black"
-                  ></td>
+                  <td class="cell-center">{{ i + 1 }}</td>
+                  <td>{{ data.tenSanPham }}</td>
+                  <td>{{ data.donVi }}</td>
+                  <td class="cell-center">{{ data.slKhachGiao }}</td>
+                  <td class="cell-center">{{ data.slTiepNhan }}</td>
+                  <td class="cell-center">{{ data.slDoiMoi }}</td>
+                  <td class="cell-center">{{ data.slSuaChua }}</td>
+                  <td class="cell-center">{{ data.slKhongBaoHanh }}</td>
+                  <td></td>
+                  <td class="cell-last"></td>
                 </tr>
               </tbody>
             </table>
           </div>
+
           <div class="notes">
             <p>
               Biên bản được lập thành 03 liên (hoặc 4 liên): liên 1 lưu Tổ bảo hành sản phẩm, liên 2 giao khách hàng, liên 3 giao P. Kh,
@@ -1122,16 +1004,15 @@
             </p>
             <p><strong>Lưu ý: Khi khách hàng lấy sản phẩm đổi, phải giao liên 2 cho thủ kho công ty</strong></p>
           </div>
-          <footer>
-            <div class="row" style="margin-left: -4rem; display: flex; justify-content: space-around">
-              <div class="col" style="text-align: center"><strong>ĐẠI DIỆN KHÁCH HÀNG</strong></div>
-              <div class="col" style="text-align: center"><strong>BẢO VỆ</strong></div>
-              <div class="col" style="text-align: center">
+
+          <footer class="document-footer">
+            <div class="row signature-row">
+              <div class="col signature-col"><strong>ĐẠI DIỆN KHÁCH HÀNG</strong></div>
+              <div class="col signature-col"><strong>BẢO VỆ</strong></div>
+              <div class="col signature-col">
                 <strong>TỔ BẢO HÀNH SẢN PHẨM</strong><br />
-                <a [href]="selectedValue" style="display: block; margin-top: 6rem; text-decoration: none; color: black">{{
-                  selectedValue
-                }}</a>
-                <select style="float: right; margin-right: 12em" (change)="onSelectChanged($event)">
+                <a [href]="selectedValue" class="signature-name">{{ selectedValue }}</a>
+                <select id="signatureSelect" class="signature-select" (change)="onSelectChanged($event)">
                   <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
                   <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
                   <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
@@ -1142,141 +1023,6 @@
               </div>
             </div>
           </footer>
-          <!-- <p style="page-break-after: always"></p>
-          <br />
-          <br /> -->
-
-          <!-- <header>
-            <div class="row">
-              <div class="col-6" align="left" style="height: 0px">
-                <img
-                  src="../../../../content/images/logoRD.png"
-                  alt="CÔNG TY CP BÓNG ĐÈN PHÍCH NƯỚC RẠNG ĐÔNG"
-                  width="150"
-                  style="margin-top: -30px; margin-left: 30px"
-                />
-              </div>
-              <div class="col-6" align="right">RĐ.QID05.BM01 Ban hành lần 1</div>
-            </div>
-          </header>
-          <div align="center">
-            <h3 style="margin-top: -20px">BIÊN BẢN GIAO NHẬN SẢN PHẨM BẢO HÀNH</h3>
-            <p style="text-align: center">Liên 4: Phòng BH1</p>
-          </div>
-          <div align="right" style="margin-right: 80px; font-size: 14px; margin-top: -30px">Số: {{ maBienBan }}</div>
-          <br />
-          <div style="display: flex; justify-content: space-between; margin-bottom: 5px">
-            <div>
-              <p>
-                Ngày {{ maBienBan.substr(2, 2) }} tháng {{ maBienBan.substr(4, 2) }} năm 20{{ maBienBan.substr(6, 2) }}
-                Công ty CP Bóng đèn Phích nước Rạng Đông nhận sản phẩm đổi của
-              </p>
-              <p>Ông (Bà): {{ donBaoHanh.tenKhachHang }}</p>
-              <p>Địa chỉ: {{ donBaoHanh.diaChi }}</p>
-              <div>Kèm giấy đề nghị đổi sản phẩm (nếu có) ngày ... tháng ... năm 20...</div>
-            </div>
-            <div>
-              <div align="right" style="margin-right: 92px">
-                <qrcode [qrdata]="donBaoHanh.maTiepNhan" [width]="10" [errorCorrectionLevel]="'M'" [elementType]="'img'"></qrcode>
-              </div>
-              <br />
-              <div align="right" style="margin-right: 94px; font-size: 14px; margin-top: -30px">{{ donBaoHanh.maTiepNhan }}</div>
-            </div>
-          </div>
-          <div>
-            <table id="table" class="table-TN" style="min-width: 82vw; border-spacing: 0px">
-              <thead>
-                <tr>
-                  <th style="width: 1rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    STT
-                  </th>
-                  <th style="width: 30rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Tên sản phẩm
-                  </th>
-                  <th style="width: 3rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Đ.vị tính
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL khách giao
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL thực nhận
-                  </th>
-                  <th style="width: 3rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL SP đổi mới
-                  </th>
-                  <th
-                    style="width: 3.5rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black"
-                  >
-                    SL SP sửa chữa
-                  </th>
-                  <th style="width: 4rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    SL SP không được bảo hành
-                  </th>
-                  <th style="width: 10rem; border-left: 0.5px solid black; border-top: 0.5px solid black; border-bottom: 0.5px solid black">
-                    Lý do không bảo hành
-                  </th>
-                  <th style="width: 10rem; border: 0.5px solid black">Lý do sửa chữa</th>
-                </tr>
-              </thead>
-              <tbody class="body-table" *ngFor="let data of resultChiTietSanPhamTiepNhans; let i = index">
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ i + 1 }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.tenSanPham }}</td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black">{{ data.donVi }}</td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slKhachGiao }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slTiepNhan }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slDoiMoi }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slSuaChua }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; text-align: center">
-                  {{ data.slKhongBaoHanh }}
-                </td>
-                <td style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black"></td>
-                <td
-                  style="height: 36px; border-left: 0.5px solid black; border-bottom: 0.5px solid black; border-right: 0.5px solid black"
-                ></td>
-              </tbody>
-            </table>
-          </div>
-          <div class="notes">
-            <p>
-              Biên bản được lập thành 03 liên (hoặc 4 liên): liên 1 lưu Tổ bảo hành sản phẩm, liên 2 giao khách hàng, liên 3 giao P. Kh,
-              liên 4 giao P. BH1 (Với trường hợp khách hàng là C1, 2 Miền Bắc). Đối với chi nhánh (2 liên): liên 1 lưu chi nhánh, liên 2
-              giao khách hàng
-            </p>
-            <p><strong>Lưu ý: Khi khách hàng lấy sản phẩm đổi, phải giao liên 2 cho thủ kho công ty</strong></p>
-          </div>
-          <footer>
-            <div class="row" style="margin-left: -4rem; display: flex; justify-content: space-around">
-              <div class="col" style="text-align: center"><strong>ĐẠI DIỆN KHÁCH HÀNG</strong></div>
-              <div class="col" style="text-align: center"><strong>BẢO VỆ</strong></div>
-              <div class="col" style="text-align: center">
-                <strong>TỔ BẢO HÀNH SẢN PHẨM</strong><br />
-                <a [href]="selectedValue" style="display: block; margin-top: 6rem; text-decoration: none; color: black">{{
-                  selectedValue
-                }}</a>
-              </div>
-            </div>
-          </footer>
-        </div>
-      </div>
-      <select style="float: right; margin-right: 12em" (change)="onSelectChanged($event)">
-        <option value="Đỗ Văn Việt">Đỗ Văn Việt</option>
-        <option value="Phạm Văn Mạnh">Phạm Văn Mạnh</option>
-        <option value="Trần Thạc Nguyên">Trần Thạc Nguyên</option>
-        <option value="Nguyễn Văn Tiến">Nguyễn Văn Tiến</option>
-        <option value="Lê Huy Sang">Lê Huy Sang</option>
-        <option value="Phan Đăng Tỵ">Phan Đăng Tỵ</option>
-      </select> -->
         </div>
       </div>
     </div>

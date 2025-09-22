@@ -277,10 +277,244 @@ button.btn.btn-info.btn-disabled-custom {
   }
 }
 
-// ::ng-deep div.wrap-text-cell {
-//     white-space: normal !important;
-//     word-break: break-word !important;
-//     overflow-wrap: break-word !important;
-//     display: block;
-
+// .popup-background {
+//   position: fixed;
+//   top: 0;
+//   left: 0;
+//   width: 100%;
+//   height: 100%;
+//   background-color: rgba(0, 0, 0, 0.5);
+//   z-index: 9999;
 // }
+
+.popup-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  max-width: 95vw;
+  max-height: 95vh;
+  overflow: auto;
+}
+
+.popup-header-in {
+  padding: 20px;
+}
+
+.close-btn {
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Toolbar Styles */
+#hiddenToolbar {
+  margin-bottom: 20px;
+}
+
+.print-btn {
+  position: relative;
+  z-index: 5;
+}
+
+.print-btn fa-icon {
+  padding-right: 5px;
+}
+
+.font-size-selector {
+  width: 120px;
+  display: inline-block;
+  margin-left: 10px;
+}
+
+/* Document Structure */
+.document-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.logo-container {
+  align: left;
+  height: 0px;
+}
+
+.logo {
+  width: 150px;
+  margin-top: 0;
+}
+
+.document-title {
+  align: center;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.document-title h3 {
+  margin: 0;
+}
+
+.document-code {
+  font-size: 14px;
+  margin-right: 15px;
+  text-align: right;
+}
+
+.document-number {
+  text-align: right;
+  margin-right: 45px;
+  font-size: 14px;
+  margin-top: 7px;
+}
+
+.document-info {
+  display: flex;
+  justify-content: space-between;
+}
+
+.qr-container {
+  text-align: right;
+  margin-right: 50px;
+}
+
+.qr-text {
+  margin-right: 40px;
+  font-size: 14px;
+  margin-top: -9px;
+  text-align: center;
+  width: 70%;
+}
+
+/* Table Styles */
+.table-container {
+  margin: 20px 0;
+}
+
+.table-TN {
+  min-width: 82vw;
+  border-spacing: 0px;
+}
+
+/* Table Column Widths */
+.col-stt {
+  width: 1rem;
+  border-left: 0.5px solid black;
+  border-top: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+}
+
+.col-ten-sp {
+  width: 30rem;
+  border-left: 0.5px solid black;
+  border-top: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+}
+
+.col-dvt {
+  width: 3rem;
+  border-left: 0.5px solid black;
+  border-top: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+}
+
+.col-sl-khach {
+  width: 4rem;
+  border-left: 0.5px solid black;
+  border-top: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+}
+
+.col-sl-nhan {
+  width: 4rem;
+  border-left: 0.5px solid black;
+  border-top: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+}
+
+.col-sl-doi {
+  width: 3rem;
+  border-left: 0.5px solid black;
+  border-top: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+}
+
+.col-sl-sua {
+  width: 3.5rem;
+  border-left: 0.5px solid black;
+  border-top: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+}
+
+.col-sl-khong-bh {
+  width: 4rem;
+  border-left: 0.5px solid black;
+  border-top: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+}
+
+.col-ly-do-khong {
+  width: 10rem;
+  border-left: 0.5px solid black;
+  border-top: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+}
+
+.col-ly-do-sua {
+  width: 10rem;
+  border: 0.5px solid black;
+}
+
+/* Table Cell Styles */
+.body-table td {
+  height: 36px;
+  border-left: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+}
+
+.cell-center {
+  text-align: center;
+}
+
+.cell-last {
+  border-right: 0.5px solid black;
+}
+
+/* Footer and Signature Styles */
+.document-footer {
+  margin-top: 20px;
+}
+
+.signature-row {
+  margin-left: -4rem;
+  display: flex;
+  justify-content: space-around;
+}
+
+.signature-col {
+  text-align: center;
+}
+
+.signature-name {
+  display: block;
+  margin-top: 6rem;
+  text-decoration: none;
+  color: black;
+}
+
+.signature-select {
+  float: right;
+  margin-right: 12em;
+}
+
+/* Page Break */
+.page-break {
+  page-break-after: always;
+}
+
+/* Notes */
+.notes {
+  margin: 20px 0;
+}

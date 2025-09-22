@@ -21,7 +21,6 @@ import tech.jhipster.config.liquibase.SpringLiquibaseUtil;
 public class LiquibaseConfiguration {
 
     private final Logger log = LoggerFactory.getLogger(LiquibaseConfiguration.class);
-
     private final Environment env;
 
     public LiquibaseConfiguration(Environment env) {
@@ -36,8 +35,11 @@ public class LiquibaseConfiguration {
         ObjectProvider<DataSource> dataSource,
         DataSourceProperties dataSourceProperties
     ) {
-        // If you don't want Liquibase to start asynchronously, substitute by this:
-        // SpringLiquibase liquibase = SpringLiquibaseUtil.createSpringLiquibase(liquibaseDataSource.getIfAvailable(), liquibaseProperties, dataSource.getIfUnique(), dataSourceProperties);
+        if (!liquibaseProperties.isEnabled()) {
+            log.info("Liquibase is disabled via configuration");
+            return null;
+        }
+
         SpringLiquibase liquibase = SpringLiquibaseUtil.createAsyncSpringLiquibase(
             this.env,
             executor,
@@ -46,6 +48,7 @@ public class LiquibaseConfiguration {
             dataSource.getIfUnique(),
             dataSourceProperties
         );
+
         liquibase.setChangeLog("classpath:config/liquibase/master.xml");
         liquibase.setContexts(liquibaseProperties.getContexts());
         liquibase.setDefaultSchema(liquibaseProperties.getDefaultSchema());
@@ -58,12 +61,14 @@ public class LiquibaseConfiguration {
         liquibase.setChangeLogParameters(liquibaseProperties.getParameters());
         liquibase.setRollbackFile(liquibaseProperties.getRollbackFile());
         liquibase.setTestRollbackOnUpdate(liquibaseProperties.isTestRollbackOnUpdate());
+
         if (env.acceptsProfiles(Profiles.of(JHipsterConstants.SPRING_PROFILE_NO_LIQUIBASE))) {
             liquibase.setShouldRun(false);
         } else {
-            liquibase.setShouldRun(liquibaseProperties.isEnabled());
+            liquibase.setShouldRun(true);
             log.debug("Configuring Liquibase");
         }
+
         return liquibase;
     }
 }

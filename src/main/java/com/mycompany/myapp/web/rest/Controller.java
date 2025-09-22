@@ -212,6 +212,12 @@ public class Controller {
         return phanTichLoiList;
     }
 
+    //* lấy danh sách lỗi
+    @GetMapping("danh-sach-loi-hoat-dong")
+    public List<Loi> getLoiHoatDong() {
+        return this.fullServices.getLoiByTrangThai("active");
+    }
+
     //☺ lấy biên bản Tiếp nhận theo đơn bảo hành
     @GetMapping("danh-sach-bien-ban/tiep-nhan/{id}")
     public MaBienBan getBienBanTiepNhanByDonBaoHanhId(@PathVariable Long id) {

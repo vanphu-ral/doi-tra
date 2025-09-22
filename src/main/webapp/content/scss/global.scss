@@ -231,72 +231,123 @@ angular-cli removes postcss-rtl processed inline css, processed rules must be ad
   transition: margin-left 0.5s;
 }
 @media print {
-  body * {
-    visibility: hidden;
+  #lien1 header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
   }
 
-  #BBTN,
-  #BBTN * {
-    visibility: visible;
+  #lien1 .col-6 {
+    height: 0;
   }
 
-  #BBTN {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+  #lien1 img {
+    margin-top: 0;
+    width: 150px;
   }
 
-  header {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 0 2rem !important;
+  #lien1 .title-center {
+    text-align: center;
+    margin-top: 1rem;
   }
 
-  h3 {
-    margin: 0 !important;
-    font-size: 18px !important;
+  #lien1 .title-center h3 {
+    margin: 0;
   }
 
-  .print-title {
-    margin-top: 1rem !important;
-    text-align: center !important;
+  #lien1 .subtitle {
+    text-align: center;
   }
 
-  /* Đảm bảo các font size được áp dụng trong print */
-  .font-size-12px,
-  .font-size-12px * {
-    font-size: 12px !important;
+  #lien1 .doc-code {
+    font-size: 14px;
+    margin-right: 15px;
+    text-align: right;
   }
 
-  .font-size-14px,
-  .font-size-14px * {
-    font-size: 14px !important;
+  #lien1 .doc-number {
+    margin-right: 45px;
+    font-size: 14px;
+    margin-top: -30px;
+    text-align: right;
   }
 
-  .font-size-16px,
-  .font-size-16px * {
-    font-size: 16px !important;
+  #lien1 .info-section {
+    display: flex;
+    justify-content: space-between;
   }
 
-  .font-size-18px,
-  .font-size-18px * {
-    font-size: 18px !important;
+  #lien1 .qr-wrapper {
+    margin-right: 50px;
+    text-align: right;
   }
 
-  .font-size-20px,
-  .font-size-20px * {
-    font-size: 20px !important;
+  #lien1 .qr-code-text {
+    margin-right: 40px;
+    font-size: 14px;
+    margin-top: -30px;
+    text-align: center;
+    width: 70%;
   }
 
-  /* Override tất cả font-size trong print */
-  table,
-  th,
-  td,
-  p,
-  div,
-  span {
-    font-size: inherit !important;
+  /* Table */
+  .table-TN {
+    min-width: 82vw;
+    border-spacing: 0;
+  }
+
+  .table-TN th,
+  .table-TN td {
+    height: 36px;
+    border-left: 0.5px solid black;
+    border-bottom: 0.5px solid black;
+    text-align: center;
+  }
+
+  .table-TN th {
+    border-top: 0.5px solid black;
+  }
+
+  .table-TN th:last-child,
+  .table-TN td:last-child {
+    border-right: 0.5px solid black;
+  }
+
+  /* Notes */
+  .notes {
+    margin-top: 1rem;
+  }
+
+  .notes p {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Footer */
+  footer .row {
+    margin-left: -4rem;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  footer .col {
+    text-align: center;
+  }
+
+  footer a {
+    display: block;
+    margin-top: 6rem;
+    text-decoration: none;
+    color: black;
+  }
+
+  footer select {
+    float: right;
+    margin-right: 12em;
+  }
+
+  /* Page break */
+  .page-break {
+    page-break-after: always;
   }
 }

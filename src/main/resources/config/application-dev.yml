@@ -14,9 +14,9 @@
 
 logging:
   level:
-    ROOT: DEBUG
-    tech.jhipster: DEBUG
-    org.hibernate.SQL: DEBUG
+    ROOT: INFO
+    tech.jhipster: ERROR
+    org.hibernate.SQL: ERROR
     com.mycompany.myapp: DEBUG
 
 spring:
@@ -26,6 +26,11 @@ spring:
       additional-exclude: static/**
     livereload:
       enabled: false # we use Webpack dev server + BrowserSync for livereload
+  liquibase:
+    # Remove 'faker' if you do not want the sample data to be loaded automatically
+    contexts: dev
+    change-log: classpath:config/liquibase/master.xml
+    enabled: false
   jackson:
     serialization:
       indent-output: true
@@ -69,13 +74,6 @@ qms:
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
   jpa:
-  liquibase:
-    # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev
-    change-log: classpath:config/liquibase/master.xml
-    enabled: true
-    asynchronous: false
-    run-on-startup: true
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:

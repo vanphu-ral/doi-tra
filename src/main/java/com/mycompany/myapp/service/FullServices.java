@@ -64,6 +64,9 @@ public class FullServices {
     @Autowired
     private KhachHangRepository khachHangRepository;
 
+    @Autowired
+    private LoiRepository loiRepository;
+
     public FullServices(
         DonBaoHanhRepository donBaoHanhRepository,
         PhanTichSanPhamRepository phanTichSanPhamRepository,
@@ -76,7 +79,8 @@ public class FullServices {
         DanhSachXuatKhoRepository danhSachXuatKhoRepository,
         ChiTietXuatKhoRepository chiTietXuatKhoRepository,
         KhachHangRepository khachHangRepository,
-        DanhSachBienBanRepository danhSachBienBanRepository
+        DanhSachBienBanRepository danhSachBienBanRepository,
+        LoiRepository loiRepository
     ) {
         this.donBaoHanhRepository = donBaoHanhRepository;
         this.phanTichSanPhamRepository = phanTichSanPhamRepository;
@@ -90,6 +94,7 @@ public class FullServices {
         this.chiTietXuatKhoRepository = chiTietXuatKhoRepository;
         this.khachHangRepository = khachHangRepository;
         this.danhSachBienBanRepository = danhSachBienBanRepository;
+        this.loiRepository = loiRepository;
     }
 
     // * ============================ Template Tiếp nhận =================================
@@ -597,6 +602,11 @@ public class FullServices {
     public List<SanPhamResponse> getListSanPham() {
         List<SanPhamResponse> list = this.sanPhamRepository.getListSanPham();
         return list;
+    }
+
+    //danh sach loi phan tich
+    public List<Loi> getLoiByTrangThai(String trangThai) {
+        return loiRepository.findByTrangThai(trangThai);
     }
 
     //Tinh toan tong loi linh dong loi ky thuat

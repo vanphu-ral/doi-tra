@@ -152,7 +152,7 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 9999;
+  z-index: 999999 !important;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -383,6 +383,7 @@
 .font-size-20 {
   font-size: 20px;
 }
+
 /* Overlay phủ toàn bộ popup */
 .spinner-overlay {
   position: absolute;
@@ -397,6 +398,7 @@
   align-items: center;
   justify-content: center;
 }
+
 .loader {
   position: relative;
   top: 0;
@@ -441,55 +443,198 @@
   -webkit-animation-delay: 0.16s !important;
   animation-delay: 0.16s !important;
 }
+
 @keyframes loading-keys-app-loading {
   0%,
   80%,
   100% {
     transform: scaleY(0.4);
   }
+
   40% {
     transform: scaleY(1);
   }
 }
-@media print {
-  .font-size-12 {
-    font-size: 12px !important;
-  }
+.document-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+}
 
-  .font-size-14 {
-    font-size: 14px !important;
-  }
+.logo-container {
+  text-align: left;
+  height: 0px;
+}
 
-  .font-size-16 {
-    font-size: 16px !important;
-  }
+.logo-container img {
+  margin-top: 0;
+}
 
-  .font-size-18 {
-    font-size: 18px !important;
-  }
+/* Document Title */
+.document-title {
+  text-align: center;
+  margin-top: 1rem;
+}
 
-  .font-size-20 {
-    font-size: 20px !important;
-  }
+.document-title h5 {
+  margin: 0;
+}
 
-  #BBTN {
-    font-family: 'Arial', sans-serif !important;
-  }
+/* Document Info */
+.doc-code {
+  font-size: 14px;
+  margin-right: 15px;
+  text-align: right;
+}
 
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 2rem;
-  }
+.doc-number {
+  margin-right: 45px;
+  font-size: 14px;
+  margin-top: -30px;
+  text-align: right;
+}
 
-  h3 {
-    margin: 0;
-    font-size: 18px;
-  }
+.info-section {
+  display: flex;
+  justify-content: space-between;
+}
 
-  .print-title {
-    margin-top: 1rem;
-    text-align: center;
-  }
+.xuatxu {
+  margin-bottom: 10px;
+}
+
+.description {
+  margin-bottom: 10px;
+}
+
+/* QR Section */
+.qr-section {
+  text-align: right;
+}
+
+.qr-container {
+  margin-right: 50px;
+}
+
+.qr-code {
+  margin-right: 40px;
+  font-size: 14px;
+  margin-top: -30px;
+  text-align: center;
+  width: 70%;
+}
+
+/* Table Styles */
+.table-TN {
+  width: 100%;
+  border-spacing: 0px;
+  margin: 20px 0;
+}
+
+/* Table Header Cells */
+.th-cell {
+  text-align: center;
+  font-weight: 700;
+  border-left: 0.5px solid black;
+  border-top: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+}
+
+.th-stt {
+  width: 1rem;
+}
+
+.th-tensp {
+  width: 30rem;
+}
+
+.th-dvt {
+  width: 3rem;
+}
+
+.th-slbh {
+  width: 4rem;
+}
+
+.th-loild {
+  width: 5rem;
+}
+
+.th-loikt {
+  width: 5rem;
+}
+
+.th-thanhly {
+  width: 7rem;
+}
+
+.th-suachua {
+  width: 7rem;
+  border-right: 0.5px solid black;
+}
+
+.th-ketluan {
+  border-right: 0.5px solid black;
+}
+
+/* Table Data Cells */
+.td-cell {
+  font-weight: 650;
+  height: 36px;
+  border-left: 0.5px solid black;
+  border-bottom: 0.5px solid black;
+  text-align: left;
+}
+
+.td-center {
+  text-align: center;
+}
+
+.td-last {
+  border-right: 0.5px solid black;
+}
+
+/* Notes Section */
+.notes {
+  margin: 20px 0;
+}
+
+.note-text {
+  padding-left: 3rem;
+  margin-bottom: 10px;
+}
+
+.note-hr {
+  margin: 10px 0;
+  border: 0.5px solid black;
+}
+
+/* Footer and Signature */
+.signature-row {
+  margin-left: -4rem;
+  margin-bottom: 4rem;
+  display: flex;
+  justify-content: space-around;
+}
+
+.signature-col {
+  text-align: center;
+}
+
+.signature-truong {
+  margin-right: -2rem;
+}
+
+.signature-name {
+  display: block;
+  margin-top: 6rem;
+  text-decoration: none;
+  color: black;
+  font-size: 18px;
+}
+
+.signature-select {
+  float: right;
+  margin-right: 7em;
 }

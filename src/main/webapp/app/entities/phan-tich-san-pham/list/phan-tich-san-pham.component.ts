@@ -96,7 +96,7 @@ interface Scan100PassItem {
 })
 export class PhanTichSanPhamComponent implements OnInit {
   // danh sách url
-  loisUrl = this.applicationConfigService.getEndpointFor('api/lois');
+  loisUrl = this.applicationConfigService.getEndpointFor('api/danh-sach-loi-hoat-dong');
   sanPhamsUrl = this.applicationConfigService.getEndpointFor('api/san-phams');
   phanLoaiChiTietTiepNhanUrl = this.applicationConfigService.getEndpointFor('api/phan-loai-chi-tiet-tiep-nhans');
   chiTietSanPhamTiepNhanUrl = this.applicationConfigService.getEndpointFor('api/chi-tiet-don-bao-hanhs');
@@ -259,52 +259,152 @@ export class PhanTichSanPhamComponent implements OnInit {
   //   { min: 61, max: 80, color: 'orange' },
   //   { min: 81, max: 100, color: 'red' }
   // ]
-  selectedFontSize = '14px';
-  printStyles: { [key: string]: { [key: string]: string } } = {
-    '#BBTN': {
-      'font-size': '14px !important',
-    },
-  };
+  selectedFontSize = '12px';
+  // Trả về printStyles có font-size động
+  get printStyles(): { [key: string]: { [key: string]: string } } {
+    return {
+      ':root': {
+        '--selected-font-size': this.selectedFontSize,
+      },
+      '#BBKN': {
+        fontSize: this.selectedFontSize + ' !important',
+      },
+      '#BBKN *': {
+        fontSize: this.selectedFontSize + ' !important',
+      },
+      '#signatureSelect': {
+        display: 'none',
+      },
+    };
+  }
+  get printStylesThanhLy(): { [key: string]: { [key: string]: string } } {
+    return {
+      ':root': {
+        '--selected-font-size': this.selectedFontSize,
+      },
+      '#BBTL': {
+        fontSize: this.selectedFontSize + ' !important',
+      },
+      '#BBTL *': {
+        fontSize: this.selectedFontSize + ' !important',
+      },
+      '#signatureSelect': {
+        display: 'none',
+      },
+    };
+  }
+  get printStylesGiaoNhan(): { [key: string]: { [key: string]: string } } {
+    const fontSize = parseInt(this.selectedFontSize, 10);
+    return {
+      ':root': {
+        '--selected-font-size': this.selectedFontSize,
+      },
+      '#BBTN': {
+        fontSize: this.selectedFontSize + ' !important',
+      },
+      '#BBTN *': {
+        fontSize: this.selectedFontSize + ' !important',
+      },
+      '#signatureSelect': {
+        display: 'none',
+      },
+
+      // Table cực kỳ compact
+      '#BBTN .table-TN': {
+        borderSpacing: '0px !important',
+        borderCollapse: 'collapse !important',
+      },
+
+      // Padding tối thiểu
+      '#BBTN .table-TN th': {
+        padding: '1px 2px !important',
+        lineHeight: '0.95 !important',
+        verticalAlign: 'middle !important',
+        height: `${Math.max(14, fontSize + 2)}px !important`,
+      },
+
+      '#BBTN .table-TN td': {
+        padding: '0px 2px !important', // Không có padding top-bottom
+        lineHeight: '0.95 !important',
+        verticalAlign: 'middle !important',
+        height: `${Math.max(12, fontSize)}px !important`,
+      },
+
+      // Loại bỏ hầu hết spacing
+      '#BBTN br': {
+        display: 'none !important', // Ẩn <br> tags
+      },
+
+      '#BBTN .notes': {
+        margin: '2px 0 !important',
+        lineHeight: '1.0 !important',
+      },
+
+      '#BBTN header': {
+        marginBottom: '2px !important',
+      },
+
+      '#BBTN footer': {
+        marginTop: '4px !important',
+      },
+
+      // Giảm kích thước title
+      '#BBTN h3': {
+        fontSize: `${fontSize + 2}px !important`,
+        margin: '0 !important',
+        lineHeight: '1.1 !important',
+      },
+    };
+  }
+
   onPrintedCallback?: () => void;
-  readonly danhSachLoiCanDung: string[] = [
-    'Cầu chì',
-    'Lỗi nguồn',
-    'Hỏng Led',
-    'Vasitor',
-    'Chập mạch',
-    'Nút vỡ nhựa, cover',
-    'Cầu Diode Hy',
-    'Bong mạch',
-    'Móp, nứt vỡ đui',
-    'Cầu Diode Silijino',
-    'Công tắc',
-    'Gãy cổ + Cơ khớp, tai cài',
-    'Tụ hoá L.H',
-    'Long keo',
-    'Nước vào',
-    'Tụ hoá Aishi',
-    'Đôminô, rác cắm',
-    'Điện áp cao',
-    'Tụ fiml CCTC',
-    'Dây nối Led',
-    'Cháy nổ nguồn',
-    'Tụ fiml hulysol',
-    'Mất lò xo,tai cài',
-    'Cũ, ẩm mốc, ố rỉ',
-    'Transistor',
-    'Dây DC',
-    'Om nhiệt',
-    'Điện trở',
-    'Dây AC',
-    'Vỡ ống, kính',
-    'Chặn(Biến áp)',
-    'Bong, nứt mối hàn',
-    'Lỗi khác',
-    'Cuộn lọc',
-    'Pin, tiếp xúc lò xo',
-    'Sáng bt',
-    'Hỏng IC VCC',
-  ];
+  // danhSachLoiCanDung: string[] = [
+  //   'Cầu chì',
+  //   'Lỗi nguồn',
+  //   'Hỏng Led',
+  //   'Vasitor',
+  //   'Chập mạch',
+  //   'Nút vỡ nhựa, cover',
+  //   'Cầu Diode Hy',
+  //   'Bong mạch',
+  //   'Móp, nứt vỡ đui',
+  //   'Cầu Diode Silijino',
+  //   'Công tắc',
+  //   'Gãy cổ + Cơ khớp, tai cài',
+  //   'Tụ hoá L.H',
+  //   'Long keo',
+  //   'Nước vào',
+  //   'Tụ hoá Aishi',
+  //   'Đôminô, rác cắm',
+  //   'Điện áp cao',
+  //   'Tụ fiml CCTC',
+  //   'Dây nối Led',
+  //   'Cháy nổ nguồn',
+  //   'Tụ fiml hulysol',
+  //   'Mất lò xo,tai cài',
+  //   'Cũ, ẩm mốc, ố rỉ',
+  //   'Transistor',
+  //   'Dây DC',
+  //   'Om nhiệt',
+  //   'Điện trở',
+  //   'Dây AC',
+  //   'Vỡ ống, kính',
+  //   'Chặn(Biến áp)',
+  //   'Bong, nứt mối hàn',
+  //   'Lỗi khác',
+  //   'Cuộn lọc',
+  //   'Pin, tiếp xúc lò xo',
+  //   'Sáng bt',
+  //   'Hỏng IC VCC',
+  //   'Hỏng Spd',
+  //   'Hỏng Quạt',
+  //   'Bong Mặt Kính',
+  //   'Mudul Wifi',
+  //   'Liệt Phím',
+  //   'Xung Sét',
+  //   'Đấu Nối Lắp Đặt Sai',
+  // ];
+  danhSachLoiCanDung: string[] = [];
 
   indexOfdanhSachLienBienBanTiepNhan = 0;
   phanTichSanPhams: any;
@@ -368,6 +468,7 @@ export class PhanTichSanPhamComponent implements OnInit {
 
   ngOnInit(): void {
     // console.time('load-phan-tich');
+    document.documentElement.style.setProperty('--selected-font-size', this.selectedFontSize);
     if (window.trustedTypes && !this.trustedTypesPolicy) {
       try {
         this.trustedTypesPolicy = window.trustedTypes.createPolicy('print-policy', {
@@ -380,6 +481,7 @@ export class PhanTichSanPhamComponent implements OnInit {
       }
     }
     this.loadData();
+    this.loadDanhSachLoi();
 
     // Gọi song song các API phụ trợ
     forkJoin({
@@ -724,6 +826,41 @@ export class PhanTichSanPhamComponent implements OnInit {
     });
     // this.loadAll();
   }
+  // Component methods hỗ trợ
+  calculateScalePercent(): number {
+    const fontSize = parseInt(this.selectedFontSize, 10);
+    // Scale từ 60% đến 120% dựa trên font size
+    if (fontSize <= 12) {
+      return 60;
+    }
+    if (fontSize <= 13) {
+      return 70;
+    }
+    if (fontSize <= 14) {
+      return 80;
+    }
+    if (fontSize <= 15) {
+      return 90;
+    }
+    if (fontSize <= 16) {
+      return 100;
+    }
+    if (fontSize <= 17) {
+      return 110;
+    }
+    return 120;
+  }
+
+  // Tính toán số dòng có thể hiển thị
+  calculateMaxRows(): number {
+    const fontSize = parseInt(this.selectedFontSize, 10);
+    const rowHeight = Math.max(20, fontSize + 8);
+    const availableHeight = 800; // Ước tính chiều cao trang A4
+    const headerFooterHeight = 300;
+    const tableContentHeight = availableHeight - headerFooterHeight;
+
+    return Math.floor(tableContentHeight / rowHeight);
+  }
   getStyle(status: string): any {
     switch (status) {
       case 'Chờ phân tích':
@@ -737,9 +874,20 @@ export class PhanTichSanPhamComponent implements OnInit {
     }
   }
   isTenLoiHienThi(tenLoi: string): boolean {
-    return this.danhSachLoiCanDung.some(loi => loi.trim().toLowerCase() === tenLoi.trim().toLowerCase());
+    return this.danhSachLoiCanDung.some(loi => loi?.trim().toLowerCase() === tenLoi?.trim().toLowerCase());
   }
-
+  //lay danh sach loi
+  loadDanhSachLoi(): void {
+    this.http.get<any[]>(this.loisUrl).subscribe({
+      next: data => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        this.danhSachLoiCanDung = data.map(loi => loi.tenLoi);
+      },
+      error: error => {
+        console.error(error);
+      },
+    });
+  }
   //lấy danh sách biên bản
   getDanhSachBienBan(): void {
     this.http.get<any>('api/ma-bien-bans').subscribe(res => {
@@ -2148,73 +2296,63 @@ export class PhanTichSanPhamComponent implements OnInit {
     // console.log('index before: ', this.indexOfChiTietPhanTichSanPham);
   }
   catchEventKhaiBaoLois(index: any): void {
-    // console.log('kiểm tra mã LOT', this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham]);
-    if (
-      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === '' &&
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === '') ||
-      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === undefined &&
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === undefined)
-    ) {
-      this.openPopupNoti('Chưa có thông tin LOT/SERIAL !!!');
+    const phanTich = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham];
+    if (!phanTich) {
+      this.openPopupNoti('Chưa chọn sản phẩm để khai báo lỗi!');
+      return;
+    }
+
+    if ((phanTich.lotNumber === '' && phanTich.detail === '') || (phanTich.lotNumber === undefined && phanTich.detail === undefined)) {
+      this.openPopupNoti('Chưa có thông tin LOT/SERIAL!');
       const input = document.getElementById(this.scanType);
       if (input) {
         input.focus();
       }
     } else {
-      //reset kết quả
-      this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat = 0;
-      this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong = 0;
-      //cập nhật số lượng lỗi linh động, lỗi kĩ thuật
+      phanTich.loiKyThuat = 0;
+      phanTich.loiLinhDong = 0;
       for (let i = 0; i < this.catchChangeOfListKhaiBaoLoi.length; i++) {
         if (this.catchChangeOfListKhaiBaoLoi[i].loi.chiChu === 'Lỗi kỹ thuật') {
-          this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat += this.catchChangeOfListKhaiBaoLoi[i].soLuong;
+          phanTich.loiKyThuat += this.catchChangeOfListKhaiBaoLoi[i].soLuong;
         }
         if (this.catchChangeOfListKhaiBaoLoi[i].loi.chiChu === 'Lỗi linh động') {
-          this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong += this.catchChangeOfListKhaiBaoLoi[i].soLuong;
+          phanTich.loiLinhDong += this.catchChangeOfListKhaiBaoLoi[i].soLuong;
         }
       }
-      this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].soLuong =
-        Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat) +
-        Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong);
+      phanTich.soLuong = Number(phanTich.loiKyThuat) + Number(phanTich.loiLinhDong);
     }
   }
   // cập nhật số lượng lỗi trong button
-  catchEventKhaiBaoLoi(index: any): void {
-    // console.log('kiểm tra mã LOT', this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham]);
-    if (
-      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === '' &&
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === '') ||
-      (this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].lotNumber === undefined &&
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].detail === undefined)
-    ) {
+  catchEventKhaiBaoLoi(index: number): void {
+    const phanTich = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham];
+
+    // nếu không có object thì show popup luôn
+    if (!phanTich) {
+      this.openPopupNoti('Chưa chọn sản phẩm cần phân tích !!!');
+      return;
+    }
+
+    if (!phanTich.lotNumber && !phanTich.detail) {
       this.openPopupNoti('Chưa có thông tin LOT/SERIAL !!!');
       const input = document.getElementById(this.scanType);
       if (input) {
         input.focus();
       }
-    } else {
-      this.catchChangeOfListKhaiBaoLoi[index].soLuong++;
-      // console.log(index);
-      //cập nhật số lượng lỗi linh động, lỗi kĩ thuật
-      if (this.catchChangeOfListKhaiBaoLoi[index].loi.chiChu === 'Lỗi kỹ thuật') {
-        // console.log({
-        //   tenLoi: this.indexOfChiTietPhanTichSanPham,
-        //   nLoi: this.catchChangeOfListKhaiBaoLoi[index].tenNhomLoi,
-        //   sl: this.catchChangeOfListKhaiBaoLoi[index].soLuong,
-        // });
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat++;
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].soLuong =
-          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat) +
-          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong);
-      }
-      if (this.catchChangeOfListKhaiBaoLoi[index].loi.chiChu === 'Lỗi linh động') {
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong++;
-        this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].soLuong =
-          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiKyThuat) +
-          Number(this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham].loiLinhDong);
-      }
-      this.updatePhanTichSanPham();
+      return;
     }
+
+    // xử lý tăng số lượng lỗi
+    this.catchChangeOfListKhaiBaoLoi[index].soLuong++;
+
+    if (this.catchChangeOfListKhaiBaoLoi[index].loi.chiChu === 'Lỗi kỹ thuật') {
+      phanTich.loiKyThuat++;
+    }
+    if (this.catchChangeOfListKhaiBaoLoi[index].loi.chiChu === 'Lỗi linh động') {
+      phanTich.loiLinhDong++;
+    }
+    phanTich.soLuong = Number(phanTich.loiKyThuat) + Number(phanTich.loiLinhDong);
+
+    this.updatePhanTichSanPham();
   }
 
   // hàm xử lý check all
@@ -2436,14 +2574,14 @@ export class PhanTichSanPhamComponent implements OnInit {
   }
 
   openPopupNoti(msg: string): void {
+    // console.log('[DEBUG] openPopupNoti called with:', msg);
     this.popupMessage = msg;
     this.isPopupVisible = true;
+    this.cdr.detectChanges();
     setTimeout(() => (this.isPopupVisible = false), 2000);
   }
   closePopupNoti(): void {
     this.isPopupVisible = false;
-    // console.log('dong popup', this.isPopupVisible)
-    // document.getElementById('popupNoti')!.style.display = 'none';
   }
   loadData(): void {
     this.http.get<DonBaoHanh[]>('api/phan-tich-san-pham').subscribe((res: DonBaoHanh[]) => {
@@ -2526,23 +2664,10 @@ export class PhanTichSanPhamComponent implements OnInit {
     this.popupInBBTNtest = false;
   }
   onFontSizeChange(): void {
-    // Áp dụng font size ngay lập tức cho preview
-    const bbtnElement = document.getElementById('BBTN');
-    if (bbtnElement) {
-      bbtnElement.style.fontSize = this.selectedFontSize;
-    }
+    // Set CSS variable globally
+    document.documentElement.style.setProperty('--selected-font-size', this.selectedFontSize);
   }
 
-  // Inject inline style với !important
-  get printStyle(): Record<string, any> {
-    const s = this.selectedFontSize;
-    return {
-      '#BBTN, #BBTN *': {
-        'font-size': `${s} !important`,
-        'font-family': 'Arial, sans-serif !important',
-      },
-    };
-  }
   getUniqueCount(list: any[]): number {
     if (!Array.isArray(list)) {
       return 0;

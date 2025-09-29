@@ -416,7 +416,7 @@ export class DonBaoHanhComponent implements OnInit {
       },
       '.signature-name': {
         display: 'block',
-        'margin-top': '6rem',
+        'margin-top': '4rem',
         'text-decoration': 'none',
         color: 'black',
         'font-size': this.selectedFontSize,

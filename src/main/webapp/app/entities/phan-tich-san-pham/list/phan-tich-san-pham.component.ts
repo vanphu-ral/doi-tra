@@ -876,6 +876,43 @@ export class PhanTichSanPhamComponent implements OnInit {
   isTenLoiHienThi(tenLoi: string): boolean {
     return this.danhSachLoiCanDung.some(loi => loi?.trim().toLowerCase() === tenLoi?.trim().toLowerCase());
   }
+  trackByError(index: number, item: any): any {
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+    return item.loi.tenLoi + item.soLuong;
+  }
+  get sortedErrorList() {
+    // Danh sách lỗi muốn hiển thị đầu tiên
+    const priorityErrors = [
+      'Cầu chì',
+      'Cầu diode HY',
+      'Cầu diode Silijino',
+      'Hỏng LED',
+      'Hỏng IC vcc',
+      'Hỏng IC fes',
+      'Lỗi khác',
+      'Móp, nứt vỡ đui',
+      'Pin, tiếp xúc lò xo',
+      'Om nhiệt',
+    ];
+
+    const filtered = this.catchChangeOfListKhaiBaoLoi.filter(data => this.isTenLoiHienThi(data.loi.tenLoi));
+
+    // Tách ra 2 nhóm: priority và còn lại
+    const priorityItems = filtered.filter(data => priorityErrors.includes(data.loi.tenLoi));
+
+    const normalItems = filtered.filter(data => !priorityErrors.includes(data.loi.tenLoi));
+
+    // Sắp xếp priority items theo thứ tự trong priorityErrors array
+    priorityItems.sort((a, b) => {
+      const aIndex = priorityErrors.indexOf(a.loi.tenLoi);
+      const bIndex = priorityErrors.indexOf(b.loi.tenLoi);
+      return aIndex - bIndex;
+    });
+
+    // Ghép lại: priority trước, normal sau (giữ nguyên thứ tự gốc)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return [...priorityItems, ...normalItems];
+  }
   //lay danh sach loi
   loadDanhSachLoi(): void {
     this.http.get<any[]>(this.loisUrl).subscribe({
@@ -2322,6 +2359,17 @@ export class PhanTichSanPhamComponent implements OnInit {
       phanTich.soLuong = Number(phanTich.loiKyThuat) + Number(phanTich.loiLinhDong);
     }
   }
+  catchEventKhaiBaoLoiSorted(data: any, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Tìm index gốc trong array chưa sort
+    const originalIndex = this.catchChangeOfListKhaiBaoLoi.findIndex(item => item.loi.tenLoi === data.loi.tenLoi);
+
+    if (originalIndex !== -1) {
+      this.catchEventKhaiBaoLoi(originalIndex);
+    }
+  }
   // cập nhật số lượng lỗi trong button
   catchEventKhaiBaoLoi(index: number): void {
     const phanTich = this.listOfPhanTichSanPhamByPLCTTN[this.indexOfChiTietPhanTichSanPham];
@@ -2351,7 +2399,6 @@ export class PhanTichSanPhamComponent implements OnInit {
       phanTich.loiLinhDong++;
     }
     phanTich.soLuong = Number(phanTich.loiKyThuat) + Number(phanTich.loiLinhDong);
-
     this.updatePhanTichSanPham();
   }
 
